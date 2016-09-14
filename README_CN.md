@@ -103,16 +103,16 @@ Description
 ===========
 
 基础模块如下:
-* [twaf_conf](https://github.com/miracleqi/openwaf_conf/blob/master/README_CN.md)
-* [twaf_log](https://github.com/miracleqi/openwaf_log/blob/master/README_CN.md)
-* [twaf_reqstat](https://github.com/miracleqi/openwaf_reqstat/blob/master/README_CN.md)
-* [twaf](https://github.com/miracleqi/twaf/blob/master/README_CN.md)
+* [twaf_conf](https://github.com/titansec/openwaf_conf)
+* [twaf_log](https://github.com/titansec/openwaf_log)
+* [twaf_reqstat](https://github.com/titansec/openwaf_reqstat)
+* [twaf](https://github.com/titansec/openwaf_twaf)
 
 部分安全模块如下:
-* [twaf_anti_detection](https://github.com/290557551/twaf_anti_detection)
-* [twaf_anti_mal_crawler](https://github.com/290557551/twaf_anti_mal_crawler)
-* [twaf_anti_robot](https://github.com/290557551/twaf_anti_robot)
-* [twaf_cookie_guard](https://github.com/290557551/twaf_cookie_guard)
+* [twaf_anti_detection](https://github.com/titansec/twaf_anti_detection)
+* [twaf_anti_mal_crawler](https://github.com/titansec/twaf_anti_mal_crawler)
+* [twaf_anti_robot](https://github.com/titansec/twaf_anti_robot)
+* [twaf_cookie_guard](https://github.com/titansec/twaf_cookie_guard)
   
 [Back to TOC](#table-of-contents)
 
