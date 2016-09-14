@@ -109,6 +109,7 @@ Description
 * [twaf](https://github.com/titansec/openwaf_twaf)
 
 部分安全模块如下:
+* [twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
 * [twaf_anti_detection](https://github.com/titansec/twaf_anti_detection)
 * [twaf_anti_mal_crawler](https://github.com/titansec/twaf_anti_mal_crawler)
 * [twaf_anti_robot](https://github.com/titansec/twaf_anti_robot)
