@@ -22,7 +22,7 @@ Table of Contents
 Version
 =======
 
-This document describes twaf v0.01 released on 26 July 2016.
+This document describes OpenWAF v0.01 released on 26 July 2016.
 
 Synopsis
 ========
@@ -131,7 +131,7 @@ Description
 * [twaf_conf](https://github.com/titansec/openwaf_conf)
 * [twaf_log](https://github.com/titansec/openwaf_log)
 * [twaf_reqstat](https://github.com/titansec/openwaf_reqstat)
-* [twaf_core](https://github.com/titansec/openwaf_twaf_core)
+* [twaf_core](https://github.com/titansec/openwaf_core)
 * [twaf_access_rule](https://https://github.com/titansec/openwaf_access_rule)
 
 功能模块如下:
@@ -150,7 +150,7 @@ Community
 Chinese Mailing List
 --------------------
 
-The [TWAF](https://groups.google.com/group/TWAF) mailing list is for Chinese speakers.
+The [OpenWAF](https://groups.google.com/group/TWAF) mailing list is for Chinese speakers.
 
 [Back to TOC](#table-of-contents)
 
@@ -160,7 +160,7 @@ Bugs and Patches
 Please submit bug reports, wishlists, or patches by
 
 1. creating a ticket on the [GitHub Issue Tracker](https://github.com/290557551/twaf/issues),
-1. or posting to the [TWAF community](#community).
+1. or posting to the [OpenWAF community](#community).
 
 [Back to TOC](#table-of-contents)
 
