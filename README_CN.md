@@ -36,7 +36,31 @@ Synopsis
     lua_shared_dict twaf_shm 50m;
     
     upstream test {
-        server 1.1.1.1;
+        server 0.0.0.1; #just an invalid address as a place holder
+        balancer_by_lua_file twaf_balancer.lua;
+    }
+    
+    server {
+        listen 443 ssl;
+        server_name _;
+        
+        ssl_certificate_by_lua_file  twaf_ssl_cert.lua;
+        rewrite_by_lua_file          /twaf/app/twaf_rewrite.lua;
+        access_by_lua_file           /twaf/app/twaf_access.lua;
+        header_filter_by_lua_file    /twaf/app/twaf_header_filter.lua;
+        body_filter_by_lua_file      /twaf/app/twaf_body_filter.lua
+        log_by_lua_file              /twaf/app/twaf_log.lua;
+        
+        set $twaf_https 1;
+        set $twaf_upstream_server "";
+        
+        ssl_certificate nginx.crt;
+        ssl_certificate_key nginx.key;
+        
+        location / {
+            lua_need_request_body on;
+            proxy_pass $twaf_upstream_server;
+        }
     }
     
     server {
@@ -107,15 +131,11 @@ Description
 * [twaf_conf](https://github.com/titansec/openwaf_conf)
 * [twaf_log](https://github.com/titansec/openwaf_log)
 * [twaf_reqstat](https://github.com/titansec/openwaf_reqstat)
-* [twaf](https://github.com/titansec/openwaf_twaf)
+* [twaf_core](https://github.com/titansec/openwaf_twaf_core)
 * [twaf_access_rule](https://https://github.com/titansec/openwaf_access_rule)
 
 功能模块如下:
 * [twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
-* [twaf_anti_detection](https://github.com/titansec/twaf_anti_detection)
-* [twaf_anti_mal_crawler](https://github.com/titansec/twaf_anti_mal_crawler)
-* [twaf_anti_robot](https://github.com/titansec/twaf_anti_robot)
-* [twaf_cookie_guard](https://github.com/titansec/twaf_cookie_guard)
   
 [Back to TOC](#table-of-contents)
 
