@@ -707,7 +707,7 @@ Variables
 
 **context:** *location*
 
-后端服务器地址，其值由"server_ssl"和"forward"确定
+后端服务器地址，其值由接入规则"server_ssl"和"forward"配置确定
 
 例如：
 ```
