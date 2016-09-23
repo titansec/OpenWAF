@@ -167,7 +167,7 @@ Please submit bug reports, wishlists, or patches by
 TODO
 ====
 
-* 1. 核心框架
+* 1. 核心框架(twaf_conf, twaf_core)
 * 2. 日志
 * 3. 统计
 * 4. 接入规则
