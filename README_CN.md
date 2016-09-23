@@ -107,8 +107,9 @@ Description
 * [twaf_log](https://github.com/titansec/openwaf_log)
 * [twaf_reqstat](https://github.com/titansec/openwaf_reqstat)
 * [twaf](https://github.com/titansec/openwaf_twaf)
+* [twaf_access_rule](https://https://github.com/titansec/openwaf_access_rule)
 
-部分安全模块如下:
+功能模块如下:
 * [twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
 * [twaf_anti_detection](https://github.com/titansec/twaf_anti_detection)
 * [twaf_anti_mal_crawler](https://github.com/titansec/twaf_anti_mal_crawler)
