@@ -17,6 +17,7 @@ Table of Contents
 * [Changes](#changes)
 * [Copyright and License](#copyright-and-license)
 * [Modules Configuration Directives](#modules-configuration-directives)
+* [Variables](#variables)
 
 Version
 =======
@@ -673,5 +674,50 @@ twaf_anti_mal_crawler
 
 [Back to MCD](#twaf_anti_mal_crawler)
 
+[Back to TOC](#table-of-contents)
+
+Variables
+==========
+
+###$twaf_https
+**syntax:** *set $twaf_https 0|1*
+
+**default:** *0*
+
+**context:** *server*
+
+用于标记请求是否通过ssl加密
+
+"set $twaf_https 1"，则表示请求通过ssl加密
+
+"set $twaf_https 1"，则表示请求未通过ssl加密
+
+###$twaf_upstream_server
+**syntax:** *set $twaf_upstream_server ""*
+
+**default:** *none*
+
+**context:** *server*
+
+只需要初始化为空字符串即可
+
+**syntax:** *proxy_pass $twaf_upstream_server*
+
+**default:** *none*
+
+**context:** *location*
+
+后端服务器地址，其值由"server_ssl"和"forward"确定
+
+例如：
+```
+    若"server_ssl"值为true, "forward"值为"server_1"
+    则$twaf_upstream_server值为"https://server_1"
+    等价于proxy_pass https://server_1;
+    
+    若"server_ssl"值为false, "forward"值为"server_2"
+    则$twaf_upstream_server值为"http://server_2"
+    等价于proxy_pass http://server_2;
+```
 
 [Back to TOC](#table-of-contents)
