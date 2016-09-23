@@ -189,26 +189,24 @@ twaf_access_rule
 ----------------
 ```txt
 {
-    "twaf_access_rule": {
-        "unknown_host_state": false,               -- 缺省后端服务器的开关，在请求未匹配任意后端服务器时生效
-        "default_host": "xxx",                     -- 缺省后端服务器ip地址（暂不支持域名）
-        "rules": {
-            "user_1": [{                           -- 有先后顺序
+    "twaf_access_rule": [
+        "rules": [                                 -- 注意先后顺序
+            {                                      
                 "client_ssl": false,               -- 客户端认证的开关，与ngx_ssl组成双向认证
-                "client_ssl_cert": "path",         -- 客户端认证所需证书地址
+                "client_ssl_cert": "path",         -- 客户端认证所需公钥地址
                 "ngx_ssl": false,                  -- nginx认证的开关
-                "ngx_ssl_cert": "path",            -- nginx认证所需证书地址
+                "ngx_ssl_cert": "path",            -- nginx认证所需公钥地址
                 "ngx_ssl_key": "path",             -- nginx认证所需私钥地址
-                "host": "^1\\.1\\.1\\.1$",         -- 域名，支持正则
-                "path": "\/",                      -- 路径，支持正则
-                "server_ssl": false,               -- 服务器ssl开关
-                "forward": "resource_server_5",    -- 后端服务器uuid（upstream名称）
-                "forward_addr": "1.1.1.2",         -- 后端服务器ip地址（暂不支持域名）
+                "host": "^1\\.1\\.1\\.1$",         -- 域名，支持字符串、正则
+                "path": "\/",                      -- 路径，支持字符串、正则
+                "server_ssl": false,               -- 后端服务器ssl开关
+                "forward": "server_5",             -- 后端服务器upstream名称
+                "forward_addr": "1.1.1.2",         -- 后端服务器ip地址
                 "forward_port": "8080",            -- 后端服务器端口号（缺省80）
-                "uuid": "access_567b067ff2060",    -- 此规则的uuid，用于记录请求频率
+                "uuid": "access_567b067ff2060",    -- 用来标记此规则的uuid
                 "policy": "policy_uuid"            -- 安全策略ID
-            }]
-        }
+            }
+        ]
     }
 }
 ```
