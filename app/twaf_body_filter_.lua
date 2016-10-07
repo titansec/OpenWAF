@@ -1,0 +1,1 @@
+return twaf:run(twaf)
