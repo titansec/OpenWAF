@@ -1,0 +1,41 @@
+{
+    "twaf_access_rule": {
+        "log_state":true,
+        "rules":[
+            {
+                "host":"^.*$",
+                "path":"/",
+                "uuid":"test_uuid1",
+                "forward":"upstream_server",
+                "client_ssl":false,
+                "server_ssl":false,
+                "forward_addr":"1.1.1.1",
+                "policy": "twaf_policy_conf"
+            },
+            {
+                "host":"qj.com",
+                "path":"/",
+                "uuid":"test_uuid2",
+                "forward":"upstream_server",
+                "client_ssl": true,
+                "client_ssl_cert": "/opt/openresty/bundle/lua-resty-core-0.1.6/t/cert/ocsp/chain.pem",
+                "ngx_ssl": true,
+                "ngx_ssl_cert": "/opt/openresty/bundle/lua-resty-core-0.1.6/t/cert/test.crt",
+                "ngx_ssl_key": "/opt/openresty/bundle/lua-resty-core-0.1.6/t/cert/test.key",
+                "forward_addr": "1.1.1.1",
+                "policy": "twaf_policy_conf"
+            },
+            {
+                "host":"jq.com",
+                "path":"/",
+                "uuid":"test_uuid3",
+                "forward":"upstream_server",
+                "ngx_ssl": true,
+                "ngx_ssl_cert": "/usr/local/openresty/nginx/conf/ssl/nginx.crt",
+                "ngx_ssl_key": "/usr/local/openresty/nginx/conf/ssl/nginx.key",
+                "forward_addr": "1.1.1.1",
+                "policy": "twaf_policy_conf"
+            }
+        ]
+    }
+}
