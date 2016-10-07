@@ -1,0 +1,97 @@
+[
+    {
+        "weight": 0,
+        "id": "000001",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false,
+            "sanitise_arg": [
+                "password", 
+                "passwd"
+            ]
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "low",
+        "category": "5Y2P6K6u6KeE6IyD",
+        "charactor_name": "cHJvdG9jb2wuYWNjZXB0",
+        "tags": [
+            "twaf_global_conf"
+        ],
+        "desc": "检测是否缺少Accept头字段,OPTIONS方法除外",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "Accept"
+                        }
+                    }
+                ],
+                "transform": "counter",
+                "operator": "equal",
+                "pattern": 0
+            },
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_METHOD"
+                    }
+                ],
+                "operator": "equal",
+                "pattern": "OPTIONS",
+                "op_negated": true
+            }
+        ]
+    },
+    {
+        "weight": 0,
+        "id": "000002",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false,
+            "sanitise_arg": [
+                "password", 
+                "passwd"
+            ]
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "low",
+        "category": "5Y2P6K6u6KeE6IyD",
+        "charactor_name": "cHJvdG9jb2wuYWNjZXB0LmE=",
+        "tags": [
+            "twaf_global_conf"
+        ],
+        "desc": "检测Accept头字段值是否为空,OPTIONS方法除外",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "Accept"
+                        }
+                    }
+                ],
+                "operator": "regex",
+                "pattern": "^$"
+            },
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_METHOD"
+                    }
+                ],
+                "operator": "equal",
+                "pattern": "OPTIONS",
+                "op_negated": true
+            }
+        ]
+    }
+]
