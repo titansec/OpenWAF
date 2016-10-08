@@ -1,0 +1,13 @@
+1.country.c
+    L247,原文为GEOIP_MEMORY_CACHE | GEOIP_SILENCE
+2.city.c
+    L298,原文为GEOIP_MEMORY_CACHE | GEOIP_SILENCE
+
+由于libgeoip版本的变动，致使geoip.h中未定义GEOIP_SILENCE
+因此，将GEOIP_SILENCE删掉了，不然无法编译
+
+3. country.c
+    添加
+  { "query_by_name_v6", lcountry_query_by_name_v6 },
+  { "query_by_addr_v6", lcountry_query_by_addr_v6 },
+   用以支持ipv6处理
