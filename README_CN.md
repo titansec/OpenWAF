@@ -142,6 +142,8 @@ Description
 Installation
 ============
 
+1. 安装[openresty] (http://openresty.org/cn/installation.html)
+
 [Back to TOC](#table-of-contents)
 
 Community
