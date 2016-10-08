@@ -143,7 +143,9 @@ Installation
 ============
 
 1. 安装[openresty](https://openresty.org/en/installation.html)
-2. 下载[OpenWAF]()
+2. 下载[OpenWAF](https://github.com/titansec/OpenWAF/archive/master.zip)
+```
+```
 
 [Back to TOC](#table-of-contents)
 
