@@ -162,7 +162,20 @@ Installation
 2. 安装OpenWAF
    2.1 cd /opt
    2.2 git clone https://github.com/titansec/OpenWAF.git
-   2.3 
+   2.3 mv conf/ngx_openwaf.conf /usr/local/openresty/nginx/conf
+   2.4 
+   
+problem
+1. nginx:[emerg] at least OpenSSL 1.0.2e required but found OpenSSL xxx
+   更新OpenSSL版本至1.0.2e以上即可
+   
+   如：wget -c http://www.openssl.org/source/openssl-1.0.2h.tar.gz
+      ./config
+      make && make install
+      
+   PS: 
+      1. 查看当前openssl版本命令： openssl version
+      2. 若更新openssl后，版本未变，请详看http://www.cnblogs.com/songqingbo/p/5464620.html
 ```
 
 [Back to TOC](#table-of-contents)
