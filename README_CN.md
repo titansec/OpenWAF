@@ -145,26 +145,35 @@ Installation
 1. 安装
 2. 下载[OpenWAF](https://github.com/titansec/OpenWAF/archive/master.zip)
 ```
-1. 安装openresty
+1. 下载openresty
    详见 https://openresty.org/en/installation.html
    
    1.1 cd /opt
    1.2 wget -c https://openresty.org/download/openresty-1.11.2.1.tar.gz
    1.3 tar -xzvf openresty-1.11.2.1.tar.gz
-   1.4 cd openresty-1.11.2.1/
-   1.5 ./configure --with-pcre-jit --with-ipv6 \
+
+2. 安装OpenWAF
+   2.1 cd /opt
+   2.2 获取OpenWAF源文件
+       git clone https://github.com/titansec/OpenWAF.git
+   2.3 移动配置文件
+       mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc
+   2.4 覆盖openresty的configure文件
+       mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.1
+   2.5 移动第三方模块至openresty中
+       mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.1/bundle/
+   2.6 删除OpenWAF/lib/openresty目录
+       rm -rf /opt/OpenWAF/lib/openresty
+       
+3. 编译openresty
+   3.1 cd /opt/openresty-1.11.2.1/
+   3.2 ./configure --with-pcre-jit --with-ipv6 \
                    --with-http_stub_status_module \
                    --with-http_ssl_module \
                    --with-http_realip_module \
                    --with-http_sub_module
-   1.6 make && make install
-
-2. 安装OpenWAF
-   2.1 cd /opt
-   2.2 git clone https://github.com/titansec/OpenWAF.git
-   2.3 mv conf/ngx_openwaf.conf /usr/local/openresty/nginx/conf
-   2.4 
-   
+   3.3 make && make install
+       
 problem
 1. nginx:[emerg] at least OpenSSL 1.0.2e required but found OpenSSL xxx
    更新OpenSSL版本至1.0.2e以上即可
