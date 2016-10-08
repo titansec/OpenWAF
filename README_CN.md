@@ -142,7 +142,8 @@ Description
 Installation
 ============
 
-1. 安装[openresty] (http://openresty.org/cn/installation.html)
+1. 安装[openresty](https://openresty.org/en/installation.html)
+2. 下载[OpenWAF]()
 
 [Back to TOC](#table-of-contents)
 
