@@ -176,6 +176,7 @@ problem
    PS: 
       1. 查看当前openssl版本命令： openssl version
       2. 若更新openssl后，版本未变，请详看http://www.cnblogs.com/songqingbo/p/5464620.html
+      3. 若依然提示版本问题，编译openresty时带上--with-openssl=/path/to/openssl-xxx/
 ```
 
 [Back to TOC](#table-of-contents)
