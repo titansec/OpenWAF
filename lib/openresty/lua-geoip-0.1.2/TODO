@@ -1,0 +1,16 @@
+TODO:
+-----
+
+ -- Document current API.
+ -- Fix file headers.
+ -- Run splint all over it, and fix errors.
+ -- Generalize copy-pasted DB handling code
+ -- Support GEOIP_COUNTRY_EDITION_V6 somehow (separate db type?)
+ -- consider removing db type constants from binding
+ -- Support regions.
+ -- Bind whole API.
+ -- Capture not only stderr, but stdin as well,
+    libgeoip spams there as well.
+ -- Write better tests.
+ -- Open by DB type leaks 18KB+ (that's how libgeoip written).
+ -- Add a luajit.ffi binding
