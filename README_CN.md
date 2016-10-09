@@ -12,6 +12,8 @@ Table of Contents
 * [Description](#description)
 * [Installation](#installation)
 * [Community](#community)
+    * [English Mailing List](#english-mailing-list)
+    * [Chinese Mailing List](#chinese-mailing-list)
 * [Bugs and Patches](#bugs-and-patches)
 * [TODO](#todo)
 * [Changes](#changes)
