@@ -1,31 +1,11 @@
 {
     "modules_order": {
         "access": [
-            "twaf_attack_response",
-            "twaf_secrules",
-            "twaf_upload_radar",
-            "twaf_anti_mal_crawler",
-            "twaf_anti_detection",
-            "twaf_anti_robot",
-            "twaf_limit_conn",
-            "twaf_shell_radar",
-            "twaf_anti_hotlink",
-            "twaf_cookie_guard",
-            "twaf_iwsc"
+            "twaf_secrules"
         ]
     },
     "init_register" : {
-        "twaf_attack_response":   "lib.twaf.twaf_attack_response",
         "twaf_secrules":          "lib.twaf.twaf_secrules",
-        "twaf_upload_radar":      "lib.twaf.twaf_upload_radar",
-        "twaf_anti_mal_crawler":  "lib.twaf.twaf_anti_mal_crawler",
-        "twaf_anti_detection":    "lib.twaf.twaf_anti_detection",
-        "twaf_anti_robot":        "lib.twaf.twaf_anti_robot",
-        "twaf_limit_conn":        "lib.twaf.twaf_anti_cc.twaf_anti_cc",
-        "twaf_shell_radar":       "lib.twaf.twaf_shell_radar",
-        "twaf_anti_hotlink":      "lib.twaf.twaf_anti_hotlink",
-        "twaf_cookie_guard":      "lib.twaf.twaf_cookie_guard",
-        "twaf_iwsc":              "lib.twaf.twaf_iwsc",
         
         "libinjection":           "resty.libinjection",
         "twaf_access_rule":       "lib.twaf.twaf_access_rule",
