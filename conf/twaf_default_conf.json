@@ -42,7 +42,7 @@
         "allowed_content_types":{
             "text/xml": true
         },
-        "simulation":false,
+        "simulation":false
     },
     "twaf_secrules":{
         "state": true,
