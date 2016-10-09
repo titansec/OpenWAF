@@ -170,6 +170,9 @@ Installation
                    --with-http_realip_module \
                    --with-http_sub_module
    3.3 make && make install
+   
+4. 启动引擎
+   /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
        
 problem
 1. nginx:[emerg] at least OpenSSL 1.0.2e required but found OpenSSL xxx
