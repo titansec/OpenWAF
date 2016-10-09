@@ -256,4 +256,3 @@ function _M.load_geoip_country_ipv6(self, path)
 end
 
 return _M
- 
