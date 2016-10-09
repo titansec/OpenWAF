@@ -14,6 +14,7 @@ Table of Contents
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
+    * [Personal QQ Mail](#personal-qq-mail)
 * [Bugs and Patches](#bugs-and-patches)
 * [TODO](#todo)
 * [Changes](#changes)
