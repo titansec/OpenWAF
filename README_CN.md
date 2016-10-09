@@ -205,6 +205,11 @@ Chinese Mailing List
 
 The [OpenWAF-cn](https://groups.google.com/group/openwaf-cn) mailing list is for Chinese speakers.
 
+Personal QQ Mail
+----------------
+
+290557551@qq.com
+
 [Back to TOC](#table-of-contents)
 
 Bugs and Patches
