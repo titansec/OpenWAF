@@ -140,7 +140,11 @@ Installation
                    --with-http_sub_module
    3.3 make && make install
    
-4. 启动引擎
+4. 编辑接入规则
+   vi /opt/OpenWAF/conf/twaf_access_rule.conf
+   编辑域名，后端服务器地址等信息
+   
+5. 启动引擎
    /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
        
 problem
