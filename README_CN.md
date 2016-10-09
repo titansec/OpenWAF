@@ -123,10 +123,6 @@ Synopsis
         "twaf_balancer":          "lib.twaf.twaf_balancer"
     },
     "twaf_global" : {
-        "ctx_show": true,
-        "debug":false,
-        "debug_log_level":"DEBUG",
-        "ctx_debug_level": "DEBUG",
         "unique_id_len": 34,
         "dict_name": "twaf_shm",
         "timer_flush_expired": 10,
@@ -135,15 +131,7 @@ Synopsis
         "allowed_content_types":{
             "text/xml": true
         },
-        "simulation":false,
-        "twaf_redis":{
-            "select":1,
-            "ipaddr":"127.0.0.2",
-            "port":60000
-        },
-        "rules_path":"/secone/webapng/lualib/twaf/lib/twaf/inc/twrules/all_rules-modsecurity",
-        "ip_blacklist_path": "/secone/webapng/lualib/twaf/conf/twaf_black_list.json",
-        "ip_whitelist_path": "/secone/webapng/lualib/twaf/conf/twaf_white_list.json"
+        "simulation":false
     },
     "twaf_secrules":{
         "state": true,
