@@ -87,40 +87,364 @@ Synopsis
 
 ```json
     #default_config-json
-    {
-        "access_order" : [
-            {"twaf_debug":            "lib.twaf.twaf_debug"},
-            {"twaf_attack_response":  "lib.twaf.twaf_attack_response"},
-            {"twaf_secrules":         "lib.twaf.twaf_secrules"},
-            {"twaf_upload_radar":     "lib.twaf.twaf_upload_radar"},
-            {"twaf_anti_mal_crawler": "lib.twaf.twaf_anti_mal_crawler"},
-            {"twaf_balancer":         "lib.twaf.twaf_balancer"},
-            {"twaf_anti_detection":   "lib.twaf.twaf_anti_detection"},
-            {"twaf_anti_robot":       "lib.twaf.twaf_anti_robot"},
-            {"twaf_limit_conn":       "lib.twaf.twaf_anti_cc.twaf_anti_cc"},
-            {"twaf_shell_radar":      "lib.twaf.twaf_shell_radar"},
-            {"twaf_anti_hotlink":     "lib.twaf.twaf_anti_hotlink"},
-            {"twaf_cookie_guard":     "lib.twaf.twaf_cookie_guard"},
-            {"twaf_iwsc":             "lib.twaf.twaf_iwsc"}
-        ],
-        "twaf_global": {
-            "unique_id_len": 34,
-            "dict_name": "twaf_shm",
-            "timer_flush_expired": 10,
-            "process_multipart_body": true,
-            "allow_unknow_content_types": true,
-            "allowed_content_types":{
-                "text/xml": true
-            },
-            "simulation": false,
-            "twaf_redis":{
-                "select": 1,
-                "ipaddr": "1.1.1.1",
-                "port":20000
+{
+    "modules_order": {
+        "access": [
+            "twaf_attack_response",
+            "twaf_secrules",
+            "twaf_upload_radar",
+            "twaf_anti_mal_crawler",
+            "twaf_anti_detection",
+            "twaf_anti_robot",
+            "twaf_limit_conn",
+            "twaf_shell_radar",
+            "twaf_anti_hotlink",
+            "twaf_cookie_guard",
+            "twaf_iwsc"
+        ]
+    },
+    "init_register" : {
+        "twaf_attack_response":   "lib.twaf.twaf_attack_response",
+        "twaf_secrules":          "lib.twaf.twaf_secrules",
+        "twaf_upload_radar":      "lib.twaf.twaf_upload_radar",
+        "twaf_anti_mal_crawler":  "lib.twaf.twaf_anti_mal_crawler",
+        "twaf_anti_detection":    "lib.twaf.twaf_anti_detection",
+        "twaf_anti_robot":        "lib.twaf.twaf_anti_robot",
+        "twaf_limit_conn":        "lib.twaf.twaf_anti_cc.twaf_anti_cc",
+        "twaf_shell_radar":       "lib.twaf.twaf_shell_radar",
+        "twaf_anti_hotlink":      "lib.twaf.twaf_anti_hotlink",
+        "twaf_cookie_guard":      "lib.twaf.twaf_cookie_guard",
+        "twaf_iwsc":              "lib.twaf.twaf_iwsc",
+        
+        "libinjection":           "resty.libinjection",
+        "twaf_access_rule":       "lib.twaf.twaf_access_rule",
+        "twaf_ssl_cert":          "lib.twaf.twaf_ssl_cert",
+        "twaf_log":               "lib.twaf.twaf_log",
+        "twaf_balancer":          "lib.twaf.twaf_balancer"
+    },
+    "twaf_global" : {
+        "ctx_show": true,
+        "debug":false,
+        "debug_log_level":"DEBUG",
+        "ctx_debug_level": "DEBUG",
+        "unique_id_len": 34,
+        "dict_name": "twaf_shm",
+        "timer_flush_expired": 10,
+        "process_multipart_body":true,
+        "allow_unknown_content_types":true,
+        "allowed_content_types":{
+            "text/xml": true
+        },
+        "simulation":false,
+        "twaf_redis":{
+            "select":1,
+            "ipaddr":"127.0.0.2",
+            "port":60000
+        },
+        "rules_path":"/secone/webapng/lualib/twaf/lib/twaf/inc/twrules/all_rules-modsecurity",
+        "ip_blacklist_path": "/secone/webapng/lualib/twaf/conf/twaf_black_list.json",
+        "ip_whitelist_path": "/secone/webapng/lualib/twaf/conf/twaf_white_list.json"
+    },
+    "twaf_secrules":{
+        "state": true,
+        "reqbody_state": true,
+        "header_filter_state": true,
+        "body_filter_state": true,
+        "reqbody_limit":134217728,
+        "respbody_limit":524288,
+        "pre_path": "/secone/webapng/lualib/twaf/",
+        "path": "lib/twaf/inc/twrules/all_rules-modsecurity",
+        "rules_id":{},
+        "rules_tag":{},
+        "user_rules":[],
+        "msg": [
+            "category",
+            "severity",
+            "action",
+            "action_meta",
+            "version",
+            "id",
+            "charactor_name",
+            { 
+                "transaction_time": "%{DURATION}",
+                "logdata": "%{MATCHED_VAR}"
             }
-            
+        ]
+    },
+    "twaf_access_rule" : {
+        "log_state":false,
+        "action":"DENY",
+        "action_meta":403,
+        "unknown_host_state":false,
+        "default_host":"server_bridge_default_def",
+        "rules":{}
+    },
+    "twaf_redis":{
+        "select":1,
+        "ipaddr":"127.0.0.2",
+        "port":60000
+    },
+    "twaf_rules":{
+        "timeout": 30
+    },
+    "twaf_uid":{
+        "state":false,
+        "req_type_state":false,
+        "timeout":7200,
+        "retry_timeout":10,
+        "retry_max":3,
+        "timer_flush_expired":10,
+        "shared_dict_name":"twaf_uid_cookies",
+        "shared_dict_key":[
+            "remote_addr",
+            "http_user_agent"
+        ],
+        "safe_cookie": {
+            "name":"TWAFSID",
+            "raw_value":"TITANWAFUID",
+            "path":"/",
+            "timeout":2
+        },
+        "safe_arg":{
+            "name":"TWAFSID",
+            "raw_value":"TITANWAFTMPARG"
+        },
+        "cookie":{
+            "name":"TWAFUID",
+            "key":"TITANWAF",
+            "path":"/"
         }
-    }
+    },
+    "twaf_anti_hotlink":{
+        "state":false,
+        "log_state":true,
+        "event_id":"110001",
+        "event_severity":"medium",
+        "ct_state":false,
+        "action_meta":403,
+        "action":"DENY",
+        "mode":"referer",
+        "allow_noreferer":true,
+        "cookie_name":"TWAF_AH"
+    },
+    "twaf_libinjection": {
+        "state":false,
+        "xss_state":false,
+        "head_state":false,
+        "post_state":false,
+        "log_state":true,
+        "action":"DENY",
+        "action_meta":403
+    },
+    "twaf_limit_conn": {
+        "state":false,
+        "log_state":true,
+        "trigger_state":true,
+        "clean_state":true,
+        "trigger_thr":{
+            "req_flow_max":314572800,
+            "req_count_max":10000
+        },
+        "clean_thr":{
+            "new_conn_max":40,
+            "conn_max":250,
+            "req_max":250,
+            "uri_frequency_max": 250
+        },
+        "timer_flush_expired":10,
+        "interval":10,
+        "shared_dict_name":"twaf_limit_conn",
+        "shared_dict_key": [
+            "remote_addr"
+        ],
+        "action":"DENY",
+        "action_meta":403,
+        "timeout":30
+    },
+    "twaf_attack_response": {
+        "state":true,
+        "detail_state":false
+    },
+    "twaf_cookie_guard": {
+        "state":false,
+        "http_only_state":false,
+        "cookie": {
+            "httponly": true
+        }
+    },
+    "twaf_iwsc": {
+        "state":false
+    },
+    "twaf_reqstat": {
+        "state":true,
+        "safe_state":true,
+        "access_state":true,
+        "upstream_state":true,
+        "shared_dict_name":"twaf_shm",
+        "content_type":"JSON"
+    },
+    "twaf_anti_mal_crawler": {
+        "state":false,
+        "cookie_state":true,
+        "log_state":true,
+        "force_scan_robots_state":false,
+        "force_scan_times": 3,
+        "shared_dict_key":["remote_addr", "http_user_agent"],
+        "timeout":300,
+        "crawler_cookie_name":"crawler",
+        "mal_cookie_name":"mcrawler",
+        "trap_uri":"/abc/abc.html",
+        "trap_args":"id=1",
+        "action":"DENY",
+        "action_meta":403
+    },
+    "twaf_shell_radar": {
+        "state": false,
+        "timeout": 300,
+        "timer_flush_expired": 10,
+        "shared_dict_name": "twaf_uid_cookies",
+        "shared_dict_key": [
+            "remote_addr",
+            "http_user_agent"
+        ],
+        "app_name": "TWAFSRAPP",
+        "cookie_name": "TWAF_SH",
+        "action": "ALLOW",
+        "action_meta": 403,
+        "aggresive": true,
+        "strict": false,
+        "args_count_max": 3,
+        "addr_count_max": 5,
+        "abi": {
+            "state": false,
+            "file_ext": "||gif|png|ico|bmp|jpeg||",
+            "content_type": "image"
+        },
+        "iis_dir": {
+            "state": false
+        }
+    },
+    "twaf_upload_radar": {
+        "state": false,
+        "log_state": true,
+        "ssdeep_state": true,
+        "clamav_state": true,
+        "image_rebuild_state": true,
+        "source_white_list": [],
+        "uri_white_list":[],
+        "max_file_len": 10000000,
+        "clamav_db": "/secone/webapng/lualib/twaf/conf/clamscan.ndb",
+        "ssdeep_db": "/secone/webapng/lualib/twaf/conf/ssdeep.txt",
+        "ssdeep_score": 90,
+        "tmp_path": "/secone/wwwcache/webap/client/",
+        "buffering": true,
+        "buffering_path": "/secone/webapng/lualib/twaf/lib/twaf/malfile_tmp",
+        "action": "DENY",
+        "action_meta": 403,
+        "opt_check_cgi": true,
+        "opt_check_pair": true,
+        "opt_check_vbs": true,
+        "trust_pair_names": ["xml", "adobe", "xpacket"]
+    },
+    "twaf_anti_detection": {
+        "state": false,
+        "log_state": true,
+        "rate_404": 200,
+        "rate_403": 200,
+        "rate_uri": 500,
+        "rate_other_code": 0,
+        "timeout":1,
+        "action":"DENY",
+        "action_meta": 403
+    },
+    "twaf_anti_robot": {
+        "state": false,
+        "log_state": true,
+        "timeout": 1800,
+        "action": "DENY",
+        "action_meta": 403,
+        "max_fails": 5,
+        "cookie_name": "TWAF_AR",
+        "shared_dict_key": "remote_addr",
+        "mode": "js",
+        "delay":3000
+    },
+    "twaf_log": {
+        "access_log_state":false,
+        "security_log_state":true,
+        "sock_type":"udp",
+        "content_type":"JSON",
+        "host":"127.0.0.1",
+        "port":60099,
+        "flush_limit":0,
+        "drop_limit":1048576,
+        "max_retry_times":5,
+        "ssl":false,
+        "access_log": [
+            "remote_addr",
+            "remote_user",
+            [
+                "[",
+                "time_local",
+                "]"
+            ],
+            "msec",
+            "request_method",
+            "request_uri",
+            "request_protocol",
+            "status",
+            "bytes_sent",
+            [
+                "\"",
+                "http_referer",
+                "\""
+            ],
+            [
+                      "\"",
+                      "http_user_agent",
+                      "\""
+                  ],
+                  [
+                      "\"",
+                      "http_x_forwarded_for",
+                      "\""
+                  ]
+              ],
+              "security_log": [
+                  "remote_addr",
+                  "remote_port",
+                  "userid",
+                  "dev_uuid",
+                  "original_dst_addr",
+                  "original_dst_port",
+                  "remote_user",
+                  [
+                      "[",
+                      "time_local",
+                      "]"
+                  ],
+                  "msec",
+                  "request_method",
+                  "request_uri",
+                  "request_protocol",
+                  "status",
+                  "bytes_sent",
+                  [
+                      "\"",
+                      "http_referer",
+                      "\""
+                  ],
+                  [
+                      "\"",
+                      "http_user_agent",
+                      "\""
+                  ],
+                  "gzip_ratio",
+                  "http_host",
+                  "raw_header"
+              ]
+          }
+      }
     
     #main_safe_policy-json
 ```
