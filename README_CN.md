@@ -146,7 +146,9 @@ Installation
        编辑域名，后端服务器地址等信息
    4.2 日志服务器
        vi /opt/OpenWAF/conf/twaf_default_conf.json
-       配置```[twaf_log](https://github.com/titansec/OpenWAF/blob/master/README_CN.md#twaf_log)```日志接收服务器地址
+```
+       配置[twaf_log](https://github.com/titansec/OpenWAF/blob/master/README_CN.md#twaf_log)日志接收服务器地址
+```
    
 5. 启动引擎
    /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
