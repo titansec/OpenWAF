@@ -1,7 +1,6 @@
 Name
 ====
-
-OpenWAF-Web security protection system based on [openresty](https://github.com/openresty/openresty)
+OpenWAF-基于[openresty](https://github.com/openresty/openresty)的Web安全防护系统
 
 Table of Contents
 =================
