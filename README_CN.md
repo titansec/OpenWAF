@@ -726,6 +726,77 @@ twaf_anti_mal_crawler
 
 [Back to MCD](#twaf_anti_mal_crawler)
 
+twaf_reqstat
+------------
+```json
+    "twaf_reqstat": {
+        "state":true,
+        "safe_state":true,
+        "access_state":true,
+        "upstream_state":true,
+        "shared_dict_name":"twaf_reqshm",
+        "content_type":"JSON"
+    }
+```
+
+###state
+**syntax:** *state true|false|$dynamic_state*
+
+**default:** *true*
+
+**context:** *twaf_reqstat*
+
+统计模块开关，支持动态开关，默认开启
+
+###access_state
+**syntax:** *access_state true|false|$dynamic_state*
+
+**default:** *true*
+
+**context:** *twaf_reqstat*
+
+访问信息统计开关，支持动态开关，默认开启
+
+###safe_state
+**syntax:** *safe_state true|false|$dynamic_state*
+
+**default:** *true*
+
+**context:** *twaf_reqstat*
+
+安全信息统计开关，支持动态开关，默认开启
+
+###upstream_state
+**syntax:** *upstream_state true|false|$dynamic_state*
+
+**default:** *true*
+
+**context:** *twaf_reqstat*
+
+转发信息统计开关，支持动态开关，默认开启
+
+###shared_dict_name
+**syntax:** *shared_dict_name string*
+
+**default:** *openwaf_reqshm*
+
+**context:** *twaf_reqstat*
+
+指定shared_dict名称，在这之前需在nginx配置文件中配置[lua_shared_dict](https://github.com/openresty/lua-nginx-module#lua_shared_dict) <name> <size>
+
+默认shared_dict名称为openwaf_reqshm
+
+###content_type
+**syntax:** *content_type JSON|INFLUXDB*
+
+**default:** *JSON*
+
+**context:** *twaf_reqstat*
+
+指定统计信息输出格式，目前支持JSON和INFLUXDB两种格式
+
+[Back to TOC](#twaf_reqstat)
+
 [Back to TOC](#table-of-contents)
 
 Variables
