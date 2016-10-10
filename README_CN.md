@@ -799,6 +799,147 @@ twaf_reqstat
 
 [Back to TOC](#table-of-contents)
 
+twaf_secrules
+-------------
+```txt
+    "twaf_secrules":{
+        "state": true,                                              -- 总开关
+        "reqbody_state": true,                                      -- 请求体检测开关
+        "header_filter_state": true,                                -- 响应头检测开关
+        "body_filter_state": true,                                  -- 响应体检测开关
+        "reqbody_limit":134217728,                                  -- 请求体检测阈值，大于阈值不检测
+        "respbody_limit":524288,                                    -- 响应体检测阈值，大于阈值不检测
+        "pre_path": "/opt/OpenWAF/",                                -- OpenWAF安装路径
+        "path": "lib/twaf/inc/knowledge_db/twrules",                -- 特征规则库在OpenWAF中的路径
+        "msg": [                                                    -- 日志格式
+            "category",
+            "severity",
+            "action",
+            "meta",
+            "version",
+            "id",
+            "charactor_name",
+            {                                                       -- 字典中为变量
+                "transaction_time": "%{DURATION}",
+                "logdata": "%{MATCHED_VAR}"
+            }
+        ],
+        "rules_id":{                                                -- 特征排除
+            "111112": [{"REMOTE_HOST":"a.com", "URI":"^/ab"}]       -- 匹配中数组中信息则对应规则失效，数组中key为变量名称，值支持正则
+            "111113": {}                                            -- 特征未被排除
+            "111114": [{}]                                          -- 特征被无条件排除
+        }
+    }
+```
+
+###state
+**syntax:** *state true|false*
+
+**default:** *true*
+
+**context:** *twaf_secrules*
+
+规则引擎总开关
+
+###reqbody_state
+**syntax:** *reqbody_state true|false*
+
+**default:** *true*
+
+**context:** *twaf_secrules*
+
+请求体检测开关
+
+###header_filter_state
+**syntax:** *header_filter_state true|false*
+
+**default:** *true*
+
+**context:** *twaf_secrules*
+
+响应头检测开关
+
+###body_filter_state
+**syntax:** *body_filter_state true|false*
+
+**default:** *false*
+
+**context:** *twaf_secrules*
+
+响应体检测开关，默认关闭，若开启需添加第三方模块[ngx_http_twaf_header_sent_filter_module暂未开源]
+
+###reqbody_limit
+**syntax:** *reqbody_limit number*
+
+**default:** *134217728*
+
+**context:** *twaf_secrules*
+
+请求体检测大小上限，默认134217728B(128MB)，若请求体超过设置上限，则不检测
+
+PS：reqbody_limit值要小于nginx中client_body_buffer_size的值才会生效
+
+###respbody_limit
+**syntax:** *respbody_limit number*
+
+**default:** *134217728*
+
+**context:** *twaf_secrules*
+
+响应体检测大小上限，默认134217728B(128MB)，若响应体大小超过设置上限，则不检测
+
+###pre_path
+**syntax:** *pre_path string*
+
+**default:** */opt/OpenWAF/*
+
+**context:** *twaf_secrules*
+
+OpenWAF的安装路径
+
+###path
+**syntax:** *path string*
+
+**default:** *lib/twaf/inc/knowledge_db/twrules*
+
+**context:** *twaf_secrules*
+
+特征规则库在OpenWAF中的路径
+
+###msg
+**syntax:** *msg table*
+
+**default:** *[
+            "category",
+            "severity",
+            "action",
+            "meta",
+            "version",
+            "id",
+            "charactor_name",
+            {
+                "transaction_time": "%{DURATION}",
+                "logdata": "%{MATCHED_VAR}"
+            }
+        ]*
+
+**context:** *twaf_secrules*
+
+日志格式
+
+###rules_id
+**syntax:** *rules_id table*
+
+**default:** *none*
+
+**context:** *twaf_secrules*
+
+用于排除特征
+
+[Back to TOC](#twaf_secrules)
+
+[Back to TOC](#table-of-contents)
+
 Variables
 ==========
 
