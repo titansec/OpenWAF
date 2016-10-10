@@ -236,6 +236,8 @@ Modules Configuration Directives
 * [twaf_access_rule](#twaf_access_rule)
 * [twaf_anti_hotlink](#twaf_anti_hotlink)
 * [twaf_anti_mal_crawler](#twaf_anti_mal_crawler)
+* [twaf_reqstat](#twaf_reqstat)
+* [twaf_secrules](#twaf_secrules)
 
 [Back to TOC](#table-of-contents)
 
