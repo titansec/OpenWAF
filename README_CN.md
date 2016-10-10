@@ -624,8 +624,6 @@ cookie_name表示盗链模块发送COOKIE的名称，默认"TWAF_AH"
 
 此配置只有mode为cookie模式下生效
 
-[Back to MCD](#twaf_anti_hotlink)
-
 ###uri_ext
 **syntax:** *"uri_ext": array|exten|"all"*
 
@@ -649,9 +647,9 @@ uri_ext表示对哪些资源进行盗链防护
      "uri_ext": "all"
 ```
 
-[Back to MCD](#twaf_anti_hotlink)
+[Back to twaf_anti_hotlink](#twaf_anti_hotlink)
 
-
+[Back to TOC](#table-of-contents)
 
 twaf_anti_mal_crawler
 ---------------------
@@ -726,7 +724,9 @@ twaf_anti_mal_crawler
 
 记录安全日志时，显示的事件等级
 
-[Back to MCD](#twaf_anti_mal_crawler)
+[Back to twaf_anti_mal_crawler](#twaf_anti_mal_crawler)
+
+[Back to TOC](#table-of-contents)
 
 twaf_reqstat
 ------------
@@ -797,7 +797,7 @@ twaf_reqstat
 
 指定统计信息输出格式，目前支持JSON和INFLUXDB两种格式
 
-[Back to TOC](#twaf_reqstat)
+[Back to twaf_reqstat](#twaf_reqstat)
 
 [Back to TOC](#table-of-contents)
 
@@ -938,7 +938,7 @@ OpenWAF的安装路径
 
 用于排除特征
 
-[Back to TOC](#twaf_secrules)
+[Back to twaf_secrules](#twaf_secrules)
 
 [Back to TOC](#table-of-contents)
 
