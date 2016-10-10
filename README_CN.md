@@ -146,6 +146,61 @@ Installation
        编辑域名，后端服务器地址等信息
    4.2 日志服务器
        vi /opt/OpenWAF/conf/twaf_default_conf.json
+       配置```[twaf_log](https://github.com/titansec/OpenWAF/blob/master/README_CN.md#twaf_log)```日志接收服务器地址
+   
+5. 启动引擎
+   /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
+       
+problem
+1. nginx:[emerg] at least OpenSSL 1.0.2e required but found OpenSSL xxx
+   更新OpenSSL版本至1.0.2e以上即可
+   
+   如：wget -c http://www.openssl.org/source/openssl-1.0.2h.tar.gz
+      ./config
+      make && make install
+      
+   PS: 
+      1. 查看当前openssl版本命令： openssl version
+      2. 若更新openssl后，版本未变，请详看http://www.cnblogs.com/songqingbo/p/5464620.html
+      3. 若依然提示版本问题，编译openresty时带上--with-openssl=/path/to/openssl-xxx/
+```
+
+```
+1. 下载openresty
+   详见 https://openresty.org/en/installation.html
+   
+   1.1 cd /opt
+   1.2 wget -c https://openresty.org/download/openresty-1.11.2.1.tar.gz
+   1.3 tar -xzvf openresty-1.11.2.1.tar.gz
+
+2. 安装OpenWAF
+   2.1 cd /opt
+   2.2 获取OpenWAF源文件
+       git clone https://github.com/titansec/OpenWAF.git
+   2.3 移动配置文件
+       mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc
+   2.4 覆盖openresty的configure文件
+       mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.1
+   2.5 移动第三方模块至openresty中
+       mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.1/bundle/
+   2.6 删除OpenWAF/lib/openresty目录
+       rm -rf /opt/OpenWAF/lib/openresty
+       
+3. 编译openresty
+   3.1 cd /opt/openresty-1.11.2.1/
+   3.2 ./configure --with-pcre-jit --with-ipv6 \
+                   --with-http_stub_status_module \
+                   --with-http_ssl_module \
+                   --with-http_realip_module \
+                   --with-http_sub_module
+   3.3 make && make install
+   
+4. 编辑配置文件
+   4.1 接入规则
+       vi /opt/OpenWAF/conf/twaf_access_rule.conf
+       编辑域名，后端服务器地址等信息
+   4.2 日志服务器
+       vi /opt/OpenWAF/conf/twaf_default_conf.json
        配置[twaf_log](https://github.com/titansec/OpenWAF/blob/master/README_CN.md#twaf_log)日志接收服务器地址
    
 5. 启动引擎
