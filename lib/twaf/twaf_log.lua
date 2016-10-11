@@ -107,7 +107,7 @@ local function _set_msg_influxdb(request, events, raw_msg, flag)
         log = log .. tf
         
         for k, v in pairs(event) do
-            if type(v) == "string" then v = "\""..v.."\"" end
+            if type(v) == "string" then v = "\"".._transfer_quotation_mark(v).."\"" end
             log = log..","..k.."="..v
         end
         
@@ -191,7 +191,7 @@ function _M.log(self, _twaf)
     end
     
     if twaf_func:state(cf.access_log_state) == true then
-        local security_msg = _M:set_msg(_twaf:ctx(), cf, cf.security_log, access_log_flag)
+        local access_msg = _M:set_msg(_twaf:ctx(), cf, cf.security_log, access_log_flag)
         if access_msg ~= false then
             local bytes, err = twaf_socket.log(access_msg)
             if err then
