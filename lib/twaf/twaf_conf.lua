@@ -7,7 +7,7 @@ local _M = {
     _VERSION = "0.01"
 }
 
-local cjson         = require "cjson.safe"
+local cjson         = require "cjson"
 local twaf_func     = require "lib.twaf.inc.twaf_func"
 local geoip_country = require "geoip.country"
 
