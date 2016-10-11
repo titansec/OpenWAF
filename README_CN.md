@@ -151,7 +151,7 @@ Installation
 5. 启动引擎
    /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
        
-problem
+Problems
 1. nginx:[emerg] at least OpenSSL 1.0.2e required but found OpenSSL xxx
    更新OpenSSL版本至1.0.2e以上即可
    
@@ -163,6 +163,14 @@ problem
       1. 查看当前openssl版本命令： openssl version
       2. 若更新openssl后，版本未变，请详看http://www.cnblogs.com/songqingbo/p/5464620.html
       3. 若依然提示版本问题，编译openresty时带上--with-openssl=/path/to/openssl-xxx/
+      
+2. 提示找不到GeoIP.h
+   
+   apt-get install libgeoip-dev
+   
+3. 提示找不到swig
+
+   apt-get install swig
 ```
 
 [Back to TOC](#table-of-contents)
