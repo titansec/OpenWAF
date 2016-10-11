@@ -142,7 +142,7 @@ Installation
    
 4. 编辑配置文件
    4.1 接入规则
-       vi /opt/OpenWAF/conf/twaf_access_rule.conf
+       vi /opt/OpenWAF/conf/twaf_access_rule.json
        编辑域名，后端服务器地址等信息
    4.2 日志服务器
        vi /opt/OpenWAF/conf/twaf_default_conf.json
