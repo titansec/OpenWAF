@@ -101,7 +101,7 @@ Description
 * [twaf_log](https://github.com/titansec/openwaf_log)
 * [twaf_reqstat](https://github.com/titansec/openwaf_reqstat)
 * [twaf_core](https://github.com/titansec/openwaf_core)
-* [twaf_access_rule](https://https://github.com/titansec/openwaf_access_rule)
+* [twaf_access_rule](https://github.com/titansec/openwaf_access_rule)
 
 功能模块如下:
 * [twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
