@@ -3,7 +3,7 @@ Name
 
 OpenWAF
 
-Web application security protection system based on [openresty](https://github.com/openresty/openresty)
+基于[openresty](https://github.com/openresty/openresty)的Web应用安全防护系统
 
 Table of Contents
 =================
@@ -103,7 +103,7 @@ Description
 * [twaf_log](https://github.com/titansec/openwaf_log)
 * [twaf_reqstat](https://github.com/titansec/openwaf_reqstat)
 * [twaf_core](https://github.com/titansec/openwaf_core)
-* [twaf_access_rule](https://https://github.com/titansec/openwaf_access_rule)
+* [twaf_access_rule](https://github.com/titansec/openwaf_access_rule)
 
 功能模块如下:
 * [twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
@@ -142,14 +142,18 @@ Installation
                    --with-http_sub_module
    3.3 make && make install
    
-4. 编辑接入规则
-   vi /opt/OpenWAF/conf/twaf_access_rule.conf
-   编辑域名，后端服务器地址等信息
+4. 编辑配置文件
+   4.1 接入规则
+       vi /opt/OpenWAF/conf/twaf_access_rule.json
+       编辑域名，后端服务器地址等信息
+   4.2 日志服务器
+       vi /opt/OpenWAF/conf/twaf_default_conf.json
+       配置twaf_log日志接收服务器地址
    
 5. 启动引擎
    /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
        
-problem
+Problems
 1. nginx:[emerg] at least OpenSSL 1.0.2e required but found OpenSSL xxx
    更新OpenSSL版本至1.0.2e以上即可
    
@@ -161,6 +165,14 @@ problem
       1. 查看当前openssl版本命令： openssl version
       2. 若更新openssl后，版本未变，请详看http://www.cnblogs.com/songqingbo/p/5464620.html
       3. 若依然提示版本问题，编译openresty时带上--with-openssl=/path/to/openssl-xxx/
+      
+2. 提示找不到GeoIP.h
+   
+   apt-get install libgeoip-dev
+   
+3. 提示找不到swig
+
+   apt-get install swig
 ```
 
 [Back to TOC](#table-of-contents)
@@ -238,6 +250,9 @@ Modules Configuration Directives
 * [twaf_access_rule](#twaf_access_rule)
 * [twaf_anti_hotlink](#twaf_anti_hotlink)
 * [twaf_anti_mal_crawler](#twaf_anti_mal_crawler)
+* [twaf_reqstat](#twaf_reqstat)
+* [twaf_log](#twaf_log)
+* [twaf_secrules](#twaf_secrules)
 
 [Back to TOC](#table-of-contents)
 
@@ -624,8 +639,6 @@ cookie_name表示盗链模块发送COOKIE的名称，默认"TWAF_AH"
 
 此配置只有mode为cookie模式下生效
 
-[Back to MCD](#twaf_anti_hotlink)
-
 ###uri_ext
 **syntax:** *"uri_ext": array|exten|"all"*
 
@@ -649,9 +662,9 @@ uri_ext表示对哪些资源进行盗链防护
      "uri_ext": "all"
 ```
 
-[Back to MCD](#twaf_anti_hotlink)
+[Back to twaf_anti_hotlink](#twaf_anti_hotlink)
 
-
+[Back to TOC](#table-of-contents)
 
 twaf_anti_mal_crawler
 ---------------------
@@ -726,7 +739,424 @@ twaf_anti_mal_crawler
 
 记录安全日志时，显示的事件等级
 
-[Back to MCD](#twaf_anti_mal_crawler)
+[Back to twaf_anti_mal_crawler](#twaf_anti_mal_crawler)
+
+[Back to TOC](#table-of-contents)
+
+twaf_reqstat
+------------
+```json
+    "twaf_reqstat": {
+        "state":true,
+        "safe_state":true,
+        "access_state":true,
+        "upstream_state":true,
+        "shared_dict_name":"twaf_reqshm",
+        "content_type":"JSON"
+    }
+```
+
+###state
+**syntax:** *state true|false|$dynamic_state*
+
+**default:** *true*
+
+**context:** *twaf_reqstat*
+
+统计模块开关，支持动态开关，默认开启
+
+###access_state
+**syntax:** *access_state true|false|$dynamic_state*
+
+**default:** *true*
+
+**context:** *twaf_reqstat*
+
+访问信息统计开关，支持动态开关，默认开启
+
+###safe_state
+**syntax:** *safe_state true|false|$dynamic_state*
+
+**default:** *true*
+
+**context:** *twaf_reqstat*
+
+安全信息统计开关，支持动态开关，默认开启
+
+###upstream_state
+**syntax:** *upstream_state true|false|$dynamic_state*
+
+**default:** *true*
+
+**context:** *twaf_reqstat*
+
+转发信息统计开关，支持动态开关，默认开启
+
+###shared_dict_name
+**syntax:** *shared_dict_name string*
+
+**default:** *openwaf_reqshm*
+
+**context:** *twaf_reqstat*
+
+指定shared_dict名称，在这之前需在nginx配置文件中配置[lua_shared_dict](https://github.com/openresty/lua-nginx-module#lua_shared_dict) <name> <size>
+
+默认shared_dict名称为openwaf_reqshm
+
+###content_type
+**syntax:** *content_type JSON|INFLUXDB*
+
+**default:** *JSON*
+
+**context:** *twaf_reqstat*
+
+指定统计信息输出格式，目前支持JSON和INFLUXDB两种格式
+
+[Back to twaf_reqstat](#twaf_reqstat)
+
+[Back to TOC](#table-of-contents)
+
+twaf_log
+--------
+```txt
+"twaf_log": {
+        "access_log_state":false,     -- 访问日志开关
+        "security_log_state":true,    -- 安全日志开关
+        "sock_type":"udp",            -- 支持tcp和udp两种协议
+        "content_type":"JSON",        -- 支持JSON和INFLUXDB两种日志格式
+        "host":"127.0.0.1",           -- 日志服务器地址
+        "port":60055,                 -- 日志服务器端口号
+        "flush_limit":0,              -- 缓冲，当存储的日志大于阈值才发送
+        "drop_limit":1048576,
+        "max_retry_times":5,          -- 最大容错次数
+        "ssl":false,                  -- 是否开启ssl协议
+        "access_log":{}               -- 访问日志格式
+        "security_log":{}             -- 安全日志格式
+}
+```
+
+###access_log_state
+**syntax:** *"access_log_state": true|false*
+
+**default:** *false*
+
+**context:** *twaf_log*
+
+访问日志开关，默认关闭
+
+###security_log_state
+**syntax:** *"security_log_state": true|false*
+
+**default:** *true*
+
+**context:** *twaf_log*
+
+安全事件日志开关，默认开启
+
+###sock_type
+**syntax:** *"sock_type": tcp|udp*
+
+**default:** *udp*
+
+**context:** *twaf_log*
+
+日志传输协议，默认udp
+
+###content_type
+**syntax:** *"content_type": JSON|INFLUXDB*
+
+**default:** *JSON*
+
+**context:** *twaf_log*
+
+日志格式，默认JSON
+
+###host
+**syntax:** *"host": string*
+
+**default:** *"127.0.0.1"*
+
+**context:** *twaf_log*
+
+日志接收服务器的ip地址
+
+###port
+**syntax:** *"port": number*
+
+**default:** *60055*
+
+**context:** *twaf_log*
+
+日志接收服务器的端口号
+
+###flush_limit
+**syntax:** *"flush_limit": number*
+
+**default:** *0*
+
+**context:** *twaf_log*
+
+缓冲区大小，当存储的日志大于阈值才发送，默认值为0，即立即发送日志
+
+###drop_limit
+**syntax:** *"drop_limit": number*
+
+**default:** *1048576*
+
+**context:** *twaf_log*
+
+###max_retry_times
+**syntax:** *"max_retry_times": number*
+
+**default:** *5*
+
+**context:** *twaf_log*
+
+最大容错次数
+
+###ssl
+**syntax:** *"ssl": true|false*
+
+**default:** *false*
+
+**context:** *twaf_log*
+
+是否开启ssl协议，默认false
+
+###access_log
+**syntax:** *"access_log": table*
+
+**default:** *false*
+
+**context:** *twaf_log*
+
+访问日志格式
+
+###security_log
+**syntax:** *"security_log": table*
+
+**default:** *false*
+
+**context:** *twaf_log*
+
+安全事件日志格式
+
+若content_type为JSON，则日志格式为
+```
+[
+    variable_key_1, 
+    variable_key_2, 
+    ...
+]
+```
+若content_type为INFLUXDB，则日志格式为
+```
+{
+    "db":MEASUREMENT名称, 
+    "tags":[variable_key_1, variable_key_2, ...], 
+    "fileds"[variable_key_1, variable_key_2, ...],
+    "time":true|false
+}
+```
+
+变量名称详见规则引擎模块[twaf_secrules](#https://github.com/titansec/openwaf_rule_engine#variables)
+
+```
+    #日志格式举例
+        #JSON格式
+        "security_log": [
+            "remote_addr",
+            "remote_port",
+            "userid",
+            "dev_uuid",
+            "original_dst_addr",
+            "original_dst_port",
+            "remote_user",
+            "time_local",
+            "msec",
+            "request_method",
+            "request_uri",
+            "request_protocol",
+            "status",
+            "bytes_sent",
+            "http_referer",
+            "http_user_agent",
+            "gzip_ratio",
+            "http_host",
+            "raw_header"
+        ]
+
+        #INFLUXDB格式
+        "security_log": {
+            "db":"test",                  -- MEASUREMENT名称
+            "tags":[],                    -- tags keys
+            "fileds":[                    -- fileds keys
+                "remote_addr",
+                "remote_port",
+                "userid",
+                "dev_uuid",
+                "original_dst_addr",
+                "original_dst_port",
+                "remote_user",
+                "time_local",
+                "msec",
+                "request_method",
+                "request_uri",
+                "request_protocol",
+                "status",
+                "bytes_sent",
+                "http_referer",
+                "http_user_agent",
+                "gzip_ratio",
+                "http_host",
+                "raw_header"
+            ],
+            "time":true                   -- 日志是否携带时间戳
+        }
+```
+
+[Back to twaf_log](#twaf_log)
+
+[Back to TOC](#table-of-contents)
+
+twaf_secrules
+-------------
+```txt
+    "twaf_secrules":{
+        "state": true,                                              -- 总开关
+        "reqbody_state": true,                                      -- 请求体检测开关
+        "header_filter_state": true,                                -- 响应头检测开关
+        "body_filter_state": true,                                  -- 响应体检测开关
+        "reqbody_limit":134217728,                                  -- 请求体检测阈值，大于阈值不检测
+        "respbody_limit":524288,                                    -- 响应体检测阈值，大于阈值不检测
+        "pre_path": "/opt/OpenWAF/",                                -- OpenWAF安装路径
+        "path": "lib/twaf/inc/knowledge_db/twrules",                -- 特征规则库在OpenWAF中的路径
+        "msg": [                                                    -- 日志格式
+            "category",
+            "severity",
+            "action",
+            "meta",
+            "version",
+            "id",
+            "charactor_name",
+            {                                                       -- 字典中为变量
+                "transaction_time": "%{DURATION}",
+                "logdata": "%{MATCHED_VAR}"
+            }
+        ],
+        "rules_id":{                                                -- 特征排除
+            "111112": [{"REMOTE_HOST":"a.com", "URI":"^/ab"}]       -- 匹配中数组中信息则对应规则失效，数组中key为变量名称，值支持正则
+            "111113": {}                                            -- 特征未被排除
+            "111114": [{}]                                          -- 特征被无条件排除
+        }
+    }
+```
+
+###state
+**syntax:** *state true|false*
+
+**default:** *true*
+
+**context:** *twaf_secrules*
+
+规则引擎总开关
+
+###reqbody_state
+**syntax:** *reqbody_state true|false*
+
+**default:** *true*
+
+**context:** *twaf_secrules*
+
+请求体检测开关
+
+###header_filter_state
+**syntax:** *header_filter_state true|false*
+
+**default:** *true*
+
+**context:** *twaf_secrules*
+
+响应头检测开关
+
+###body_filter_state
+**syntax:** *body_filter_state true|false*
+
+**default:** *false*
+
+**context:** *twaf_secrules*
+
+响应体检测开关，默认关闭，若开启需添加第三方模块[ngx_http_twaf_header_sent_filter_module暂未开源]
+
+###reqbody_limit
+**syntax:** *reqbody_limit number*
+
+**default:** *134217728*
+
+**context:** *twaf_secrules*
+
+请求体检测大小上限，默认134217728B(128MB)，若请求体超过设置上限，则不检测
+
+PS：reqbody_limit值要小于nginx中client_body_buffer_size的值才会生效
+
+###respbody_limit
+**syntax:** *respbody_limit number*
+
+**default:** *134217728*
+
+**context:** *twaf_secrules*
+
+响应体检测大小上限，默认134217728B(128MB)，若响应体大小超过设置上限，则不检测
+
+###pre_path
+**syntax:** *pre_path string*
+
+**default:** */opt/OpenWAF/*
+
+**context:** *twaf_secrules*
+
+OpenWAF的安装路径
+
+###path
+**syntax:** *path string*
+
+**default:** *lib/twaf/inc/knowledge_db/twrules*
+
+**context:** *twaf_secrules*
+
+特征规则库在OpenWAF中的路径
+
+###msg
+**syntax:** *msg table*
+
+**default:** *[
+            "category",
+            "severity",
+            "action",
+            "meta",
+            "version",
+            "id",
+            "charactor_name",
+            {
+                "transaction_time": "%{DURATION}",
+                "logdata": "%{MATCHED_VAR}"
+            }
+        ]*
+
+**context:** *twaf_secrules*
+
+日志格式
+
+###rules_id
+**syntax:** *rules_id table*
+
+**default:** *none*
+
+**context:** *twaf_secrules*
+
+用于排除特征
+
+[Back to twaf_secrules](#twaf_secrules)
 
 [Back to TOC](#table-of-contents)
 
