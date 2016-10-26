@@ -27,7 +27,7 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v0.01 released on 26 July 2016.
+This document describes OpenWAF v0.0.1.161026_beta released on 26 Oct 2016.
 
 Synopsis
 ========
