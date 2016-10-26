@@ -60,42 +60,6 @@ function _M.register_modules(self, modules)
     return true
 end
 
-function _M.set_config_param(self, param, value)
-    local policy = self.config.global_conf_uuid
-    
-    if ngx.ctx and self:ctx().policy_uuid then
-        policy = self:ctx().policy_uuid
-    end
-    
-    self.config.twaf_policy[policy][param] = value
-end
-
--- Set module config parameter
-function _M.set_modules_config_param(self, modules, param, value)
-    local policy = self.config.global_conf_uuid
-    
-    if ngx.ctx and self:ctx().policy_uuid then
-        policy = self:ctx().policy_uuid
-    end
-    
-    if self.config.twaf_policy[policy][modules] == nil then
-         ngx.log(ngx.ERR, "no such module - ", modules)
-         ngx.exit(500)
-    end
-    
-    if type(value) ~= "table" then
-        self.config.twaf_policy[policy][modules][param] = value
-    else
-        if self.config.twaf_policy[policy][modules][param] == nil then
-            self.config.twaf_policy[policy][modules][param] = {}
-        end
-
-        for k, v in pairs(value) do
-            self.config.twaf_policy[policy][modules][param][k] = v
-        end
-    end
-end
-
 function _M.get_default_config_param(self, param)
     return self.config.twaf_default_conf[param]
 end
@@ -147,16 +111,6 @@ function _M.get_modules_config_param(self, modules, param)
     end
     
     return mod[param]
-end
-
-local function _parse_conf_file(self, path)
-
-    local file = io.open(path)
-    local conf_json = file:read("*a")
-    file:close()
-    local conf = cjson.decode(conf_json)
-
-    return conf
 end
 
 local function _filter_order(_twaf, phase, modules_order)

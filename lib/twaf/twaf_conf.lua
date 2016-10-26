@@ -2,7 +2,6 @@
 -- Copyright (C) Miracle
 -- Copyright (C) OpenWAF
 
-
 local _M = {
     _VERSION = "0.0.1"
 }
