@@ -8,6 +8,7 @@ local _M = {
 
 local cjson                = require "cjson.safe"
 local twaf_func            = require "lib.twaf.inc.twaf_func"
+
 local mt                   = { __index = _M }
 local ngx_header           = ngx.header
 local ngx_HTTP_OK          = ngx.HTTP_OK
@@ -15,7 +16,6 @@ local ngx_log              = ngx.log
 local ngx_var              = ngx.var
 local ngx_shared           = ngx.shared
 local ngx_ERR              = ngx.ERR
-local ngx_null             = ngx.null
 local ngx_send_headers     = ngx.send_headers
 local ngx_req_get_uri_args = ngx.req.get_uri_args
 local ngx_time             = ngx.time
@@ -29,13 +29,15 @@ local safe_state
 local access_state
 local upstream_state
 local shared_dict_name
-
-local delay
 local reqstat_dict
 
-local stat_safe     = {}
+
 local stat_access   = {"addr_total", "req_total", "bytes_in", "attack_total",
                        "bytes_out", "conn_total", "1xx", "2xx", "3xx", "4xx", "5xx"}
+local stat_safe     = {["cat.attack.injection"] = 1, ["cat.attack.other"] = 1, ["cat.ddos.cc"] = 1,
+                       ["cat.abnormal.score"]   = 1, ["cat.attack.xss"]   = 1, ["cat.leakage"] = 1,
+                       ["cat.attack.upload"]    = 1, ["cat.protocol"]     = 1, ["cat.hotfix"]  = 1, 
+                       ["cat.abnormal.req"]     = 1, ["cat.mal.page"]     = 1, ["cat.robot"]   = 1}
 local stat_upstream = {"req_total", "bytes_in", "bytes_out", "1xx", "2xx", "3xx", 
                        "4xx", "400", "401", "403", "404", "405", "406", "407", "408", 
                        "409", "410", "411", "412", "413", "414", "415", "416", "417",
@@ -132,6 +134,8 @@ function _M.get_reqstat_uuid_info(self, uuids)
              info[uuid] = {}
             _get_reqstat_info(info[uuid], modules_name.."_"..uuid)
         end
+        
+        return info
     end
     
     for _, uuid in ipairs(uuids) do
@@ -253,9 +257,6 @@ local function _log_upstream_stat(key)
     if status == nil or bytes_in == nil or bytes_out == nil then
         return
     end
-    
---  bytes_in  = bytes_in  or 0
---  bytes_out = bytes_out or 0
 
     reqstat_dict:incr(key.."_upstream_req_total", 1)
     reqstat_dict:incr(key.."_upstream_bytes_in", bytes_in)
@@ -314,11 +315,11 @@ function _M.reqstat_log_handler(self, events, uuid)
     end
 
     _reqstat(events, global_uuid)
-    -- policy test
+    
     if uuid then
         _reqstat(events, uuid)
     end
-    -- test end
+    
     return true
 end
 
@@ -367,8 +368,6 @@ function _M.new(self, reqstat_conf, uuids)
             upstream_state = v
         elseif k == "shared_dict_name" then
             shared_dict_name = v
-        elseif k == "delay" then
-            delay = v
         end
     end
     

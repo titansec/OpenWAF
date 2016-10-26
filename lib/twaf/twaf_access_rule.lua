@@ -9,20 +9,15 @@ local _M = {
 local twaf_func            = require "lib.twaf.inc.twaf_func"
 local twaf_action          = require "lib.twaf.inc.action"
 
-local mt                   = { __index = _M, }
 local event_id             = "910001"
 local event_severity       = "low"
-local category             = "5byC5bi46K+35rGC"  --异常请求
+local category             = "cat.abnormal.req"
 local modules_name         = "twaf_access_rule"
-local modules_log_name     = "exception.access"
+local modules_log_name     = "cat.abnormal.req.access_rule"
 local ngx_var              = ngx.var
 local ngx_exit             = ngx.exit
 local ngx_shared           = ngx.shared
 local ngx_req_get_headers  = ngx.req.get_headers
-
-function _M.new_modules(self, config)
-    return setmetatable({config = config}, mt)
-end
 
 local function _log_action(_twaf, cf)
 
@@ -141,15 +136,6 @@ function _M.handler(self, _twaf)
     ctx.balancer      = {}
     ctx.balancer.addr = server.forward_addr
     ctx.balancer.port = server.forward_port
-    
-    -- statistic
-    if server["uuid"] then
-        local shared_dict_name  = cf.shared_dict_name or gcf.dict_name
-        local access_rules_dict = ngx_shared[shared_dict_name]
-        
-        access_rules_dict:add(server["uuid"], 0)
-        access_rules_dict:incr(server["uuid"], 1)
-    end
     
     return true
 end

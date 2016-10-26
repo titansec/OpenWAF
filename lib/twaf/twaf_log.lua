@@ -9,17 +9,14 @@ local _M = {
 local twaf_func           = require "lib.twaf.inc.twaf_func"
 local twaf_socket         = require "resty.logger.socket"
 local cjson               = require "cjson.safe"
+
 local ngx_log             = ngx.log
-local DEBUG               = ngx.DEBUG
-local NOTICE              = ngx.NOTICE
 local WARN                = ngx.WARN
 local ERR                 = ngx.ERR
-local CRIT                = ngx.CRIT
-local ngx_var             = ngx.var
 local access_log_flag     = 1
 local security_log_flag   = 2
 
---     " --> \"
+-- " --> \"
 local function _transfer_quotation_mark(str)
     local func = function(m)
         if m[0] == '\\"' then
@@ -28,7 +25,11 @@ local function _transfer_quotation_mark(str)
                     
         return m[0]:sub(1,1)..'\\"'
     end
-                
+    
+    if str:sub(1,1) == '"' then
+        str = '\\'..str
+    end
+    
     return ngx.re.gsub(str, [=[."]=], func, "oij")
 end
 

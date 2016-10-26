@@ -110,7 +110,7 @@ function _M.load_policy_config(self, path, policy_uuids)
     end
 end
 
--- 各文件rules合并
+-- merge lua rule file (only one rule in a file)
 local function _rule_combine(tb1, tb2, f)
 
     if type(tb2) == "table" then
@@ -210,12 +210,13 @@ function _M.load_rules(self)
     
     local secrules = {}
     
-    --TODO: 支持多级目录解析
+    --TODO: Support multi-level directory parsing
     --load rules to self.rules
     _load_rules_json(secrules, pre_path, path)
     _load_rules_lua(secrules, pre_path, path)
     
-    --check rules 检测失败应该drop process
+    --check rules 
+    --TODO: if check failed, drop process
     for _, r in ipairs(secrules) do
         local res = twaf_func:check_rules(self, r)
         if res == true then
@@ -226,9 +227,7 @@ function _M.load_rules(self)
         end
     end
     
-    --将所有规则划分phase
     _M:rule_group_phase(self.rules, secrules)
-    
 end
 
 function _M.load_geoip_country_ipv4(self, path)

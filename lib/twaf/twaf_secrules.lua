@@ -7,7 +7,6 @@ local _M = {
 }
 
 local cjson                = require "cjson.safe"
-
 local twaf_opts            = require "lib.twaf.inc.opts"
 local twaf_func            = require "lib.twaf.inc.twaf_func"
 local twaf_action          = require "lib.twaf.inc.action"
@@ -15,26 +14,12 @@ local twaf_request         = require "lib.twaf.inc.request"
 local twaf_operators       = require "lib.twaf.inc.operators"
 local twaf_transforms      = require "lib.twaf.inc.transforms"
 
---local mt                   = { __index = _M, }
-_M.__index = _M
 local modules_name         = "twaf_secrules"
 local ngx_var              = ngx.var
 local ngx_shared           = ngx.shared
 local ngx_req_get_method   = ngx.req.get_method
 local ngx_req_http_version = ngx.req.http_version
 local ngx_req_get_headers  = ngx.req.get_headers
-
-function _M.new_modules(self, config)
-    return setmetatable({config = config}, _M)
-end
-
-function _M.set_logger(self, logger)
-    self.logger = logger
-end
-
-function _M.get_logger(self)
-    return self.logger
-end
 
 local function _log_action(_twaf, ctx, sctx, request, rule)
 
@@ -45,7 +30,6 @@ local function _log_action(_twaf, ctx, sctx, request, rule)
     
     -- log
     if not opts.nolog then
-        
         local key = modules_name.."_"..sctx.id
         log[key]  = {}
         
@@ -73,7 +57,6 @@ local function _log_action(_twaf, ctx, sctx, request, rule)
     return twaf_action:do_action(_twaf, sctx.action, sctx.action_meta)
 end
 
---解析单个变量
 local function _parse_var(_twaf, gcf, var, parse)
 
     if type(var) ~= "table" then
@@ -127,7 +110,7 @@ end
 local function _do_operator(_twaf, sctx, operator, data, pattern, pf)
 
     -- get pattern from file
-    -- don't support multi files
+    -- not support multi files
     if pf then
         local patterns = sctx.patterns
         local gcf      = sctx.gcf
@@ -191,6 +174,7 @@ local function _do_operator(_twaf, sctx, operator, data, pattern, pf)
                 end
             end
         else
+            
             return twaf_operators:operators(operator, data, pattern, sctx)
         end
     end
@@ -198,7 +182,6 @@ local function _do_operator(_twaf, sctx, operator, data, pattern, pf)
     return false, value
 end
 
---解析多个变量
 local function _parse_vars(_twaf, rule, ctx, sctx)
 
     local match         = false
@@ -213,7 +196,6 @@ local function _parse_vars(_twaf, rule, ctx, sctx)
     
     local request       = ctx.request
     
-    -- "或"关系，不匹配继续判断，匹配中跳出循环
     for _, v in ipairs(vars) do
     
         repeat
@@ -227,15 +209,15 @@ local function _parse_vars(_twaf, rule, ctx, sctx)
         
         local data = nil
         
-        if type(v.var) == "function" then              
+        if type(v.var) == "function" then
             match, value = v.var(_twaf, rule, ctx)
             
-        elseif v["function"] then        
+        elseif v["function"] then
             local modules_name = v.var:lower()
             local func         = v["function"]
             match, value = _twaf.modfactory[modules_name][func](nil, _twaf)
             
-        elseif type(request[v.var]) == "function" then                  
+        elseif type(request[v.var]) == "function" then
             data = request[v.var](_twaf)
             
         else
@@ -259,6 +241,7 @@ local function _parse_vars(_twaf, rule, ctx, sctx)
         end
         
         if operator then
+        
             if parse_pattern then
                 pattern = twaf_opts:parse_dynamic_value(pattern, request)
             end
@@ -342,8 +325,8 @@ local function _process_rule(_twaf, rule, ctx, sctx)
         rule_match = _parse_fn(_twaf, rule, request, ctx)
         
     else
-        -- "与"关系，匹配继续判断，不匹配跳出循环
         for k, r in ipairs(rule.match) do
+            
             ngx.log(ngx[gcf.debug_log_level], "ID: "..rule.id.." layer: "..tostring(k))
             
             local res = _parse_vars(_twaf, r, ctx, sctx)
@@ -360,7 +343,6 @@ local function _process_rule(_twaf, rule, ctx, sctx)
     ngx.log(ngx[gcf.debug_log_level], "ID: "..rule.id.." match: "..tostring(rule_match))
     
     if rule_match == true then
-      --rule.weight  = weight + 1
         request.RULE = rule
         
         for k, v in pairs(opts) do
@@ -373,33 +355,33 @@ local function _process_rule(_twaf, rule, ctx, sctx)
     return false
 end
 
-local function _enable_id(cf, rule, ctx)
+local function _enable_id(_twaf, cf, rule, ctx)
 
     local flag
-    local request = ctx.request
-    local id      = cf.rules_id[rule.id]
+    local request    =  ctx.request
+    local system_rid = _twaf.config.twaf_policy.system_rules_id or {}
+    local id         =  cf.rules_id[rule.id] or {}
     
-    if type(id) == "table" then
+    for k, v in pairs(system_rid) do
+        id[k] = v
+    end
     
-        for _, r in ipairs(id) do
+    for _, r in ipairs(id) do
         
-            flag = true
-            
-            for k, v in pairs(r) do
-                local from, to, err = ngx.re.find(request[k], v)
-                if not from then
-                    flag = false
-                    break
-                end
-            end
-            
-            if flag then
-                -- disable
-                return false
+        flag = true
+        
+        for k, v in pairs(r) do
+            local from, to, err = ngx.re.find(request[k], v)
+            if not from then
+                flag = false
+                break
             end
         end
         
-        return true
+        if flag then
+            -- disable
+            return false
+        end
     end
     
     return true
@@ -414,7 +396,7 @@ local function _process_rules(_twaf, rules, ctx, sctx)
     
     for _, rule in ipairs(rules) do
         
-        if not rule.disable and _enable_id(cf, rule, ctx) then
+        if not rule.disable and _enable_id(_twaf, cf, rule, ctx) then
         
             if type(rule.phase) ~= "table" then
                 rule.phase = {rule.phase}
@@ -424,6 +406,7 @@ local function _process_rules(_twaf, rules, ctx, sctx)
             
             if flags == true then
                 local res = _process_rule(_twaf, rule, ctx, sctx)
+                -- res: true false ngx.OK ngx.DONE
                 if res == true or res == ngx.DONE then
                     return res
                 end
@@ -456,8 +439,15 @@ local function _process(_twaf, ctx, sctx)
     repeat
     
     -- system rules
-    res = _process_rules(_twaf, rules, ctx, sctx)
-    if res ~= false then break end
+    local iwsc_result = true
+    if type(ctx.iwsc_result) == "number" and ctx.iwsc_result >= 0 then
+        iwsc_result = false
+    end
+    
+    if iwsc_result == true then
+        res = _process_rules(_twaf, rules, ctx, sctx)
+        if res ~= false then break end
+    end
     
     -- user defined rules
     rules = sctx.cf.user_defined_rules or {}

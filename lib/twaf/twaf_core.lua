@@ -2,18 +2,13 @@
 -- Copyright (C) Miracle
 -- Copyright (C) OpenWAF
 
-
 local _M = {
     _VERSION = "0.0.1"
 }
 
 local cjson                                = require "cjson"
-
-_M.modfactory = {}
-_M["bit"]                                  = require "bit"
-_M["redis_m"]                              = require "resty.redis"
-_M["twaf_func"]                            = require "lib.twaf.inc.twaf_func"
-_M["request"]                              = require "lib.twaf.inc.request"
+local twaf_func                            = require "lib.twaf.inc.twaf_func"
+local twaf_request                         = require "lib.twaf.inc.request"
 
 local mt            = { __index = _M, }
 local ngx_log       = ngx.log
@@ -25,7 +20,8 @@ local ngx_get_phase = ngx.get_phase
 
 function _M.new(self, config)
 
-    self.access_modules = {}
+    self.modfactory            = {}
+    self.access_modules        = {}
     self.header_filter_modules = {}
 
     return setmetatable({
@@ -112,8 +108,6 @@ function _M.get_config_param(self, param)
         local policy = self.config.twaf_policy[policy_uuid]
         if policy == nil then
             ngx.log(ngx.ERR, "No policy '"..policy_uuid.."'")
-            --ngx.log(ngx.ERR, ngx.get_phase)
-            --ngx.exit(500) -- API disable
             return
         end
         
@@ -192,8 +186,8 @@ function _M.run(self, _twaf)
     local request       =  ctx.request or {}
     
     -- request variables
-    if _M.request.request[phase] then
-        _M.request.request[phase](_twaf, request, ctx)
+    if twaf_request.request[phase] then
+        twaf_request.request[phase](_twaf, request, ctx)
     end
     
     ctx.request        =  request
@@ -203,7 +197,14 @@ function _M.run(self, _twaf)
         return
     end
     
-    if phase == "access" then
+    if phase == "rewrite" then
+    
+        -- config synchronization
+        twaf_func:syn_config(_twaf)
+        
+        _twaf.modfactory.twaf_access_rule:handler(_twaf)
+        
+    elseif phase == "access" then
         
         for _, modules_name in ipairs(modules_order.access) do
             local mod = _twaf.modfactory[modules_name]
@@ -211,29 +212,26 @@ function _M.run(self, _twaf)
                 break
             end
         end
-    elseif phase == "header_filter" then
-        _filter_order(_twaf, phase, modules_order)
         
-        local cf = twaf:get_config_param("twaf_add_resp_header")
-        if type(cf) == "table" then
-            for k, v in pairs(cf) do
-                if v ~= "nil" then
-                    ngx.header[k] = v
-                end
-            end
-        end
+    elseif phase == "header_filter" then
+    
+        _filter_order(_twaf, phase, modules_order)
         
     elseif phase == "body_filter" then
+    
         if ngx.ctx.reset_connection == true then return ngx.ERROR end
         
         _filter_order(_twaf, phase, modules_order)
         
         if ngx.ctx.reset_connection == true then return ngx.ERROR end
+        
     elseif phase == "balancer" or phase == "log" then
+    
         local mod = _twaf.modfactory["twaf_"..phase]
         if mod and mod[phase] then
             mod[phase](mod, _twaf)
         end
+        
     end
 end
 
