@@ -1,9 +1,9 @@
 
 -- Copyright (C) Miracle
--- Copyright (C) Titan, Co.Ltd.
+-- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.01"
+    _VERSION = "0.0.1"
 }
 
 function _M.parse_dynamic_value(self, key, request)
