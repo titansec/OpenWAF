@@ -97,7 +97,7 @@ function _M.operators(self, operator, subject, pattern, ctx)
         end,
         begins_with = function(subject, pattern)
             
-            local from, to = tostring(subject):find(pattern)
+            local from, to = ngx.re.find(tostring(subject), pattern)
             if from == 1 then
                 ctx.mp = "String match "..pattern
                 return true, subject
@@ -109,7 +109,7 @@ function _M.operators(self, operator, subject, pattern, ctx)
         end,
         contains = function(subject, pattern)
             
-            local from, to = tostring(subject):find(pattern)
+            local from, to = ngx.re.find(tostring(subject), pattern)
             if from then
                 ctx.mp = "String match "..pattern
                 return true, subject
@@ -122,7 +122,7 @@ function _M.operators(self, operator, subject, pattern, ctx)
         contains_word = function(subject, pattern)
             
             local pa = "\b"..pattern.."\b"
-            local from, to = tostring(subject):find(pa)
+            local from, to = ngx.re.find(tostring(subject), pa)
             if from then
                 ctx.mp = "String match "..pattern
                 return true, subject
@@ -133,7 +133,8 @@ function _M.operators(self, operator, subject, pattern, ctx)
             
         end,
         ends_with = function(subject, pattern)
-            local from, to = tostring(subject):find(pattern)
+            
+            local from, to = ngx.re.find(tostring(subject), pattern)
             if to == #subject then
                 ctx.mp = "String match "..pattern
                 return true, subject
@@ -145,7 +146,7 @@ function _M.operators(self, operator, subject, pattern, ctx)
         end,
         str_match = function(subject, pattern)
             
-            local from, to = tostring(subject):find(pattern, 1, true)
+            local from, to = ngx.re.find(tostring(subject), pattern)
             if from then
                 ctx.mp = "Pattern match "..pattern
                 return true, subject
@@ -319,7 +320,6 @@ function _M.operators(self, operator, subject, pattern, ctx)
         end,
         validate_url_encoding = function(data)
         
-            -- 检验url，%xx中xx是16进制
             if not data then
                 return false
             end

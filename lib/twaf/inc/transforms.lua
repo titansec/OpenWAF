@@ -99,13 +99,11 @@ function _M.transforms(self, options, values)
         remove_comments = function(value)
             if type(value) ~= "string" then return value end
             
-            -- modsec支持去掉/*...*/,--,#，而这里目前只支持去掉/*...*/
             return ngx.re.gsub(value, [=[\/\*(\*(?!\/)|[^\*])*\*\/]=], '', "oij")
         end,
         remove_comments_char = function(value)
             if type(value) ~= "string" then return value end
             
-            --同modsec,去掉/*,*/,--,#
             return ngx.re.gsub(value, [=[\/\*|\*\/|--|#]=], '', "oij")
         end,
         remove_whitespace = function(value)
@@ -119,7 +117,6 @@ function _M.transforms(self, options, values)
         replace_comments = function(value)
             if type(value) ~= "string" then return value end
             
-            --用一个空格代替/*...*/
             return ngx.re.gsub(value, [=[\/\*(\*(?!\/)|[^\*])*\*\/]=], ' ', "oij")
         end,
         sha1 = function(value)
@@ -149,19 +146,16 @@ function _M.transforms(self, options, values)
         trim = function(value)
             if type(value) ~= "string" then return value end
             
-            --去除左右两侧空格
             return ngx.re.gsub(value, [=[^\s*|\s+$]=], '')
         end,
         trim_left = function(value)
             if type(value) ~= "string" then return value end
             
-            --去除左侧空格
             return ngx.re.sub(value, [=[^\s+]=], '')
         end,
         trim_right = function(value)
             if type(value) ~= "string" then return value end
             
-            --去除左侧空格
             return ngx.re.sub(value, [=[\s+$]=], '')
         end,
         uri_decode = function(value)

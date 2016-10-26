@@ -41,6 +41,7 @@ function _M.parse_dynamic_value(self, key, request)
 end
 
 local function _set_var(ctx, element, value)
+
     local col     = string.upper(element.column)
 	local key     = element.key
 	local incr    = element.incr
@@ -70,18 +71,10 @@ local function _set_var(ctx, element, value)
 	end
     
 	storage[col][key] = value
-    
 end
 
 function _M.opts(self, _twaf, ctx, request, options, values)
     local func = {
-        nolog = function(_twaf, values, ctx, request)
-            if not values then
-                -- _log_event
-            else
-                -- logger:We had a match, but not logging because opts.nolog is set
-            end
-        end,
         setvar = function(_twaf, values, ctx, request)
             for k, v in ipairs(values) do
                 local value = _M:parse_dynamic_value(v.value, request)
@@ -110,6 +103,18 @@ function _M.opts(self, _twaf, ctx, request, options, values)
             end
             
             ctx.sanitise_uri_args = tb
+        end,
+        add_resp_headers = function(_twaf, values, ctx, request)
+        
+            if type(values) ~= "table" then
+                return
+            end
+        
+            ctx.add_resp_headers = ctx.add_resp_headers or {}
+            
+            for k, v in pairs(values) do
+                ctx.add_resp_headers[k] = v
+            end
         end
     }
     

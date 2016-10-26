@@ -23,7 +23,7 @@ function _M.string_trim(self, str)
     return (str:gsub("^%s*(.-)%s*$", "%1"))
 end
 
--- 分隔符仅为1个字符
+--Only the first character to take effect in separator.
 function _M.string_split(self, str, sep)
     local fields = {}
     local pattern = string.format("([^%s]+)", sep)
@@ -31,7 +31,7 @@ function _M.string_split(self, str, sep)
     return fields
 end
 
--- 分隔符不可带'-','*','+','?','%','.','[',']','^'等字符，要用'%'进行转义，不然会被绕过
+-- If the separator with '-', '*', '+', '?', '%', '.', '[', ']', '^', it should add escape character
 function _M.string_ssplit(self, str, sep)
 
     if not str or not sep then
@@ -46,8 +46,8 @@ function _M.string_ssplit(self, str, sep)
     return result
 end
 
--- 当处理请求的消息时，建议用此函数
--- init_by_lua等未有request object时，不可使用
+-- When processing the request message, it is recommended to use this function
+-- no object request pahse，this function does't work
 function _M.string_split_re(self, str, sep)
 
     if not str or not sep then
@@ -83,7 +83,7 @@ function _M.get_cookie_table(self, text_cookie)
     if not text_cookie then
         return {}
     end
-
+    
     local cookie_table = {}
     local cookie_string = _M:string_split(text_cookie, ";")
     for _, value in ipairs(cookie_string) do
@@ -91,7 +91,7 @@ function _M.get_cookie_table(self, text_cookie)
         local result = _M:string_split(value, "=")
         cookie_table[result[1]] = result[2]
     end
-
+    
     return cookie_table
 end
 
@@ -100,14 +100,14 @@ function _M.get_cookie(self, _twaf, key)
     if cookie == nil then
         return nil, "no any cookie found in the current request"
     end
-
+    
     local cookie_table = _twaf:ctx().cookie_table
-
+    
     if cookie_table == nil then
         cookie_table  = _M:get_cookie_table(cookie)
         _twaf:ctx().cookie_table = cookie_table
     end
-
+    
     return cookie_table[key]
 end
 
@@ -115,7 +115,7 @@ local function _bake_cookie(cookie)
     if not cookie.name or not cookie.value then
         return nil, 'missing cookie field "name" or "value"'
     end
-
+    
     if cookie["max-age"] then
         cookie.max_age = cookie["max-age"]
     end
@@ -132,22 +132,22 @@ end
 
 function _M.set_cookie(self, cookie)
     local cookie_str, err
-
+    
     if type(cookie) == "table" then
         cookie_str, err = _bake_cookie(cookie)
     else
         cookie_str = cookie
     end
-
+    
     if cookie_str == nil then
         ngx_log(ngx_ERR, err)
         return
     end
-
+    
     local Set_Cookie = ngx_header['Set-Cookie']
     local set_cookie_type = type(Set_Cookie)
     local t = {}
-
+    
     if set_cookie_type == "string" then
         -- only one cookie has been setted
         if Set_Cookie ~= cookie_str then
@@ -158,7 +158,7 @@ function _M.set_cookie(self, cookie)
     elseif set_cookie_type == "table" then
         -- more than one cookies has been setted
         local size = #Set_Cookie
-
+        
         -- we can not set cookie like ngx.header['Set-Cookie'][3] = val
         -- so create a new table, copy all the values, and then set it back
         for i=1, size do
@@ -205,7 +205,7 @@ function _M.check_cookie_value(self, cookie, request, key, timeout)
     if not from or from == 1 or from == #cookie then
         return false
     end
-
+    
     local time      = tonumber(cookie:sub(1, from - 1))
     local crc       = tonumber(cookie:sub(from + 1))
     local now       = request.TIME_EPOCH      or ngx.time()
@@ -232,12 +232,12 @@ function _M.flush_expired(premature, _twaf, dict, delay)
     if not dict:get("add_timer") then
         return nil, "twaf_func:flush_expired - don't have key \"add_timer\""
     end
-
+    
     local ok, err = timer(delay, _M.flush_expired, _twaf, dict, delay)
     if not ok then
         dict:set("add_timer", nil)
     end
-
+    
     return ok, err
 end
 
@@ -254,53 +254,29 @@ function _M.dict_flush_expired(self, _twaf, dict, delay)
     end
 end
 
-function _M.find(self, subject, str, options, operators)
-        if (str:sub(1,1) ~= "~") then
-            if operators == "EQUALS" then
-                if subject == str then
-                    return true
-                end
-            elseif operators == "PREFIX" then
-                local from = subject:find(str)
-                if from == 1 then
-                    return true
-                end
-            elseif operators == "SUBSTR" then
-                local from = subject:find(str)
-                if from ~= nil then
-                    return true
-                end
-            end
-        else
-            str = str:sub(2)
-            local from, to, err = ngx_re_find(subject, str, options)
-            if from ~= nil then
-                return true
-            end
-        end
+function _M.match(self, subject, complex, options)
 
+    if complex == nil then
         return false
-end
-
-function _M.match(self, subject, complex, options, operators)
-    if complex ~= nil then
-        local res
-
-        if type(complex) == "string" then
-            res = self:find(subject, complex, options, operators)
-            if res == true then
+    end
+    
+    local res
+    
+    if type(complex) == "string" then
+        res = ngx.re.find(subject, complex, options)
+        if res then
+            return true
+        end
+        
+    elseif type(complex) == "table" then
+        for _, v in pairs(complex) do
+            res = ngx.re.find(subject, v, options)
+            if res then
                 return true
-            end
-        elseif type(complex) == "table" then
-            for _, v in pairs(complex) do
-                res = self:find(subject, v, options, operators)
-                if res == true then
-                    return true
-                end
             end
         end
     end
-
+    
     return false
 end
 
@@ -314,20 +290,20 @@ function _M.state(self, state)
     if type(state) == "string" then
         state = state:sub(2)
         local ds_state = ngx_var[state]
-
+        
         if ds_state == "1" then
             return true
         elseif ds_state == "0" then
             return false
         end
-
+        
         return false
     end
     
     if  type(state) == "boolean" then
         return state
     end
-
+    
     return false
 end
 
@@ -337,30 +313,30 @@ end
 
 function _M.key(self, key_var)
     local key
-
+    
     if type(key_var) == "string" then
         key = self:get_variable(key_var)
-
+        
     elseif type(key_var) == "table" then
-
+    
         if type(key_var[1]) == "string" then
             key = self:get_variable(key_var[1])
             for i = 2, #key_var do
                 key = key .. self:get_variable(key_var[i])
             end
-
+            
         elseif type(key_var[1]) == "table" then
             for _, key_m in ipairs(key_var) do
                 local key_n = self:get_variable(key_m[1])
                 for i = 2, #key_m do
                     key_n = key_n .. self:get_variable(key_m[i])
                 end
-
+                
                 key[#key+1] = key_n
             end
         end
     end
-
+    
     return key
 end
 
@@ -374,7 +350,7 @@ function _M.content_length_operation(self, num, operator)
     if phase ~= "header_filter" then
         return nil
     end
-
+    
     local content_length = ngx_header['Content-Length']
     if content_length ~= nil then
         if operator == "add" then
@@ -383,7 +359,7 @@ function _M.content_length_operation(self, num, operator)
             ngx_header['Content-Length'] = content_length - num
         end
     end
-
+    
     return nil 
 end
 
@@ -476,9 +452,10 @@ end
 
 function _M.table_keys(self, tb)
     if type(tb) ~= "table" then
-        _M:fatal_log(type(tb) .. " was given to table_keys")
+        ngx.log(ngx.WARN, type(tb) .. " was given to table_keys")
+        return tb
     end
-
+    
     local t = {}
     
     for key, _ in pairs(tb) do
@@ -490,7 +467,8 @@ end
 
 function _M.table_values(self, tb)
     if type(tb) ~= "table" then
-        _M:fatal_log(type(tb) .. " was given to table_values")
+        ngx.log(ngx.WARN, type(tb) .. " was given to table_values")
+        return tb
     end
     
     local t = {}
@@ -509,7 +487,6 @@ function _M.table_values(self, tb)
     return t
 end
 
--- 获取多个table所有的值
 function _M.multi_table_values(self, ...)
     
     local t = {}
@@ -569,15 +546,6 @@ function _M.check_rules(self, conf, rule)
         end
     end
     
-    --TODO: check others
-    --parse just have one pairs k/v
-    --counter , transform just have one in same time
-    --if counter then operator just is GREATER or EQUALS
-    
-    --if var exist
-    --if operator exist
-    --if transform exist
-    
     if #log > 0 then
         ngx.log(ngx.WARN, cjson.encode(log))
         return false, log
@@ -589,7 +557,7 @@ end
 local function sanitise_request_line(ctx, request)
 
     local s
-
+    
     local func = function(m)
         local str = ""
         for i = 1, #m - 1 do
@@ -620,7 +588,6 @@ local function table_value_to_string(tb)
         if type(v) == "table" then
             tb[k] = table_value_to_string(v)
         elseif type(v) =="function" then
-            --tb[k] = tostring(v)
             tb[k] = string.dump(v)
         elseif type(v) == "userdata" then
             tb[k] = 1
@@ -638,6 +605,80 @@ function _M.table_to_string(self, tb)
     local t = table_value_to_string(tbl)
     
     return cjson.encode(t)
+end
+
+function _M.syn_config_process(self, _twaf, worker_config)
+
+    if type(worker_config) ~= "table" then
+        return nil
+    end
+    
+    local phase = {"access", "header_filter", "body_filter"}
+    
+    -- system rules
+    if worker_config.rules then
+        for phase, rules in pairs(worker_config.rules) do
+            for _, rule in ipairs(rules) do
+                if not rule.match then
+                    for _, p in ipairs(phase) do
+                        if rule[p] then
+                            rule[p] = load(rule[p])
+                        end
+                    end
+                end
+            end
+        end
+    end
+        
+    -- user defined rules
+    if worker_config.twaf_policy and worker_config.twaf_policy.policy_uuids then
+        for uuid, _ in pairs(worker_config.twaf_policy.policy_uuids) do
+            local policy = worker_config.twaf_policy[uuid]
+            if policy and policy.twaf_secrules then
+                local rules = policy.twaf_secrules.user_defined_rules
+                for _, rule in ipairs(rules or {}) do
+                    if not rule.match then
+                        for _, p in ipairs(phase) do
+                            if rule[p] then
+                                rule[p] = load(rule[p])
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+        
+    for k, v in pairs(worker_config) do
+        if type(_twaf.config[k]) == "userdata" then
+            worker_config[k] = _twaf.config[k]
+        end
+    end
+    
+    return worker_config
+end
+
+function _M.syn_config(self, _twaf)
+    local gcf   = _twaf:get_config_param("twaf_global")
+    local dict  =  ngx.shared[gcf.dict_name]
+    local wid   =  ngx.worker.id()
+    local wpid  =  ngx.worker.pid()
+    
+    local res = dict:get("worker_process_"..wid)
+    
+    if res and res ~= true and res ~= wpid then
+        res = true
+    end
+    
+    if res == true then
+        ngx.log(ngx.ERR, "config synchronization ing..")
+        local worker_config = dict:get("worker_config")
+        worker_config = cjson.decode(worker_config)
+        
+        _twaf.config = _M:syn_config_process(_twaf, worker_config) or _twaf.config
+        
+        dict:set("worker_process_"..wid, wpid)
+    end
 end
 
 return _M

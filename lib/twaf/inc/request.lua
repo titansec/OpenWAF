@@ -62,8 +62,6 @@ local function _vars_op(op, ...)
                 end
             end
             
-            --TODO:若k重复如何处理？
-            --建议：若重复，则组成数组
             return t
         end,
         args_combined_size = function(args)
@@ -289,6 +287,7 @@ _M.request = {
         request.ARGS_POST                    =  request_post_args
         request.ARGS_POST_NAMES              = _vars_op("get_args_names", request_post_args)
         request.DURATION                     =  function() return (ngx.re.match(tostring((ngx.now() - ngx.req.start_time()) * 1000000), "([0-9]+)", "oij"))[1] end
+        request.EXTEN                        =  ngx.var.exten
         
         request.SESSION                      =  require "resty.session".start()
         request.SESSION_DATA                 =  request.SESSION.data
@@ -315,11 +314,12 @@ _M.request = {
         request.REQUEST_COOKIES              =  request_cookies
         request.REQUEST_COOKIES_NAMES        = _vars_op("get_cookies_names", request_cookies)
         request.REQUEST_LINE                 =  ngx.var.request
+        request.REQUEST_LINE_ARGS            =  ngx.var.args
         request.REQUEST_PROTOCOL             =  ngx.var.server_protocol
         request.UNIQUE_ID                    =  unique_id
         request.TX                           =  ctx.TX
         request.TIME_EPOCH                   =  ngx.time()                         -- seconds since 1970, integer
-        request.TIME                         =  os.date("%X", request.TIME_EPOCH)  -- hour:minute:second  --PS:当心系统时区
+        request.TIME                         =  os.date("%X", request.TIME_EPOCH)  -- hour:minute:second  --PS:the system time zone
         request.TIME_DAY                     =  os.date("%d", request.TIME_EPOCH)  -- 1–31
         request.TIME_HOUR                    =  os.date("%H", request.TIME_EPOCH)  -- 0-23, %I 12-hour clock
         request.TIME_MIN                     =  os.date("%M", request.TIME_EPOCH)  -- 0–59
@@ -335,6 +335,7 @@ _M.request = {
         request.MATCHED_VAR_NAMES            =  {}
         
         request.HTTP_USER_AGENT              =  ngx.var.http_user_agent
+        request.HTTP_COOKIE                  =  ngx.var.http_cookie
         request.RAW_HEADER                   =  ngx.req.raw_header()
         request.RAW_HEADER_TRUE              =  ngx.req.raw_header(true)
         request.TIME_LOCAL                   =  ngx.var.time_local
@@ -441,6 +442,5 @@ _M.parse_var = {
         return _var
     end
 }
-
 
 return _M
