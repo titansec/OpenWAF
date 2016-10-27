@@ -75,6 +75,8 @@ end
 
 function _M.opts(self, _twaf, ctx, request, options, values)
     local func = {
+        nolog  = function(_twaf, values, ctx, request)
+        end,
         setvar = function(_twaf, values, ctx, request)
             for k, v in ipairs(values) do
                 local value = _M:parse_dynamic_value(v.value, request)
