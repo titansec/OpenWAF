@@ -27,7 +27,7 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v0.01 released on 26 July 2016.
+This document describes OpenWAF v0.0.1.161026_beta released on 26 Oct 2016.
 
 Synopsis
 ========
@@ -98,15 +98,26 @@ Synopsis
 Description
 ===========
 
+OpenWAF是基于openresty的Web应用防护系统（WAF），他基于nginx_lua API分析HTTP请求信息。OpenWAF由行为分析引擎和规则引擎两大功能引擎构成。其中规则引擎主要对单个请求进行分析，行为分析引擎主要负责跨请求信息追踪。
+   
+规则引擎的启发来自freewaf及ModSecurity，将ModSecurity的规则机制用lua实现。基于规则引擎可以进行协议规范，自动工具，注入攻击，跨站攻击，信息泄露，异常请求等安全防护，支持动态添加规则，及时修补漏洞。
+   
+行为分析引擎包含基于频率的模糊识别，防恶意爬虫，人机识别等防探测模块，防CSRF，防CC，防提权，文件上传防护等防攻击模块，cookie防篡改，防盗链，自定义响应头，攻击响应页面等防信息泄露模块。
+   
+除了两大引擎之外，还包含统计，日志，攻击响应页面，接入规则等基础模块。除了已有的功能模块，OpenWAF还支持动态修改配置，
+动态添加第三方模块，使得在不重启引擎中断业务的条件下，升级防护。
+
+OpenWAF支持将上述功能封装为策略，不同的web application应用不同的策略来防护。策略还可分享供他人参考。
+
 基础模块如下:
-* [twaf_conf](https://github.com/titansec/openwaf_conf)
-* [twaf_log](https://github.com/titansec/openwaf_log)
-* [twaf_reqstat](https://github.com/titansec/openwaf_reqstat)
-* [twaf_core](https://github.com/titansec/openwaf_core)
-* [twaf_access_rule](https://github.com/titansec/openwaf_access_rule)
+* [静态配置管理器twaf_conf](https://github.com/titansec/openwaf_conf)
+* [日志twaf_log](https://github.com/titansec/openwaf_log)
+* [统计twaf_reqstat](https://github.com/titansec/openwaf_reqstat)
+* [核心层twaf_core](https://github.com/titansec/openwaf_core)
+* [接入规则twaf_access_rule](https://github.com/titansec/openwaf_access_rule)
 
 功能模块如下:
-* [twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
+* [规则引擎twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
   
 [Back to TOC](#table-of-contents)
 
@@ -210,12 +221,24 @@ Please submit bug reports, wishlists, or patches by
 TODO
 ====
 
-* 1. 核心框架(twaf_conf, twaf_core)
-* 2. 日志
-* 3. 统计
-* 4. 接入规则
-* 5. 规则引擎
-* 6. 其余文档，包括Install、Description等
+* 01. 完善核心框架(twaf_conf, twaf_core)文档
+* 02. 完善日志模块文档
+* 03. 完善统计模块文档
+* 04. 完善接入规则文档
+* 05. 完善规则引擎文档
+* 06. 上传防恶意爬虫模块
+* 07. 上传攻击响应页面模块
+* 08. 上传人机识别模块
+* 09. 上传防盗链模块
+* 10. 上传防CC模块
+* 11. 上传cookie防篡改模块
+* 12. 上传基于频率的模糊识别防探测模块
+* 13. 上传WebShell上传防护模块
+* 14. 上传防CSRF模块
+* 15. 上传OpenWAF docker
+* 16. 提供页面体验OpenWAF防护功能
+* 17. 放开动态配置规则引擎API
+* 18. 放开动态配置行为分析引擎API
 
 [Back to TOC](#table-of-contents)
 
