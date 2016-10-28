@@ -206,8 +206,8 @@ function _M.check_cookie_value(self, cookie, request, key, timeout)
         return false
     end
     
-    local time      = tonumber(cookie:sub(1, from - 1))
-    local crc       = tonumber(cookie:sub(from + 1))
+    local time      = tonumber(cookie:sub(1, from - 1)) or 0
+    local crc       = tonumber(cookie:sub(from + 1)) or 0
     local now       = request.TIME_EPOCH      or ngx.time()
     local addr      = request.REMOTE_ADDR     or ngx.var.remote_addr
     local agent     = request.http_user_agent or ngx.var.http_user_agent or ""
