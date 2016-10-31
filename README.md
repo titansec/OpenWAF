@@ -213,7 +213,7 @@ Bugs and Patches
 
 Please submit bug reports, wishlists, or patches by
 
-1. creating a ticket on the [GitHub Issue Tracker](https://github.com/290557551/twaf/issues),
+1. creating a ticket on the [GitHub Issue Tracker](https://github.com/titansec/OpenWAF/issues),
 1. or posting to the [OpenWAF community](#community).
 
 [Back to TOC](#table-of-contents)
