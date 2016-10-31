@@ -515,11 +515,11 @@ function _M.check_rules(self, conf, rule)
         table.insert(log, "ID: "..rule.id.." is duplicate")
     end
     
-    -- weight
+    --[[-- weight
     if type(rule.weight) ~= "number" then
         table.insert(log, "weight: number expected, got "..type(rule.weight)..
                           " in rule ID: "..rule.id)
-    end
+    end]]
     
     -- phase
     local phase_arr = {access = 1, header_filter = 1, body_filter = 1}

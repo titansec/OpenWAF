@@ -1,15 +1,10 @@
 [
     {
-        "weight": 0,
         "id": "000001",
         "release_version": "858",
         "charactor_version": "001",
         "opts": {
-            "nolog": false,
-            "sanitise_arg": [
-                "password", 
-                "passwd"
-            ]
+            "nolog": false
         },
         "phase": "access",
         "action": "deny",
@@ -17,9 +12,6 @@
         "severity": "low",
         "category": "5Y2P6K6u6KeE6IyD",
         "charactor_name": "cHJvdG9jb2wuYWNjZXB0",
-        "tags": [
-            "twaf_global_conf"
-        ],
         "desc": "检测是否缺少Accept头字段,OPTIONS方法除外",
         "match": [
             {
@@ -48,16 +40,11 @@
         ]
     },
     {
-        "weight": 0,
         "id": "000002",
         "release_version": "858",
         "charactor_version": "001",
         "opts": {
-            "nolog": false,
-            "sanitise_arg": [
-                "password", 
-                "passwd"
-            ]
+            "nolog": false
         },
         "phase": "access",
         "action": "deny",
@@ -65,9 +52,6 @@
         "severity": "low",
         "category": "5Y2P6K6u6KeE6IyD",
         "charactor_name": "cHJvdG9jb2wuYWNjZXB0LmE=",
-        "tags": [
-            "twaf_global_conf"
-        ],
         "desc": "检测Accept头字段值是否为空,OPTIONS方法除外",
         "match": [
             {
@@ -91,6 +75,81 @@
                 "operator": "equal",
                 "pattern": "OPTIONS",
                 "op_negated": true
+            }
+        ]
+    },
+    {
+        "id": "200001",
+        "release_version": "858",
+        "charactor_version": "001",
+        "severity": "critical",
+        "category": "5rOo5YWl5pS75Ye7",
+        "charactor_name": "YXR0YWNrLmluamVjdGlvbi5zcWwubGliaW5qZWN0aW9u",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "desc": "利用第三方模块Libinjection防SQLI",
+        "match": [{
+            "vars": [{
+                "var": "REQUEST_FILENAME"
+            },
+            {
+                "var": "ARGS_NAMES"
+            },
+            {
+                "var": "ARGS",
+                "parse": {
+                    "ignore": [
+                        "__VIEWSTATE",
+                        "__EVENTVALIDATION"
+                    ]
+                }
+            }],
+            "transform": "uri_decode_uni",
+            "operator": "detect_sqli"
+        }]
+    },
+    {
+        "id": "200002",
+        "release_version": "858",
+        "charactor_version": "001",
+        "severity": "high",
+        "category": "6Leo56uZ5pS75Ye7",
+        "charactor_name": "YXR0YWNrLnhzcy5saWJpbmplY3Rpb24=",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "desc": "利用第三方模块Libinjection防XSS",
+        "match": [
+            {
+                "vars": [{
+                    "var": "REQUEST_METHOD"
+                }],
+                "pattern": "GET",
+                "operator": "equal"
+            },
+            {
+                "vars": [{
+                    "var": "REQUEST_FILENAME"
+                },
+                {
+                    "var": "ARGS_NAMES"
+                },
+                {
+                    "var": "ARGS",
+                    "parse": {
+                        "ignore": ["__VIEWSTATE",
+                        "__EVENTVALIDATION"]
+                    }
+                }],
+                "transform": "html_decode",
+                "operator": "detect_xss"
             }
         ]
     }
