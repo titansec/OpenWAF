@@ -100,7 +100,7 @@ Description
 
 OpenWAF是基于openresty的Web应用防护系统（WAF），他基于nginx_lua API分析HTTP请求信息。OpenWAF由行为分析引擎和规则引擎两大功能引擎构成。其中规则引擎主要对单个请求进行分析，行为分析引擎主要负责跨请求信息追踪。
    
-规则引擎的启发来自freewaf及ModSecurity，将ModSecurity的规则机制用lua实现。基于规则引擎可以进行协议规范，自动工具，注入攻击，跨站攻击，信息泄露，异常请求等安全防护，支持动态添加规则，及时修补漏洞。
+规则引擎的启发来自[modsecurity](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual)及[freewaf(lua-resty-waf)](https://github.com/p0pr0ck5/lua-resty-waf)，将ModSecurity的规则机制用lua实现。基于规则引擎可以进行协议规范，自动工具，注入攻击，跨站攻击，信息泄露，异常请求等安全防护，支持动态添加规则，及时修补漏洞。
    
 行为分析引擎包含基于频率的模糊识别，防恶意爬虫，人机识别等防探测模块，防CSRF，防CC，防提权，文件上传防护等防攻击模块，cookie防篡改，防盗链，自定义响应头，攻击响应页面等防信息泄露模块。
    
