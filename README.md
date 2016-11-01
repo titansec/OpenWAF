@@ -23,10 +23,11 @@ Table of Contents
 * [Copyright and License](#copyright-and-license)
 * [Modules Configuration Directives](#modules-configuration-directives)
 * [Nginx Variables](#nginx-variables)
-* [Lua Variables](#lua-variables)
-* [Transformation Functions](#transformation-functions)
-* [Operators](#operators)
-* [Others](#others)
+* [SecRules](#secrules)
+    * [Lua Variables](#lua-variables)
+    * [Transformation Functions](#transformation-functions)
+    * [Operators](#operators)
+    * [Others](#others)
 
 Version
 =======
@@ -1235,8 +1236,11 @@ Nginx Variables
 
 [Back to TOC](#table-of-contents)
 
-Lua Variables
-=============
+SecRules
+========
+
+Variables
+=========
 * [ARGS](#args)
 * [ARGS_COMBINED_SIZE](#args_combined_size)
 * [ARGS_GET](#args_get)
