@@ -118,6 +118,8 @@ OpenWAF支持将上述功能封装为策略，不同的web application应用不�
 
 功能模块如下:
 * [规则引擎twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
+
+详细配置文档及示例请看上述各模块文档
   
 [Back to TOC](#table-of-contents)
 
