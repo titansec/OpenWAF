@@ -24,7 +24,7 @@ Table of Contents
 * [Modules Configuration Directives](#modules-configuration-directives)
 * [Nginx Variables](#nginx-variables)
 * [SecRules](#secrules)
-    * [Lua Variables](#lua-variables)
+    * [Variables](#variables)
     * [Transformation Functions](#transformation-functions)
     * [Operators](#operators)
     * [Others](#others)
@@ -1240,7 +1240,7 @@ SecRules
 ========
 
 Variables
-=========
+---------
 * [ARGS](#args)
 * [ARGS_COMBINED_SIZE](#args_combined_size)
 * [ARGS_GET](#args_get)
@@ -2002,7 +2002,7 @@ string类型，从接入规则配置得到的用于ID标识
 [Back to TOC](#table-of-contents)
 
 Transformation Functions
-========================
+------------------------
 * [base64_decode](#base64_decode)
 * [sql_hex_decode](#sql_hex_decode)
 * [base64_encode](#base64_encode)
@@ -2237,7 +2237,7 @@ Removes whitespace from both the left and right sides of the input string.
 [Back to TOC](#table-of-contents)
 
 Operators
-=========
+---------
 
 * [begins_with](#begins_with)
 * [contains](#contains)
@@ -2554,7 +2554,7 @@ Validates the URL-encoded characters in the provided input string.
 
 
 Others
-======
+------
 
 * [allow](#allow)
 * [deny](#deny)
