@@ -1176,6 +1176,7 @@ server {
 
 若"server_ssl"值为false, "forward"值为"server_2"
 等价于proxy_pass http://server_2;
+```
 
 [Back to TOC](#table-of-contents)
 
