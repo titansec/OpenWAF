@@ -15,7 +15,7 @@ geoip/country.so: src/database.o src/country.o
 geoip/city.so: src/database.o src/city.o
 
 .c.o:
-	$(CC) $(CFLAGS) -Isrc/ -c $^ -o $@
+	$(CC) $(CFLAGS) $(LUA_FLAGS) -Isrc/ -c $^ -o $@
 
 %.so:
 	$(CC) -shared -lGeoIP $^ -o $@
