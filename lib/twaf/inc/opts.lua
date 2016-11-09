@@ -6,6 +6,8 @@ local _M = {
     _VERSION = "0.0.1"
 }
 
+local http_cache = require "http_cache"
+
 function _M.parse_dynamic_value(self, key, request)
 	local lookup = function(m)
 		local val      = request[m[1]:upper()]
@@ -116,6 +118,38 @@ function _M.opts(self, _twaf, ctx, request, options, values)
             
             for k, v in pairs(values) do
                 ctx.add_resp_headers[k] = v
+            end
+        end,
+        proxy_cache = function(_twaf, values, ctx, request)
+            
+            if type(values) ~= "table" or ctx.cache_down then
+                return
+            end
+            
+            ctx.cache_down = true
+            
+            local cache_status = request.UPSTREAM_CACHE_STATUS or ""
+            local cache_data   = http_cache.get_metadata()
+            
+            if not values.state then
+                http_cache.purge()
+                return
+            end
+            
+            if cache_status == "MISS" or cache_status == "EXPIRED" then
+
+                if cache_data and cache_data.valid_sec then
+                    local new_expire = request.TIME_EPOCH + (values.expired or 600)
+                    local cache_meta = {}
+                    cache_data.fcn   = {}
+                    
+                    ngx.var.twaf_cache_flag  = 0
+                    cache_meta.valid_sec     = new_expire
+                    cache_data.fcn.valid_sec = new_expire
+                    cache_data.fcn.expire    = new_expire
+                    
+                    http_cache.set_metadata(cache_meta)
+                end
             end
         end
     }

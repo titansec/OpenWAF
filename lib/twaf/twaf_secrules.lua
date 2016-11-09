@@ -107,7 +107,7 @@ local function _do_transform(_twaf, data, transform)
     return t
 end
 
-local function _do_operator(_twaf, sctx, operator, data, pattern, pf)
+local function _do_operator(_twaf, sctx, rule, data, pattern, request, pf)
 
     -- get pattern from file
     -- not support multi files
@@ -156,7 +156,7 @@ local function _do_operator(_twaf, sctx, operator, data, pattern, pf)
     
     if type(data) == "table" then
         for _, v in pairs(data) do
-            match, value = _do_operator(_twaf, sctx, operator, v, pattern)
+            match, value = _do_operator(_twaf, sctx, rule, v, pattern, request)
             if match then
                 return true, value
             end
@@ -168,14 +168,18 @@ local function _do_operator(_twaf, sctx, operator, data, pattern, pf)
         
         if type(pattern) == "table" then
             for _, v in pairs(pattern) do
-                match, value = _do_operator(_twaf, sctx, operator, data, v)
+                match, value = _do_operator(_twaf, sctx, rule, data, v, request)
                 if match then
                     return true, value
                 end
             end
         else
             
-            return twaf_operators:operators(operator, data, pattern, sctx)
+            if rule.parse_pattern == true then
+                pattern = twaf_opts:parse_dynamic_value(pattern, request)
+            end
+            
+            return twaf_operators:operators(rule.operator, data, pattern, sctx)
         end
     end
     
@@ -192,8 +196,6 @@ local function _parse_vars(_twaf, rule, ctx, sctx)
     local pattern       = rule.pattern
     local operator      = rule.operator
     local op_negated    = rule.op_negated or false
-    local parse_pattern = rule.parse_pattern or false
-    
     local request       = ctx.request
     
     for _, v in ipairs(vars) do
@@ -241,12 +243,7 @@ local function _parse_vars(_twaf, rule, ctx, sctx)
         end
         
         if operator then
-        
-            if parse_pattern then
-                pattern = twaf_opts:parse_dynamic_value(pattern, request)
-            end
-            
-            match, value = _do_operator(_twaf, sctx, operator, data, pattern, pf)
+            match, value = _do_operator(_twaf, sctx, rule, data, pattern, request, pf)
         end
         
         if match ~= op_negated then

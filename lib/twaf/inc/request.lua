@@ -359,6 +359,7 @@ _M.request = {
     end,
     header_filter = function(_twaf, request)
         request.RESPONSE_HEADERS             = ngx.resp.get_headers(0)
+        request.UPSTREAM_CACHE_STATUS        = ngx.var.upstream_cache_status
         request.RESPONSE_STATUS              = function() return ngx.status end
         request.BYTES_SENT                   = function() return tonumber(ngx.var.bytes_sent) or 0 end
     end,
