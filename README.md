@@ -1258,6 +1258,8 @@ Variables
 * [TIME_LOCAL](#time_local)
 * [TX](#tx)
 * [UNIQUE_ID](#unique_id)
+* [UPSTREAM_CACHE_STATUS](#upstream_cache_status)
+* [USERID](#userid)
 
 [Back to Var](#variables)
 
@@ -1937,6 +1939,14 @@ string类型，ID标识，随机生成的字符串，可通过配置来控制随
 
 [Back to TOC](#table-of-contents)
 
+##UPSTREAM_CACHE_STATUS
+
+keeps the status of accessing a response cache (0.8.3). The status can be either “MISS”, “BYPASS”, “EXPIRED”, “STALE”, “UPDATING”, “REVALIDATED”, or “HIT”.
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
 ##USERID
 
 string类型，从接入规则配置得到的用于ID标识
@@ -2508,6 +2518,7 @@ Others
 * [parse](#parse)
 * [pass](#pass)
 * [phase](#phase)
+* [proxy_cache](#proxy_cache)
 * [redirect](#redirect)
 * [charactor_version](#charactor_version)
 * [severity](#severity)
@@ -2735,6 +2746,81 @@ Continues processing with the next rule in spite of a successful match.
     ...
 }
 "xxx_02规则在access阶段和"header_filter"阶段各执行一次
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##proxy_cache
+
+```
+{
+    ...
+    phase = "header_filter",         -- 缓存开关需在header_filter阶段配置
+    action = "pass",                 -- 无需拦截请求
+    opts = {
+        nolog = true,                -- 不需记录日志
+        proxy_cache = {
+            state = true|false,      -- 缓存开关
+            expired = 600            -- 缓存时长（单位秒）,默认600秒
+        }
+    }
+    ...
+}
+
+若state为true，且得到的缓存状态为"MISS"或"EXPIRED"，则对响应内容进行缓存，同时设置缓存时长
+若state为false，则清除对应缓存键的缓存（包含其缓存文件）
+```
+
+举例如下：
+```
+# nginx.conf 有关proxy cache 配置如下
+http {
+    proxy_cache_path  /opt/cache/OpenWAF-proxy levels=2:2 keys_zone=twaf_cache:101m max_size=100m use_temp_path=off;
+    proxy_cache_key $host$uri;
+    proxy_cache twaf_cache;
+    proxy_ignore_headers X-Accel-Expires Cache-Control Set-Cookie;
+    proxy_no_cache $twaf_cache_flag;
+    
+    server {
+        set $twaf_cache_flag 1;         #默认不缓存
+    }
+}
+
+# lua 格式 配置
+{ 
+    id = "test_x01",                      -- id 全局唯一
+    opts = {
+        nolog = true,
+        proxy_cache = {
+            state = true,
+            expired = 300
+        }
+    },
+    phase = "header_filter", 
+    action = "pass",
+    match = {{
+        vars = {{
+            var = "URI"
+        },{
+            var = "REQUEST_HEADERS",
+            parse = {
+                specific = "Referer"
+            }
+        }},
+        operator = "equal",
+        pattern = {"/xampp/", "%{SCHEME}://%{HTTP_HOST}/xampp/"},
+        parse_pattern = true
+    }}
+}
+此规则将缓存URI为'/xampp/'的页面，更新时间为300秒
+
+若match中过滤条件为响应码，则相当于Nginx的proxy_cache_valid指令
+若match中过滤条件为请求方法，则相当于Nginx的proxy_cache_methods指令
+若macth中过滤条件为资源类型，则相当于Nginx的proxy_cache_content_type指令
+
+PS: proxy_cache_content_type指令为官方指令，是miracle Qi修改Nginx源码扩展的功能
 ```
 
 [Back to OTHERS](#others)
