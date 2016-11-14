@@ -3,7 +3,7 @@ Name
 
 OpenWAF
 
-基于[openresty](https://github.com/openresty/openresty)的Web应用安全防护系统
+Web application security protection system based on [openresty](https://github.com/openresty/openresty)
 
 Table of Contents
 =================
@@ -22,7 +22,12 @@ Table of Contents
 * [Changes](#changes)
 * [Copyright and License](#copyright-and-license)
 * [Modules Configuration Directives](#modules-configuration-directives)
-* [Variables](#variables)
+* [Nginx Variables](#nginx-variables)
+* [SecRules](#secrules)
+    * [Variables](#variables)
+    * [Transformation Functions](#transformation-functions)
+    * [Operators](#operators)
+    * [Others](#others)
 
 Version
 =======
@@ -100,7 +105,7 @@ Description
 
 OpenWAF是基于openresty的Web应用防护系统（WAF），他基于nginx_lua API分析HTTP请求信息。OpenWAF由行为分析引擎和规则引擎两大功能引擎构成。其中规则引擎主要对单个请求进行分析，行为分析引擎主要负责跨请求信息追踪。
    
-规则引擎的启发来自freewaf及ModSecurity，将ModSecurity的规则机制用lua实现。基于规则引擎可以进行协议规范，自动工具，注入攻击，跨站攻击，信息泄露，异常请求等安全防护，支持动态添加规则，及时修补漏洞。
+规则引擎的启发来自[modsecurity](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual)及[freewaf(lua-resty-waf)](https://github.com/p0pr0ck5/lua-resty-waf)，将ModSecurity的规则机制用lua实现。基于规则引擎可以进行协议规范，自动工具，注入攻击，跨站攻击，信息泄露，异常请求等安全防护，支持动态添加规则，及时修补漏洞。
    
 行为分析引擎包含基于频率的模糊识别，防恶意爬虫，人机识别等防探测模块，防CSRF，防CC，防提权，文件上传防护等防攻击模块，cookie防篡改，防盗链，自定义响应头，攻击响应页面等防信息泄露模块。
    
@@ -118,6 +123,8 @@ OpenWAF支持将上述功能封装为策略，不同的web application应用不�
 
 功能模块如下:
 * [规则引擎twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
+
+详细配置文档及示例请看上述各模块文档
   
 [Back to TOC](#table-of-contents)
 
@@ -213,7 +220,7 @@ Bugs and Patches
 
 Please submit bug reports, wishlists, or patches by
 
-1. creating a ticket on the [GitHub Issue Tracker](https://github.com/290557551/twaf/issues),
+1. creating a ticket on the [GitHub Issue Tracker](https://github.com/titansec/OpenWAF/issues),
 1. or posting to the [OpenWAF community](#community).
 
 [Back to TOC](#table-of-contents)
@@ -281,18 +288,19 @@ Modules Configuration Directives
 
 twaf_access_rule
 ----------------
+
 ```txt
 {
     "twaf_access_rule": [
         "rules": [                                 -- 注意先后顺序
             {                                      
                 "client_ssl": false,               -- 客户端认证的开关，与ngx_ssl组成双向认证
-                "client_ssl_cert": "path",         -- 客户端认证所需公钥地址
+                "client_ssl_cert": "path",         -- 客户端认证所需PEM证书地址
                 "ngx_ssl": false,                  -- nginx认证的开关
-                "ngx_ssl_cert": "path",            -- nginx认证所需公钥地址
-                "ngx_ssl_key": "path",             -- nginx认证所需私钥地址
-                "host": "^1\\.1\\.1\\.1$",         -- 域名，支持字符串、正则
-                "path": "\/",                      -- 路径，支持字符串、正则
+                "ngx_ssl_cert": "path",            -- nginx认证所需PEM证书地址
+                "ngx_ssl_key": "path",             -- nginx认证所需PEM私钥地址
+                "host": "^1\\.1\\.1\\.1$",         -- 域名，正则匹配
+                "path": "\/",                      -- 路径，正则匹配
                 "server_ssl": false,               -- 后端服务器ssl开关
                 "forward": "server_5",             -- 后端服务器upstream名称
                 "forward_addr": "1.1.1.2",         -- 后端服务器ip地址
@@ -311,7 +319,7 @@ twaf_access_rule
 
 **context:** *twaf_access_rule*
 
-接入规则，顺序执行
+table类型，接入规则，顺序匹配
 
 ###client_ssl
 **syntax:** *"client_ssl": true|false*
@@ -329,7 +337,7 @@ twaf_access_rule
 
 **context:** *twaf_access_rule*
 
-客户端认证所需公钥地址
+string类型，客户端认证所需PEM证书地址，目前仅支持绝对地址
 
 ###ngx_ssl
 **syntax:** *"ngx_ssl": true|false*
@@ -338,7 +346,7 @@ twaf_access_rule
 
 **context:** *twaf_access_rule*
 
-服务器端(nginx)认证开关，与client_ssl组成双向认证，默认关闭
+boolean类型，服务器端(nginx)认证开关，与client_ssl组成双向认证，默认关闭
 
 ###ngx_ssl_cert
 **syntax:** *"ngx_ssl_cert": "path"*
@@ -347,7 +355,7 @@ twaf_access_rule
 
 **context:** *twaf_access_rule*
 
-服务器端(nginx)认证所需公钥地址
+string类型，服务器端(nginx)认证所需PEM证书地址，目前仅支持绝对地址
 
 ###ngx_ssl_key
 **syntax:** *"ngx_ssl_key": "path"*
@@ -356,32 +364,33 @@ twaf_access_rule
 
 **context:** *twaf_access_rule*
 
-服务器端(nginx)认证所需私钥地址
+string类型，服务器端(nginx)认证所需PEM私钥地址，目前仅支持绝对地址
 
 ###host
-**syntax:** *"host": "ip|domain name string|regex"*
+**syntax:** *"host": "ip|domain name regex"*
 
 **default:** *none*
 
 **context:** *twaf_access_rule*
 
-域名，支持正则
+string类型，域名，正则匹配
 
 例如:
 ```
     "host": "^1\\.1\\.1\\.1$"
     "host": "test\\.com"
     "host": "^.*\\.com$"
+    "host": "www.baidu.com"
 ```
 
 ###path
-**syntax:** *"path": "string|regex"*
+**syntax:** *"path": "regex"*
 
 **default:** *none*
 
 **context:** *twaf_access_rule*
 
-路径，支持字符串及正则
+string类型，路径，正则匹配
 
 例如:
 ```
@@ -397,7 +406,7 @@ twaf_access_rule
 
 **context:** *twaf_access_rule*
 
-OpenWAF向后端服务器连接的ssl开关
+boolean类型，OpenWAF向后端服务器连接的ssl开关
 
 例如:
 ```
@@ -421,13 +430,13 @@ OpenWAF向后端服务器连接的ssl开关
 ```
 
 ###forward
-**syntax:** *"forward": "string"*
+**syntax:** *"forward": "upstream_uuid"*
 
 **default:** *none*
 
 **context:** *twaf_access_rule*
 
-forward表示后端服务器的uuid即upstream的名称
+string类型，forward表示后端服务器的uuid，即upstream的名称
 
 ```
     #如：forward值为test
@@ -443,7 +452,8 @@ forward表示后端服务器的uuid即upstream的名称
 
 **context:** *twaf_access_rule*
 
-forward_addr表示后端服务器的ip地址（TODO：支持域名）
+string类型，forward_addr表示后端服务器的ip地址（TODO：支持域名）
+
 ```
     upstream test {
         #如：forward_addr值为1.1.1.1
@@ -458,7 +468,7 @@ forward_addr表示后端服务器的ip地址（TODO：支持域名）
 
 **context:** *twaf_access_rule*
 
-forward_port表示后端服务器端口号，默认80
+number类型，forward_port表示后端服务器端口号，默认80
 
 ```
     upstream test {
@@ -474,7 +484,7 @@ forward_port表示后端服务器端口号，默认80
 
 **context:** *twaf_access_rule*
 
-接入规则的唯一标识
+string类型，接入规则的唯一标识
 
 ###policy
 **syntax:** *"policy": "policy_uuid"*
@@ -483,91 +493,11 @@ forward_port表示后端服务器端口号，默认80
 
 **context:** *twaf_access_rule*
 
-满足此接入规则的请求，所使用安全策略的ID
+string类型，满足此接入规则的请求，所使用安全策略的uuid
+
+[Back to twaf_access_rule](#twaf_access_rule)
 
 [Back to TOC](#table-of-contents)
-```
-    upstream test {
-    	server 1.1.1.1;
-    }
-    
-    http {
-    	server {
-    	    listen 80;
-    	    server_name _;
-    	    
-    	    location / {
-    	        #server_ssl为true，则proxy_pass后为https
-    	    	proxy_pass https://test;
-    	        #server_ssl为false，则proxy_pass后为http
-    	    	#proxy_pass http://test;
-    	    }
-    	}
-    }
-```
-
-###forward
-**syntax:** *"forward": "string"*
-
-**default:** *none*
-
-**context:** *twaf_access_rule*
-
-forward表示后端服务器的uuid即upstream的名称
-```
-    #如：forward值为test
-    upstream test {
-        server 1.1.1.1;
-    }
-```
-
-###forward_addr
-**syntax:** *"forward_addr": "ip"*
-
-**default:** *none*
-
-**context:** *twaf_access_rule*
-
-forward_addr表示后端服务器的ip地址（TODO：支持域名）
-```
-    upstream test {
-        #如：forward_addr值为1.1.1.1
-    	server 1.1.1.1;
-    }
-```
-
-###forward_port
-**syntax:** *"forward_port": port*
-
-**default:** *80*
-
-**context:** *twaf_access_rule*
-
-forward_port表示后端服务器端口号，默认80
-```
-    upstream test {
-    	#如：forward_port值为50001
-    	server 1.1.1.1:50001;
-    }
-```
-
-###uuid
-**syntax:** *"uuid": "string"*
-
-**default:** *none*
-
-**context:** *twaf_access_rule*
-
-uuid表示接入规则的唯一标识，利用此标识可以查看此站点的访问频率（单位：个/秒）
-
-###policy
-**syntax:** *"policy": "policy_uuid"*
-
-**default:** *none*
-
-**context:** *twaf_access_rule*
-
-policy表示此站点使用安全策略的ID
 
 twaf_anti_hotlink
 -----------------
@@ -1183,8 +1113,8 @@ OpenWAF的安装路径
 
 [Back to TOC](#table-of-contents)
 
-Variables
-==========
+Nginx Variables
+===============
 
 ###$twaf_https
 **syntax:** *set $twaf_https 0|1*
@@ -1199,6 +1129,20 @@ Variables
 
 "set $twaf_https 1"，则表示请求未通过ssl加密
 
+```
+server {
+    listen 443 ssl;
+    set $twaf_https 1;
+    ...
+}
+
+server {
+    listen 80;
+    set $twaf_https 0;
+    ...
+}
+```
+
 ###$twaf_upstream_server
 **syntax:** *set $twaf_upstream_server ""*
 
@@ -1206,25 +1150,1849 @@ Variables
 
 **context:** *server*
 
-只需要初始化为空字符串即可
+用于指定后端服务器地址，只需初始化为空字符串即可，其值由"server_ssl"和"forward"确定
 
-**syntax:** *proxy_pass $twaf_upstream_server*
-
-**default:** *none*
-
-**context:** *location*
-
-后端服务器地址，其值由接入规则"server_ssl"和"forward"配置确定
-
-例如：
 ```
-    若"server_ssl"值为true, "forward"值为"server_1"
-    则$twaf_upstream_server值为"https://server_1"
-    等价于proxy_pass https://server_1;
+upstream server_1 {
+    ...
+}
+
+upstream server_2 {
+    ...
+}
+
+server {
+    ...
     
-    若"server_ssl"值为false, "forward"值为"server_2"
-    则$twaf_upstream_server值为"http://server_2"
-    等价于proxy_pass http://server_2;
+    set $twaf_upstream_server "";
+    location / {
+        ...
+        proxy_pass $twaf_upstream_server;
+    }
+}
+
+若"server_ssl"值为true, "forward"值为"server_1"
+等价于proxy_pass https://server_1;
+
+若"server_ssl"值为false, "forward"值为"server_2"
+等价于proxy_pass http://server_2;
 ```
+
+[Back to TOC](#table-of-contents)
+
+SecRules
+========
+
+Variables
+---------
+* [ARGS](#args)
+* [ARGS_COMBINED_SIZE](#args_combined_size)
+* [ARGS_GET](#args_get)
+* [ARGS_GET_NAMES ](#args_get_names)
+* [ARGS_NAMES](#args_names)
+* [ARGS_POST ](#args_post)
+* [ARGS_POST_NAMES ](#args_post_names)
+* [BYTES_IN](#bytes_in)
+* [CONNECTION_REQUESTS](#connection_requests)
+* [DURATION](#duration)
+* [FILES](#files)
+* [FILES_NAMES](#files_names)
+* [GEO](#geo)
+* [GEO_CODE3](#geo_code3)
+* [GEO_CODE3](#geo_code)
+* [GEO_ID](#geo_id)
+* [GEO_CONTINENT](#geo_continent)
+* [GEO_NAME](#geo_name)
+* [GZIP_RATIO](#gzip_ratio)
+* [HTTP_COOKIE](#http_cookie)
+* [HTTP_HOST](#http_host)
+* [HTTP_REFERER](#http_referer)
+* [HTTP_USER_AGENT](#http_user_agent)
+* [IP_VERSION](#ip_version)
+* [MATCHED_VAR](#matched_var)
+* [MATCHED_VARS](#matched_vars)
+* [MATCHED_VAR_NAME](#matched_var_name)
+* [MATCHED_VARS_NAMES](#matched_var_names)
+* [ORIGINAL_DST_ADDR](#original_dst_addr)
+* [ORIGINAL_DST_PORT](#original_dst_port)
+* [POLICYID](#policyid)
+* [QUERY_STRING](#query_string)
+* [RAW_HEADER](#raw_header)
+* [RAW_HEADER_TRUE](#raw_header_true)
+* [REMOTE_ADDR](#remote_addr)
+* [REMOTE_HOST](#remote_host)
+* [REMOTE_PORT](#remote_port)
+* [REMOTE_USER](#remote_user)
+* [REQUEST_BASENAME](#request_basename)
+* [REQUEST_BODY](#request_body)
+* [REQUEST_COOKIES](#request_cookies)
+* [REQUEST_COOKIES_NAMES](#request_cookies_names)
+* [REQUEST_FILENAME](#request_filename)
+* [REQUEST_HEADERS](#request_headers)
+* [REQUEST_HEADERS_NAMES](#request_headers_names)
+* [REQUEST_LINE](#request_line)
+* [REQUEST_METHOD](#request_method)
+* [REQUEST_PROTOCOL](#request_protocol)
+* [HTTP_VERSION](#http_version)
+* [URI](#uri)
+* [URL](#url)
+* [REQUEST_URI](#request_uri)
+* [RESPONSE_BODY](#response_body)
+* [RESPONSE_HEADERS](#response_headers)
+* [RESPONSE_STATUS](#response_status)
+* [SCHEME](#scheme)
+* [SERVER_ADDR](#server_addr)
+* [SERVER_NAME](#server_name)
+* [SERVER_PORT](#server_port)
+* [SESSION](#session)
+* [SESSION_DATA](#session_data)
+* [TIME](#time)
+* [TIME_DAY](#time_day)
+* [TIME_EPOCH](#time_epoch)
+* [TIME_HOUR](#time_hour)
+* [TIME_MIN](#time_min)
+* [TIME_MON](#time_mon)
+* [TIME_SEC](#time_sec)
+* [TIME_WDAY](#time_wday)
+* [TIME_YEAR](#time_year)
+* [TIME_LOCAL](#time_local)
+* [TX](#tx)
+* [UNIQUE_ID](#unique_id)
+* [UPSTREAM_CACHE_STATUS](#upstream_cache_status)
+* [USERID](#userid)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##ARGS
+
+table类型，所有的请求参数，包含ARGS_GET和ARGS_POST
+
+```
+例如：POST http://www.baidu.com?name=miracle&age=5
+
+请求体为：time=123456&day=365
+
+ARGS变量值为{"name": "miracle", "age": "5", "time": "123456", "day": "365"}
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##ARGS_COMBINED_SIZE
+
+number类型，请求参数总长度，只包含key和value的长度，不包含'&'或'='等符号
+
+```
+例如：GET http://www.baidu.com?name=miracle&age=5
+
+ARGS_COMBINED_SIZE变量值为15，而不是18
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##ARGS_GET
+
+table类型，querystring参数
+
+```
+例如：GET http://www.baidu.com?name=miracle&age=5
+
+ARGS_GET变量值为{"name": "miracle", "age": "5"}
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##ARGS_GET_NAMES
+
+table类型，querystring参数key值
+
+```
+例如：GET http://www.baidu.com?name=miracle&age=5
+
+ARGS_GET_NAMES变量值为["name", "age"]
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##ARGS_NAMES
+
+table类型，querystring参数key值及post参数key值
+
+```
+例如：POST http://www.baidu.com?name=miracle&age=5
+
+请求体为：time=123456&day=365
+
+ARGS_NAMES变量值为["name", "age", "time", "day"]
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##ARGS_POST
+
+table类型，POST参数
+
+```
+例如：
+
+POST http://www.baidu.com/login.html
+
+请求体为：time=123456&day=365
+
+ARGS_POST变量值为{"time": "123456", "day": "365"}
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##ARGS_POST_NAMES
+
+table类型，POST参数key值
+
+```
+例如：
+
+POST http://www.baidu.com/login.html
+
+请求体为：time=123456&day=365
+
+ARGS_POST_NAMES变量值为["time", "day"]
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##BYTES_IN
+
+number类型，接收信息字节数
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##CONNECTION_REQUESTS
+
+number类型，当前连接中的请求数
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##DURATION
+
+string类型，处理事务用时时间，单位秒(s)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##FILES
+
+table类型，从请求体中得到的原始文件名(带有文件后缀名)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##FILES_NAMES
+
+table类型，上传文件名称（不带有后缀名）
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##GEO
+
+table类型，包含code3,code,id,continent,name等字段信息
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##GEO_CODE3
+
+string类型，3个字母长度的国家缩写
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##GEO_CODE
+
+string类型，2个字母长度的国家缩写
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##GEO_ID
+
+number类型，国家ID
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##GEO_CONTINENT
+
+string类型，国家所在大洲
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##GEO_NAME
+
+string类型，国家全称
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##GZIP_RATIO
+
+string类型，压缩比率
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##HTTP_COOKIE
+
+string类型，请求头中的cookie字段
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##HTTP_HOST
+
+string类型，请求头中的host字段值，既域名:端口(80缺省)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##HTTP_REFERER
+
+string类型，请求头中的referer字段
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##HTTP_USER_AGENT
+
+string类型，请求头中的user-agent字段
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##IP_VERSION
+
+string类型，IPv4 or IPv6
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##MATCHED_VAR
+
+类型不定，当前匹配中的变量
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##MATCHED_VARS
+
+table类型，单条规则匹配中的所有变量
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##MATCHED_VAR_NAME
+
+string类型，当前匹配中的变量名称
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##MATCHED_VARS_NAMES
+
+table类型，单条规则匹配中的所有变量名称
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##ORIGINAL_DST_ADDR
+
+string类型，服务器地址，应用代理模式为WAF地址，透明模式为后端服务器地址
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##ORIGINAL_DST_PORT
+
+string类型，服务器端口号，应用代理模式为WAF端口号，透明模式为后端服务器端口号
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##POLICYID
+
+string类型，策略ID
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##QUERY_STRING
+
+string类型，未解码的请求参数
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##RAW_HEADER
+
+string类型，请求头信息，带请求行
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##RAW_HEADER_TRUE
+
+string类型，请求头信息，不带请求行
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REMOTE_ADDR
+
+string类型，客户端地址
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REMOTE_HOST
+
+string类型，域名
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REMOTE_PORT
+
+number类型，端口号
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REMOTE_USER
+
+string类型，用于身份验证的用户名
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_BASENAME
+
+string类型，请求的文件名
+
+```
+例如: GET http://www.baidu.com/test/login.php
+
+REQUEST_BASENAME值为/login.php
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_BODY
+
+类型不定，请求体
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_COOKIES
+
+table类型，请求携带的cookie
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_COOKIES_NAMES
+
+table类型，请求携带cookie的名称
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_FILENAME
+
+string类型，relative request URL(相对请求路径)
+
+```
+例如: GET http://www.baidu.com/test/login.php
+
+REQUEST_FILENAME值为/test/login.php
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_HEADERS
+
+table类型，请求头信息
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_HEADERS_NAMES
+
+table类型，请求头key值
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_LINE
+
+string类型，请求行
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_METHOD
+
+string类型，请求方法
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_PROTOCOL
+
+string类型，http请求协议，如: HTTP/1.1
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##HTTP_VERSION
+
+string类型，http请求协议版本，如: 1.1
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##URI
+
+string类型，请求路径，既不带域名，也不带参数
+
+```
+例如: GET http://www.baid.com/test/login.php?name=miracle
+
+URI变量值为/test/login.php
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##URL
+
+string类型，统一资源定位符，SCHEME与HTTP_HOST与URI的拼接
+
+```
+例如: GET http://www.baid.com/test/login.php?name=miracle
+
+URL变量值为http://www.baid.com/test/login.php
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##REQUEST_URI
+
+string类型，请求路径，带参数，但不带有域名
+
+```
+例如: GET http://www.baid.com/test/login.php?name=miracle
+
+REQUEST_URI变量值为/test/login.php?name=miracle
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##RESPONSE_BODY
+
+string类型，响应体
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##RESPONSE_HEADERS
+
+table类型，响应头信息
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##RESPONSE_STATUS
+
+function类型，响应状态码
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##SCHEME
+
+string类型，http or https
+
+```
+例如：GET http://www.baidu.com/
+
+SCHEME变量值为http
+```
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##SERVER_ADDR
+
+string类型，服务器地址
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##SERVER_NAME
+
+string类型，服务器名称
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##SERVER_PORT
+
+number类型，服务器端口号
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##SESSION
+
+table类型，第三方模块lua-resty-session提供的变量
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##SESSION_DATA
+
+table类型，session信息，第三方模块lua-resty-session提供的变量
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME
+
+string类型，hour:minute:second
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME_DAY
+
+number类型，天(1-31)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME_EPOCH
+
+number类型，时间戳，seconds since 1970
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME_HOUR
+
+number类型，小时(0-23)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME_MIN
+
+number类型，分钟(0-59)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME_MON
+
+number类型，月份(1-12)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME_SEC
+
+number类型，秒(0-59)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME_WDAY
+
+number类型，周(0-6)
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME_YEAR
+
+number类型，年份，four-digit，例如: 1997
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TIME_LOCAL
+
+string类型，当前时间，例如: 26/Aug/2016:01:32:16 -0400
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##TX
+
+table类型，用于存储当前请求信息的变量，作用域仅仅是当前请求
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##UNIQUE_ID
+
+string类型，ID标识，随机生成的字符串，可通过配置来控制随机字符串的长度
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##UPSTREAM_CACHE_STATUS
+
+keeps the status of accessing a response cache (0.8.3). The status can be either “MISS”, “BYPASS”, “EXPIRED”, “STALE”, “UPDATING”, “REVALIDATED”, or “HIT”.
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+##USERID
+
+string类型，从接入规则配置得到的用于ID标识
+
+[Back to Var](#variables)
+
+[Back to TOC](#table-of-contents)
+
+Transformation Functions
+------------------------
+* [base64_decode](#base64_decode)
+* [sql_hex_decode](#sql_hex_decode)
+* [base64_encode](#base64_encode)
+* [counter](#counter)
+* [compress_whitespace ](#compress_whitespace )
+* [hex_decode](#hex_decode)
+* [hex_encode](#hex_encode)
+* [html_decode](#html_decode)
+* [length](#length)
+* [lowercase](#lowercase)
+* [md5](#md5)
+* [normalise_path](#normalise_path)
+* [remove_nulls](#remove_nulls)
+* [remove_whitespace](#remove_whitespace)
+* [replace_comments](#replace_comments)
+* [remove_comments_char](#remove_comments_char)
+* [remove_comments](#remove_comments)
+* [uri_decode](#uri_decode)
+* [uri_encode](#uri_encode)
+* [sha1](#sha1)
+* [trim_left](#trim_left)
+* [trim_right](#trim_right)
+* [trim](#trim)
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##base64_decode
+
+Decodes a Base64-encoded string.
+
+Note: 注意transform的执行顺序
+
+```
+例如：
+{
+   "id": "xxxx",
+   ...
+   "transform": ["base64_decode", "lowercase"],
+   ...
+}
+
+先执行base64解码，然后字符串最小化，若顺序调换，会影响结果
+```
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##sql_hex_decode
+
+Decode sql hex data.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##base64_encode
+
+Encodes input string using Base64 encoding.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##counter
+
+计数，相当于modsecurity中的'&'符号
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##compress_whitespace
+
+Converts any of the whitespace characters (0x20, \f, \t, \n, \r, \v, 0xa0) to spaces (ASCII 0x20), compressing multiple consecutive space characters into one.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##hex_decode
+
+Decodes a string that has been encoded using the same algorithm as the one used in hexEncode 
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##hex_encode
+
+Encodes string (possibly containing binary characters) by replacing each input byte with two hexadecimal characters.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##html_decode
+
+Decodes the characters encoded as HTML entities.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##length
+
+Looks up the length of the input string in bytes
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##lowercase
+
+Converts all characters to lowercase
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##md5
+
+Calculates an MD5 hash from the data in input. The computed hash is in a raw binary form and may need encoded into text to be printed (or logged). Hash functions are commonly used in combination with hex_encode (for example: "transform": ["md5", "hex_encode").
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##normalise_path
+
+Removes multiple slashes, directory self-references, and directory back-references (except when at the beginning of the input) from input string.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##remove_nulls
+
+Removes all NUL bytes from input
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##remove_whitespace
+
+Removes all whitespace characters from input.
+
+移除空白字符\s，包含水平定位字符 ('\t')、归位键('\r')、换行('\n')、垂直定位字符('\v')或翻页('\f')等
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##replace_comments
+
+用一个空格代替/*...*/注释内容
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##remove_comments_char
+
+Removes common comments chars (/*, */, --, #).
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##remove_comments
+
+去掉/*...*/注释内容
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##uri_decode
+
+Unescape str as an escaped URI component.
+
+```
+例如: 
+"b%20r56+7" 使用uri_decode转换后为 b r56 7
+```
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##uri_encode
+
+Escape str as a URI component.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##sha1
+
+Calculates a SHA1 hash from the input string. The computed hash is in a raw binary form and may need encoded into text to be printed (or logged). Hash functions are commonly used in combination with hex_encode (for example, "transform": ["sha1", "hex_encode"]).
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##trim_left
+
+Removes whitespace from the left side of the input string.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##trim_right
+
+Removes whitespace from the right side of the input string.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+##trim
+
+Removes whitespace from both the left and right sides of the input string.
+
+[Back to TFF](#transformation-functions)
+
+[Back to TOC](#table-of-contents)
+
+Operators
+---------
+
+* [begins_with](#begins_with)
+* [contains](#contains)
+* [contains_word](#contains_word)
+* [detect_sqli](#detect_sqli)
+* [detect_xss](#detect_xss)
+* [ends_with](#ends_with)
+* [equal](#equal)
+* [greater_eq](#greater_eq)
+* [greater](#greater)
+* [ip_utils](#ip_utils)
+* [less_eq](#less_eq)
+* [less](#less)
+* [pf](#pf)
+* [regex](#regex)
+* [str_match](#str_match)
+* [validate_url_encoding](#validate_url_encoding)
+* [num_range](#num_range)
+* [str_range](#str_range)
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##begins_with
+
+Returns true if the parameter string is found at the beginning of the input.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##contains
+
+Returns true if the parameter string is found anywhere in the input.
+
+operator为contains且pattern为数组，相当于modsecurity的pm
+
+PS: modsecurity的pm忽略大小写，OpenWAF中contains不忽略大小写
+
+```
+例如:
+{
+    "id": "xxx",
+    ...
+    "operator": "contains",
+    "pattern": ["abc", "def"],
+    ...
+}
+```
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##contains_word
+
+Returns true if the parameter string (with word boundaries) is found anywhere in the input.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##detect_sqli
+
+This operator uses LibInjection to detect SQLi attacks.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##detect_xss
+
+This operator uses LibInjection to detect XSS attacks.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##ends_with
+
+Returns true if the parameter string is found at the end of the input.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##equal
+
+Performs a string comparison and returns true if the parameter string is identical to the input string.
+
+相当于modsecurity的eq和streq
+
+```
+例如:
+{
+    "id": "xxx",
+    ...
+    "operator": "equal",
+    "pattern": [12345, "html", "23456"]
+    ...
+}
+```
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##greater_eq
+
+Performs numerical comparison and returns true if the input value is greater than or equal to the provided parameter.
+
+return false, if a value is provided that cannot be converted to a number.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##greater
+
+Performs numerical comparison and returns true if the input value is greater than the operator parameter.
+
+return false, if a value is provided that cannot be converted to a number.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##ip_utils
+
+Performs a fast ipv4 or ipv6 match of REMOTE_ADDR variable data. Can handle the following formats:
+
+Full IPv4 Address: 192.168.1.100
+Network Block/CIDR Address: 192.168.1.0/24
+IPv4 Address Region: 1.1.1.1-2.2.2.2
+
+ip_utils与pf的组合相当于modsecurity中的ipMatchF和ipMatchFromFile
+
+```
+例如:
+规则如下：
+{
+    "id": "xxxx",
+    ...
+    "operator": "ip_utils",
+    "pf": "/tmp/ip_blacklist.txt",
+    ...
+}
+"/tmp/ip_blacklist.txt"文件内容如下：
+192.168.1.100
+192.168.1.0/24
+1.1.1.1-2.2.2.2
+```
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##less_eq
+
+Performs numerical comparison and returns true if the input value is less than or equal to the operator parameter.
+
+return false, if a value is provided that cannot be converted to a number.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##less
+
+Performs numerical comparison and returns true if the input value is less than to the operator parameter.
+
+return false, if a value is provided that cannot be converted to a number.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##pf
+
+pattern是operator操作的参数
+
+pf是指pattern from file，与pattern互斥（二者不可同时出现），目前仅支持绝对路径
+
+pf与contains组合，相当于modsecurity的pmf或pmFromFile
+
+pf与ip_utils组合，相当于modsecurity的ipMatchF或ipMatchFromFile
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##regex
+
+Performs a regular expression match of the pattern provided as parameter. 
+
+regex还有modecurity的capture捕获功能
+
+modsecurity有关capture的描述如下：
+When used together with the regular expression operator (@rx), the capture action will create copies of the regular expression captures and place them into the transaction variable collection.
+
+OpenWAF中无capture指令，但使用regex默认开启capture功能
+
+```
+例如:
+{
+    "id": "000031",
+    "release_version": "858",
+    "charactor_version": "001",
+    "opts": {
+        "nolog": false
+    },
+    "phase": "access",
+    "action": "deny",
+    "meta": 403,
+    "severity": "low",
+    "category": "5Y2P6K6u6KeE6IyD",
+    "charactor_name": "cHJvdG9jb2wucmVxSGVhZGVyLmM=",
+    "desc": "协议规范性约束，检测含有不合规Range或Request-Range值的HTTP请求",
+    "match": [
+        {
+            "vars": [
+                {
+                    "var": "REQUEST_HEADERS",
+                    "parse": {
+                        "specific": "Range"
+                    }
+                },
+                {
+                    "var": "REQUEST_HEADERS",
+                    "parse": {
+                        "specific": "Request-Range"
+                    }
+                }
+            ],
+            "operator": "regex",
+            "pattern": "(\\d+)\\-(\\d+)\\,"
+        },
+        {
+            "vars": [{
+                "var": "TX",
+                "parse": {
+                    "specific": "2"
+                }
+            }],
+            "operator": "greater_eq",
+            "pattern": "%{TX.1}",
+            "parse_pattern": true,
+            "op_negated": true
+        }
+    ]
+}
+```
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##str_match
+
+等同于contains
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##validate_url_encoding
+
+Validates the URL-encoded characters in the provided input string.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##num_range
+
+判断是否在数字范围内
+
+它与transform的length组合，相当于modsecurity的validateByteRange
+
+```
+{
+    "id": "xxx",
+    ...
+    "operator": "num_range",
+    "pattern": [10, "13", "32-126"],
+    "transform": "length",
+    ...
+}
+```
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+##str_range
+
+判断是否在字符串范围内
+
+```
+例如时间区间判断:
+{
+    "id": "xxx",
+    ...
+    "operator": "str_range",
+    "pattern": ["01:42:00-04:32:00"],
+    ...
+}
+```
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+
+Others
+------
+
+* [allow](#allow)
+* [deny](#deny)
+* [id](#id)
+* [nolog](#nolog)
+* [op_negated](#op_negated)
+* [parse](#parse)
+* [pass](#pass)
+* [phase](#phase)
+* [proxy_cache](#proxy_cache)
+* [redirect](#redirect)
+* [charactor_version](#charactor_version)
+* [severity](#severity)
+* [setvar](#setvar)
+* [meta](#meta)
+* [transform](#transform)
+* [tag](#tag)
+* [release_version](#release_version)
+* [robot](#robot)
+* [add_resp_headers](#add_resp_headers)
+
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##allow
+
+Stops rule processing of the current phase on a successful match and allows the transaction to proceed.
+
+```
+"action": "allow"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##deny
+
+Stops rule processing and intercepts transaction.
+
+```
+"action": "deny",
+"meta": 403
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##id
+
+Stops rule processing and intercepts transaction.
+
+```
+"id": "xxxxxxx"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##nolog
+
+不记录日志
+
+```
+"opts": {
+    "nolog": true
+}
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##op_negated
+
+对operator结果的取反
+
+```
+"match": [{
+    "vars": [{
+        "var": "HTTP_USER_AGENT"
+    }],
+    "transform": "length",
+    "operator": "less_eq",
+    "pattern": 50,
+    "op_negated": true
+}]
+
+等价于
+
+"match": [{
+    "vars": [{
+        "var": "HTTP_USER_AGENT"
+    }],
+    "transform": "length",
+    "operator": "greater",
+    "pattern": 50
+}]
+
+若请求头中user_agent字段长度大于50，则匹配中此条规则
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##parse
+
+对变量进一步解析
+
+```
+若请求GET http://www.baidu.com?name=miracle&age=5
+
+"match": [{
+    "vars": [{
+        "var": "ARGS_GET"
+    }]，
+    ...
+}]
+得到的值为{"name": "miracle", "age": "5"}
+
+
+"match": [{
+    "vars": [{
+        "var": "ARGS_GET",
+        "parse": {
+            "specific": "name"
+        }
+    }]
+}]
+得到的值为["miracle"]
+
+
+"match": [{
+    "vars": [{
+        "var": "ARGS_GET",
+        "parse": {
+            "specific": ["name", "age"]
+        }
+    }]
+}]
+得到的值为["miracle", "5"]
+
+
+"match": [{
+    "vars": [{
+        "var": "ARGS_GET",
+        "parse": {
+            "ignore": "name"
+        }
+    }]
+}]
+得到的值为{"age": "5"}
+
+
+"match": [{
+    "vars": [{
+        "var": "ARGS_GET",
+        "parse": {
+            "ignore": ["name", "age"]
+        }
+    }]
+}]
+得到的值为[]
+
+
+"match": [{
+    "vars": [{
+        "var": "ARGS_GET",
+        "parse": {
+            "keys": true
+        }
+    }]
+}]
+得到的值为["name", "age"]
+
+
+"match": [{
+    "vars": [{
+        "var": "ARGS_GET",
+        "parse": {
+            "values": true
+        }
+    }]
+}]
+得到的值为["miracle", "5"]
+
+
+"match": [{
+    "vars": [{
+        "var": "ARGS_GET",
+        "parse": {
+            "all": true
+        }
+    }]
+}]
+得到的值为["name", "age", "miracle", "5"]
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##pass
+
+Continues processing with the next rule in spite of a successful match.
+
+```
+"action": "pass"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##phase
+
+规则执行的阶段，取值可为"access","header_filter","body_filter"的组合
+
+```
+{
+    "id": "xxx_01",
+    "phase": "access",
+    ...
+}
+"xxx_01"规则在access阶段执行
+
+{
+    "id": "xxx_02",
+    "phase": ["access", "header_filter"],
+    ...
+}
+"xxx_02规则在access阶段和"header_filter"阶段各执行一次
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##proxy_cache
+
+```
+{
+    ...
+    phase = "header_filter",         -- 缓存开关需在header_filter阶段配置
+    action = "pass",                 -- 无需拦截请求
+    opts = {
+        nolog = true,                -- 不需记录日志
+        proxy_cache = {
+            state = true|false,      -- 缓存开关
+            expired = 600            -- 缓存时长（单位秒）,默认600秒
+        }
+    }
+    ...
+}
+
+若state为true，且得到的缓存状态为"MISS"或"EXPIRED"，则对响应内容进行缓存，同时设置缓存时长
+若state为false，则清除对应缓存键的缓存（包含其缓存文件）
+```
+
+举例如下：
+```
+# nginx.conf 有关proxy cache 配置如下
+http {
+    proxy_cache_path  /opt/cache/OpenWAF-proxy levels=2:2 keys_zone=twaf_cache:101m max_size=100m use_temp_path=off;
+    proxy_cache_key $host$uri;
+    proxy_cache twaf_cache;
+    proxy_ignore_headers X-Accel-Expires Cache-Control Set-Cookie;
+    proxy_no_cache $twaf_cache_flag;
+    
+    server {
+        set $twaf_cache_flag 1;         #默认不缓存
+    }
+}
+
+# lua 格式 配置
+{ 
+    id = "test_x01",                      -- id 全局唯一
+    opts = {
+        nolog = true,
+        proxy_cache = {
+            state = true,
+            expired = 300
+        }
+    },
+    phase = "header_filter", 
+    action = "pass",
+    match = {{
+        vars = {{
+            var = "URI"
+        },{
+            var = "REQUEST_HEADERS",
+            parse = {
+                specific = "Referer"
+            }
+        }},
+        operator = "equal",
+        pattern = {"/xampp/", "%{SCHEME}://%{HTTP_HOST}/xampp/"},
+        parse_pattern = true
+    }}
+}
+此规则将缓存URI为'/xampp/'的页面，更新时间为300秒
+
+若match中过滤条件为响应码，则相当于Nginx的proxy_cache_valid指令
+若match中过滤条件为请求方法，则相当于Nginx的proxy_cache_methods指令
+若macth中过滤条件为资源类型，则相当于Nginx的proxy_cache_content_type指令
+
+PS: proxy_cache_content_type指令为官方指令，是miracle Qi修改Nginx源码扩展的功能
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##redirect
+
+```
+"action": "redirect",
+"meta": "/index.html"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##charactor_version
+
+指定此条规则的版本，同modsecurity中Action的rev功能
+
+```
+"charactor_version": "001"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##severity
+
+Assigns severity to the rule in which it is used.
+
+The data below is used by the OWASP ModSecurity Core Rule Set (CRS):
+
+EMERGENCY: is generated from correlation of anomaly scoring data where there is an inbound attack and an outbound leakage.
+ALERT: is generated from correlation where there is an inbound attack and an outbound application level error.
+CRITICAL: Anomaly Score of 5. Is the highest severity level possible without correlation. It is normally generated by the web attack rules (40 level files).
+ERROR: Error - Anomaly Score of 4. Is generated mostly from outbound leakage rules (50 level files).
+WARNING: Anomaly Score of 3. Is generated by malicious client rules (35 level files).
+NOTICE: Anomaly Score of 2. Is generated by the Protocol policy and anomaly files.
+INFO
+DEBUG
+
+也可自定义严重等级，如:low，medium，high，critical等
+
+```
+"severity": "high"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##setvar
+
+Creates, removes, or updates a variable. 
+
+```
+{
+    "id": "xxx_01",
+    "opts":{
+        "nolog": false,
+        "setvar": [{
+            "column": "TX",
+            "key": "score",
+            "value": 5,
+            "incr": true
+        }]
+    },
+    ...
+}
+"xxx_01"规则中，给变量TX中score成员的值加5，若TX中无score成员，则初始化为0，再加5
+
+{
+    "id": "xxx_02",
+    "opts":{
+        "nolog": false,
+        "setvar": [{
+            "column": "TX",
+            "key": "score",
+            "value": 5
+        }]
+    },
+    ...
+}
+
+"xxx_02"规则中，给变量TX中score成员的值赋为5
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##meta
+
+"action"的附属信息
+
+```
+若"action"为"deny"，则"meta"为响应码
+"action": "deny",
+"meta": 403
+
+若"action"为"redirect"，则"meta"为重定向地址
+"action": "redirect",
+"meta": "/index.html"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##transform
+
+This action is used to specify the transformation pipeline to use to transform the value of each variable used in the rule before matching.
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##tag
+
+Assigns a tag (category) to a rule.
+
+```
+支持数组    "tag": ["xxx_1", "xxx_2"]
+支持字符串  "tag": "xxx_3"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##release_version
+
+规则集版本，等同于modsecurity中Action的ver功能
+
+```
+"release_version": "858"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##robot
+
+人机识别
+
+需提前配置人机识别模块配置，此功能暂未放开
+
+```
+"action": "robot"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+##add_resp_headers
+
+增删改响应头
+
+```
+例如隐藏server字段:
+"opts": {
+    "add"_resp_headers": {
+        "server": ""
+    }
+}
+```
+
+[Back to OTHERS](#others)
 
 [Back to TOC](#table-of-contents)
