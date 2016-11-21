@@ -41,8 +41,7 @@ Synopsis
     lua_package_path '/twaf/?.lua;;';
     
     init_by_lua_file /twaf/app/twaf_init.lua;
-  --init_worker_by_lua_file /twaf/app/twaf_init_worker.lua;
-
+    
     lua_shared_dict twaf_shm 50m;
     
     upstream test {
