@@ -1392,7 +1392,7 @@ number类型，当前连接中的请求数
 
 ##DURATION
 
-string类型，处理事务用时时间，单位秒(s)
+string类型，处理事务用时时间，单位:微秒(μs)
 
 [Back to Var](#variables)
 
