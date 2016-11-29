@@ -18,7 +18,7 @@ _M.rules = {
     meta     = 403,
     severity = "critical",
     category = "5rOo5YWl5pS75Ye7",
-    charactor_name = "YXR0YWNrLmluamVjdGlvbi5zcWwubGliaW5qZWN0aW9u",
+    rule_name = "YXR0YWNrLmluamVjdGlvbi5zcWwubGliaW5qZWN0aW9u",
     desc  = "sqli检测",
     match = {{
         vars = {{
@@ -54,7 +54,7 @@ _M.rules = {
     meta   = 403,
     severity = "high",
     category = "6Leo56uZ5pS75Ye7",
-    charactor_name = "YXR0YWNrLnhzcy5saWJpbmplY3Rpb24=",
+    rule_name = "YXR0YWNrLnhzcy5saWJpbmplY3Rpb24=",
     desc  = "xss检测",
     match = {{
         vars = {{

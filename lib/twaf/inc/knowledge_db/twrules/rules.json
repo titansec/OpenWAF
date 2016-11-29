@@ -11,7 +11,7 @@
         "meta": "403",
         "severity": "low",
         "category": "5Y2P6K6u6KeE6IyD",
-        "charactor_name": "cHJvdG9jb2wuYWNjZXB0",
+        "rule_name": "cHJvdG9jb2wuYWNjZXB0",
         "desc": "检测是否缺少Accept头字段,OPTIONS方法除外",
         "match": [
             {
@@ -51,7 +51,7 @@
         "meta": "403",
         "severity": "low",
         "category": "5Y2P6K6u6KeE6IyD",
-        "charactor_name": "cHJvdG9jb2wuYWNjZXB0LmE=",
+        "rule_name": "cHJvdG9jb2wuYWNjZXB0LmE=",
         "desc": "检测Accept头字段值是否为空,OPTIONS方法除外",
         "match": [
             {
@@ -84,7 +84,7 @@
         "charactor_version": "001",
         "severity": "critical",
         "category": "5rOo5YWl5pS75Ye7",
-        "charactor_name": "YXR0YWNrLmluamVjdGlvbi5zcWwubGliaW5qZWN0aW9u",
+        "rule_name": "YXR0YWNrLmluamVjdGlvbi5zcWwubGliaW5qZWN0aW9u",
         "opts": {
             "nolog": false
         },
@@ -118,7 +118,7 @@
         "charactor_version": "001",
         "severity": "high",
         "category": "6Leo56uZ5pS75Ye7",
-        "charactor_name": "YXR0YWNrLnhzcy5saWJpbmplY3Rpb24=",
+        "rule_name": "YXR0YWNrLnhzcy5saWJpbmplY3Rpb24=",
         "opts": {
             "nolog": false
         },
