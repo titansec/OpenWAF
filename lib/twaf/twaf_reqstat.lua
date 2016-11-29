@@ -34,10 +34,7 @@ local reqstat_dict
 
 local stat_access   = {"addr_total", "req_total", "bytes_in", "attack_total",
                        "bytes_out", "conn_total", "1xx", "2xx", "3xx", "4xx", "5xx"}
-local stat_safe     = {["cat.attack.injection"] = 1, ["cat.attack.other"] = 1, ["cat.ddos.cc"] = 1,
-                       ["cat.abnormal.score"]   = 1, ["cat.attack.xss"]   = 1, ["cat.leakage"] = 1,
-                       ["cat.attack.upload"]    = 1, ["cat.protocol"]     = 1, ["cat.hotfix"]  = 1, 
-                       ["cat.abnormal.req"]     = 1, ["cat.mal.page"]     = 1, ["cat.robot"]   = 1}
+local stat_safe     = {}
 local stat_upstream = {"req_total", "bytes_in", "bytes_out", "1xx", "2xx", "3xx", 
                        "4xx", "400", "401", "403", "404", "405", "406", "407", "408", 
                        "409", "410", "411", "412", "413", "414", "415", "416", "417",
@@ -60,33 +57,36 @@ end
 
 local function _get_reqstat_access_info(info, key)
 
-	for _, v in pairs(stat_access) do
-	    info[v] = _get_dict_info(key.."_"..v)
-	end
+    for _, v in pairs(stat_access) do
+        info[v] = _get_dict_info(key.."_"..v)
+    end
 end
 
 local function _get_reqstat_safe_info(info, key)
 
-	for k, _ in pairs(stat_safe) do
-	    info[k] = _get_dict_info(key.."_"..k)
-	end
+    local safe_keys = reqstat_dict:get(modules_name.."_safe_keys")
+    stat_safe       = cjson.decode(safe_keys) or stat_safe
+    
+    for k, _ in pairs(stat_safe) do
+        info[k] = _get_dict_info(key.."_"..k)
+    end
 end
 
 local function _get_reqstat_upstream_info(info, key)
 
-	for _, v in pairs(stat_upstream) do
-	    info[v] = _get_dict_info(key.."_upstream_"..v)
-	end
+    for _, v in pairs(stat_upstream) do
+        info[v] = _get_dict_info(key.."_upstream_"..v)
+    end
 end
 
 local function _get_reqstat_info(info, key)
 
      info.safe = {}
     _get_reqstat_safe_info(info.safe, key)
-
+    
      info.access = {}
     _get_reqstat_access_info(info.access, key)
-
+    
      info.upstream = {}
     _get_reqstat_upstream_info(info.upstream, key)
 
@@ -103,7 +103,7 @@ function _M.get_reqstat_main_info(self)
     local handled       =  twaf_func:get_variable("stat_handled")
     local requests      =  twaf_func:get_variable("stat_requests")
     local reset_sec     = _get_dict_info("reset_sec")
-
+    
     local info                    = {}
     info.main                     = {}
     info.main.connection          = {}
@@ -117,9 +117,9 @@ function _M.get_reqstat_main_info(self)
     info.main.connection.accepted = accepted
     info.main.connection.handled  = handled
     info.main.connection.requests = requests
-
+    
     _get_reqstat_info(info.main, modules_name.."_"..global_uuid)
-
+    
     return info
 end
 
@@ -160,13 +160,13 @@ function _M.reqstat_show_handler(self)
     ngx_header['Content_Type'] = "application/json"
     ngx.status = ngx_HTTP_OK
     ngx_header['Content_Length'] = nil
-
+    
     local ok, err = ngx_send_headers()
     if err then
         ngx_log(ngx_ERR, "failed to send headers -- ", err)
         ngx.exit(500)
     end
-
+    
     if show_uuid == nil then
         reqstat_info = _M:get_reqstat_main_info()
     else
@@ -174,28 +174,28 @@ function _M.reqstat_show_handler(self)
     end
     
     ngx.say(cjson.encode(reqstat_info))
-
+    
     return true
 end
 
 --log
 
 local function _reqstat_access_init(key)
-	for _, v in pairs(stat_access) do
+    for _, v in pairs(stat_access) do
         reqstat_dict:add(key.."_"..v, 0)
-	end
+    end
 end
 
 local function _reqstat_safe_init(key)
-	for k, _ in pairs(stat_safe) do
+    for k, _ in pairs(stat_safe) do
         reqstat_dict:add(key.."_"..k, 0)
-	end
+    end
 end
 
 local function _reqstat_upstream_init(key)
-	for _, v in pairs(stat_upstream) do
+    for _, v in pairs(stat_upstream) do
         reqstat_dict:add(key.."_upstream_"..v, 0)
-	end
+    end
 end
 
 local function _log_access_stat(safe_event, key)
@@ -204,7 +204,7 @@ local function _log_access_stat(safe_event, key)
     local bytes_in     = tonumber(ngx_var.bytes_in) or 0
     local bytes_sent   = tonumber(ngx_var.bytes_sent) or 0
     local conn         = ngx_var.connection_requests
-
+    
     reqstat_dict:incr(key.."_req_total", 1)
     reqstat_dict:incr(key.."_bytes_in", bytes_in)
     reqstat_dict:incr(key.."_bytes_out", bytes_sent)
@@ -240,9 +240,13 @@ local function _log_safe_stat(safe_event, key)
     end
     
     for k, _ in pairs(safe_event) do
-        stat_safe[k] = 1
         reqstat_dict:add(key.."_"..k, 0)
         reqstat_dict:incr(key.."_"..k, 1)
+        
+        if not stat_safe[k] then
+            stat_safe[k] = 1
+            reqstat_dict:set(modules_name.."_safe_keys", cjson.encode(stat_safe))
+        end
     end
 end
 
@@ -255,11 +259,11 @@ local function _log_upstream_stat(key)
     if status == nil or bytes_in == nil or bytes_out == nil then
         return
     end
-
+    
     reqstat_dict:incr(key.."_upstream_req_total", 1)
     reqstat_dict:incr(key.."_upstream_bytes_in", bytes_in)
     reqstat_dict:incr(key.."_upstream_bytes_out", bytes_out)
-
+    
     if status >= 100 and status < 200 then
         reqstat_dict:incr(key.."_upstream_1xx", 1)
     elseif status >= 200 and status < 300 then
@@ -267,11 +271,11 @@ local function _log_upstream_stat(key)
     elseif status >= 300 and status < 400 then
         reqstat_dict:incr(key.."_upstream_3xx", 1)
     elseif status >= 400 and status < 500 then
-	    reqstat_dict:incr(key.."_upstream_4xx", 1)
-		reqstat_dict:incr(key.."_upstream_"..tostring(status), 1)
-	elseif status >= 500 and status < 600 then
-		reqstat_dict:incr(key.."_upstream_5xx", 1)
-		reqstat_dict:incr(key.."_upstream_"..tostring(status), 1)
+        reqstat_dict:incr(key.."_upstream_4xx", 1)
+        reqstat_dict:incr(key.."_upstream_"..tostring(status), 1)
+    elseif status >= 500 and status < 600 then
+        reqstat_dict:incr(key.."_upstream_5xx", 1)
+        reqstat_dict:incr(key.."_upstream_"..tostring(status), 1)
     end
 end
 
@@ -291,7 +295,7 @@ local function _reqstat(events, uuid)
         _reqstat_safe_init(key)
         _reqstat_upstream_init(key)
     end
-
+    
     if safe_state == true then
         _log_safe_stat(events, key)
     end
@@ -299,7 +303,7 @@ local function _reqstat(events, uuid)
     if access_state == true then
         _log_access_stat(events, key)
     end
-
+    
     if upstream_state == true then
         _log_upstream_stat(key)
     end
@@ -311,7 +315,7 @@ function _M.reqstat_log_handler(self, events, uuid)
     if twaf_func:state(state) == false then
         return true
     end
-
+    
     _reqstat(events, global_uuid)
     
     if uuid then
@@ -354,7 +358,7 @@ function _M.new(self, reqstat_conf, uuids)
         ngx_log(ngx_ERR, "the type of reqstat config must be table")
         return false
     end
-
+    
     for k, v in pairs(reqstat_conf) do 
         if k == "state" then
             state = v
@@ -373,7 +377,7 @@ function _M.new(self, reqstat_conf, uuids)
     stat_uuids[global_uuid] = 1
     
     _reqstat_init()
-
+    
     return setmetatable({config = reqstat_conf} , mt)
 end
 
