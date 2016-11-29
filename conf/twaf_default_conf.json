@@ -23,13 +23,14 @@
         "allowed_content_types":{
             "text/xml": true
         },
-        "simulation":false
+        "simulation":false,
+        "category_path": "/secone/webapng/lualib/twaf/conf/category.json"
     },
     "twaf_secrules":{
         "state": true,
         "reqbody_state": true,
         "header_filter_state": true,
-        "body_filter_state": true,
+        "body_filter_state": false,
         "reqbody_limit":134217728,
         "respbody_limit":524288,
         "pre_path": "/opt/OpenWAF/",
@@ -63,7 +64,7 @@
         "safe_state":true,
         "access_state":true,
         "upstream_state":true,
-        "shared_dict_name":"twaf_shm",
+        "shared_dict_name":"twaf_reqstat",
         "content_type":"JSON"
     },
     "twaf_log": {
@@ -74,40 +75,27 @@
         "host":"127.0.0.1",
         "port":60099,
         "flush_limit":0,
-        "drop_limit":1048576,
+        "drop_limit":65507,
         "max_retry_times":5,
         "ssl":false,
-        "access_log": [
-            "remote_addr",
-            "remote_user",
-            [
-                "[",
-                "time_local",
-                "]"
+        "safe_event_format": {
+            "ctx": [
+                "category",
+                "severity",
+                "action",
+                "action_meta",
+                "version",
+                "id",
+                "rule_name"
             ],
-            "msec",
-            "request_method",
-            "request_uri",
-            "request_protocol",
-            "status",
-            "bytes_sent",
-            [
-                "\"",
-                "http_referer",
-                "\""
-            ],
-            [
-                "\"",
-                "http_user_agent",
-                "\""
-            ],
-            [
-                "\"",
-                "http_x_forwarded_for",
-                "\""
+            "vars": [
+                "duration",
+                "matched_vars",
+                "matched_var_names"
             ]
-        ],
-        "security_log": [
+        },
+        "access_log": [
+            "unique_id",
             "remote_addr",
             "remote_port",
             "userid",
@@ -115,30 +103,41 @@
             "original_dst_addr",
             "original_dst_port",
             "remote_user",
-            [
-                "[",
-                "time_local",
-                "]"
-            ],
+            "time_local",
             "msec",
             "request_method",
             "request_uri",
             "request_protocol",
-            "status",
+            "response_status",
             "bytes_sent",
-            [
-                "\"",
-                "http_referer",
-                "\""
-            ],
-            [
-                "\"",
-                "http_user_agent",
-                "\""
-            ],
+            "http_referer",
+            "http_user_agent",
             "gzip_ratio",
             "http_host",
-            "raw_header"
+            "policyid"
+        ],
+        "security_log": [
+            "unique_id",
+            "remote_addr",
+            "remote_port",
+            "userid",
+            "dev_uuid",
+            "original_dst_addr",
+            "original_dst_port",
+            "remote_user",
+            "time_local",
+            "msec",
+            "request_method",
+            "request_uri",
+            "request_protocol",
+            "response_status",
+            "bytes_sent",
+            "http_referer",
+            "http_user_agent",
+            "gzip_ratio",
+            "http_host",
+            "raw_header",
+            "policyid"
         ]
     }
 }
