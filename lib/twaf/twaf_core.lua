@@ -179,7 +179,7 @@ function _M.run(self, _twaf)
         
         if ngx.ctx.reset_connection == true then return ngx.ERROR end
         
-    elseif phase == "balancer" or phase == "log" then
+    else -- "balancer" "log" "ssl_cert"
     
         local mod = _twaf.modfactory["twaf_"..phase]
         if mod and mod[phase] then
