@@ -170,7 +170,7 @@ local function _parse_request_body(_twaf, request, ctx, request_headers)
         local last_string  =  table.remove(body_table)
         
         for _, v in ipairs(body_table) do
-            
+        
             local from, to, name, filename = v:find('Content%-Disposition: form%-data; name="(.+)"; filename="(.-)"\r\n')
             if not from then
                 -- other args
@@ -260,7 +260,7 @@ local function _geo_look_up(_twaf, ip_version, addr)
 end
 
 _M.request = {
-    access = function(_twaf, request, ctx)
+    rewrite = function(_twaf, request, ctx)
     
         if ctx.nodup then return end
         
