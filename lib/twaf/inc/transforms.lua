@@ -189,7 +189,7 @@ function _M.transforms(self, options, values)
     
     if not func[options] then
         ngx.log(ngx.WARN, "Not support transform: ", options)
-        return false
+        return nil
     end
     
     return func[options](values)
