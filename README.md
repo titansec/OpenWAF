@@ -250,6 +250,10 @@ TODO
 * 17. 放开动态配置规则引擎API
 * 18. 放开动态配置行为分析引擎API
 
+2016.11.30 添加50条规则；上传攻击响应页面模块
+
+2016.11.30 - 2016.12.01 上传OpenWAF docker版
+
 [Back to TOC](#table-of-contents)
 
 Changes
