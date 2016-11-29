@@ -6,8 +6,6 @@ local _M = {
     _VERSION = "0.0.1"
 }
 
-local twaf_func = require "lib.twaf.inc.twaf_func"
-
 _M.error_page = 
 "<html> \
 <head><title>{{status}}</title></head> \
@@ -53,7 +51,7 @@ _M.status_lines = {
 function _M.do_action(self, _twaf, action, meta)
 
     local simulation = _twaf:get_modules_config_param("twaf_global", "simulation")
-    if twaf_func:state(simulation) == true or not action then
+    if simulation == true or not action then
         action = "PASS"
     end
     
