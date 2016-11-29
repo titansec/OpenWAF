@@ -7,40 +7,7 @@ local _M = {
 }
 
 local http_cache = require "http_cache"
-
-function _M.parse_dynamic_value(self, key, request)
-	local lookup = function(m)
-		local val      = request[m[1]:upper()]
-		local specific = m[2]
-
-		if (not val) then
-            return "-"
-		end
-
-		if (type(val) == "table") then
-			if (specific) then
-				return tostring(val[specific])
-			else
-				return tostring(m[1])
-			end
-		elseif (type(val) == "function") then
-			return tostring(val(twaf))
-		else
-			return tostring(val)
-		end
-	end
-
-	-- grab something that looks like
-	-- %{VAL} or %{VAL.foo}
-	-- and find it in the lookup table
-	local str = ngx.re.gsub(key, [[%{([^\.]+?)(?:\.([^}]+))?}]], lookup, "oij")
-    
-	if (ngx.re.find(str, [=[^\d+$]=], "oij")) then
-		return tonumber(str)
-	else
-		return str
-	end
-end
+local twaf_func  = require "lib.twaf.inc.twaf_func"
 
 local function _set_var(ctx, element, value)
 
@@ -81,7 +48,7 @@ function _M.opts(self, _twaf, ctx, request, options, values)
         end,
         setvar = function(_twaf, values, ctx, request)
             for k, v in ipairs(values) do
-                local value = _M:parse_dynamic_value(v.value, request)
+                local value = twaf_func:parse_dynamic_value(v.value, request)
                 _set_var(ctx, v, value)
             end
         end,
