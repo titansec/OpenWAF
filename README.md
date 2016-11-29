@@ -190,6 +190,10 @@ Problems
 3. 提示找不到swig
 
    apt-get install swig
+   
+4. 提示PCRE不支持JIT 
+   
+   编译pcre时，带上--enable-jit参数
 ```
 
 [Back to TOC](#table-of-contents)
