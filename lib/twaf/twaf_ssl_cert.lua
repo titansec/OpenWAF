@@ -18,17 +18,16 @@ local function _ssl(crt, key)
         return ngx.exit(ngx.ERROR)
     end
     
-            
     local f = assert(io.open(crt))
     local pem_cert_chain = f:read("*a")
     f:close()
-            
+    
     local der_cert_chain, err = ssl.cert_pem_to_der(pem_cert_chain)
     if not der_cert_chain then
         ngx.log(ngx.ERR, "failed to convert certificate chain from PEM to DER: ", err)
         return ngx.exit(ngx.ERROR)
     end
-            
+    
     local ok, err = ssl.set_der_cert(der_cert_chain)
     if not ok then
         ngx.log(ngx.ERR, "failed to set DER cert: ", err)
@@ -44,7 +43,7 @@ local function _ssl(crt, key)
         ngx.log(ngx.ERR, "failed to convert pkey from PEM to DER: ", err)
         return ngx.exit(ngx.ERROR)
     end
-            
+    
     local ok, err = ssl.set_der_priv_key(der_pkey)
     if not ok then
         ngx.log(ngx.ERR, "failed to set DER private key: ", err)
