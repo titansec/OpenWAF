@@ -7,6 +7,7 @@ local _M = {
 }
 
 local cjson                 =  require "cjson.safe"
+local twaf_action           =  require "lib.twaf.inc.action"
 
 local ngx_ERR               =  ngx.ERR
 local ngx_log               =  ngx.log
@@ -435,12 +436,12 @@ function _M.table_has_value(self, tb, value)
         return false
     end
     
-    for _, v in pairs(tb) do
+    for i, v in pairs(tb) do
         if type(v) == "table" then
             return _M:table_has_value(v, value)
         else
             if type(v) == type(value) and v == value then
-                return true
+                return true, i
             else
                 return false
             end
@@ -514,12 +515,6 @@ function _M.check_rules(self, conf, rule)
     if conf.rules_id[rule.id] then
         table.insert(log, "ID: "..rule.id.." is duplicate")
     end
-    
-    --[[-- weight
-    if type(rule.weight) ~= "number" then
-        table.insert(log, "weight: number expected, got "..type(rule.weight)..
-                          " in rule ID: "..rule.id)
-    end]]
     
     -- phase
     local phase_arr = {access = 1, header_filter = 1, body_filter = 1}
@@ -679,6 +674,108 @@ function _M.syn_config(self, _twaf)
         
         dict:set("worker_process_"..wid, wpid)
     end
+end
+
+function _M.parse_dynamic_value(self, key, request)
+	local lookup = function(m)
+		local val      = request[m[1]:upper()]
+		local specific = m[2]
+        
+		if (not val) then
+			--logger.fatal_fail("Bad dynamic parse, no collection key " .. m[1])
+            return "-"
+		end
+        
+		if (type(val) == "table") then
+			if (specific) then
+				return tostring(val[specific])
+			else
+                return _M:table_to_string(val)
+				--return tostring(m[1])
+			end
+		elseif (type(val) == "function") then
+			return tostring(val(twaf))
+		else
+			return tostring(val)
+		end
+	end
+    
+	-- grab something that looks like
+	-- %{VAL} or %{VAL.foo}
+	-- and find it in the lookup table
+	local str = ngx.re.gsub(key, [[%{([^\.]+?)(?:\.([^}]+))?}]], lookup, "oij")
+    
+	--logger.log(_twaf, "Parsed dynamic value is " .. str)
+    
+	if (ngx.re.find(str, [=[^\d+$]=], "oij")) then
+		return tonumber(str)
+	else
+		return str
+	end
+end
+
+function _M.conf_log(self, _twaf, request, ctx)
+
+    local log =  {}
+    local lcf = _twaf:get_config_param("twaf_log") or {}
+    local sef =  lcf.safe_event_format
+    
+    if not sef then
+        return false
+    end
+    
+    for _, v in pairs(sef.ctx or {}) do
+        log[v] = _M:table_to_string(ctx[v]) or "-"
+    end
+    
+    for _, v in pairs(sef.vars or {}) do
+        local value = request[v:upper()]
+        if type(value) == "function" then
+            value = _M:table_to_string(value())
+        else
+            value = _M:table_to_string(value)
+        end
+        
+        log[v] = value or "-"
+    end
+    
+    return log
+end
+
+function _M.rule_category(self, _twaf, rule_name)
+    for k, v in pairs(_twaf.config.category_map or {}) do
+        if ngx.re.find(rule_name, v.rule_name) then
+            return k
+        end
+    end
+    
+    return "UNKNOWN"
+end
+
+function _M.rule_log(self, _twaf, info)
+
+    local ctx     = _twaf:ctx()
+    local request =  ctx.request
+    info.category = _M:rule_category(_twaf, info.rule_name)
+    
+    -- reqstat
+    ctx.events.stat[info.category] = 1
+    
+    -- attack response
+    if info.action ~= "PASS" and info.action ~= "ALLOW" and info.action ~= "CHAIN" then
+	    ngx_var.twaf_attack_info = ngx_var.twaf_attack_info .. info.rule_name .. ";"
+	end
+    
+    -- log
+    if info.log_state == true then
+        ctx.events.log[info.rule_name] = _M:conf_log(_twaf, ctx.request, info)
+    end
+    
+    request.MATCHED_VARS      = {}
+    request.MATCHED_VAR_NAMES = {}
+    
+    -- action
+    return twaf_action:do_action(_twaf, info.action, info.meta)
 end
 
 return _M

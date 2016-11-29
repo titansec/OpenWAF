@@ -43,11 +43,19 @@ function _M.load_default_config(self, path)
     local default_conf_json = d_file:read("*a")
     d_file:close()
     
-    self.twaf_default_conf = cjson.decode(default_conf_json) or {}
+    self.twaf_default_conf = cjson.decode(default_conf_json)
     
     -- access rule
     self.twaf_access_rule = twaf_func:copy_table(self.twaf_default_conf.twaf_access_rule)
     self.twaf_default_conf.twaf_access_rule = nil
+    
+    -- rules or modules category
+    local twaf_global = self.twaf_default_conf.twaf_global
+    local f = io.open(twaf_global.category_path)
+    local category = f:read("*a")
+    f:close()
+    category = cjson.decode(category)
+    self.category_map = category
 end
 
 local function _merge_table(self, path, modules_name)

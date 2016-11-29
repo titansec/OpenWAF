@@ -1,0 +1,14 @@
+{
+    "protocol_specifications" : { "cname": "协议规范", "rule_name": "protocol\\..*"},
+    "automatic_tool"          : { "cname": "自动工具", "rule_name": "(?:auto|spider)\\..*"},
+    "injection_attack"        : { "cname": "注入攻击", "rule_name": "attack\\.injection\\..*"},
+    "XSS_attack"              : { "cname": "跨站攻击", "rule_name": "attack\\.xss.*"},
+    "other_attack"            : { "cname": "其它攻击", "rule_name": "attack\\.(?!injection|xss|upload).*"},
+    "information_leakage"     : { "cname": "信息泄漏", "rule_name": "leakage\\..*"},
+    "malicious_page"          : { "cname": "恶意页面", "rule_name": "(?:malicious|risk)\\..*"},
+    "hotfix"                  : { "cname": "热补丁",   "rule_name": "fix\\..*"},
+    "upload_attack"           : { "cname": "上传攻击", "rule_name": "attack\\.upload.*"},
+    "exception_request"       : { "cname": "异常请求", "rule_name": "exception\\..*"},
+    "abnormal_score"          : { "cname": "异常评分", "rule_name": "behavior\\.anomaly_score"},
+    "CC_attack"               : { "cname": "CC攻击",   "rule_name": "ddos\\.cc"}
+}

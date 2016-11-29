@@ -9,7 +9,6 @@ local _M = {
 local cjson                = require "cjson.safe"
 local twaf_opts            = require "lib.twaf.inc.opts"
 local twaf_func            = require "lib.twaf.inc.twaf_func"
-local twaf_action          = require "lib.twaf.inc.action"
 local twaf_request         = require "lib.twaf.inc.request"
 local twaf_operators       = require "lib.twaf.inc.operators"
 local twaf_transforms      = require "lib.twaf.inc.transforms"
@@ -21,40 +20,15 @@ local ngx_req_get_method   = ngx.req.get_method
 local ngx_req_http_version = ngx.req.http_version
 local ngx_req_get_headers  = ngx.req.get_headers
 
-local function _log_action(_twaf, ctx, sctx, request, rule)
+local function _log_action(_twaf, sctx)
 
-    local cf   =  sctx.cf
-    local opts =  sctx.opts
-    local log  =  ctx.events.log
-    local stat =  ctx.events.stat
+    local opts =  sctx.opts or {}
     
-    -- log
-    if not opts.nolog then
-        local key = modules_name.."_"..sctx.id
-        log[key]  = {}
-        
-        for _, value in ipairs(cf.msg) do
-            if type(value) ~= "table" then
-                local m = twaf_func:table_to_string(sctx[value])
-                log[key][value] = m
-            else
-                for k, v in pairs(value) do
-                    local m = twaf_func:table_to_string(twaf_opts:parse_dynamic_value(v, request))
-                    log[key][k] = m
-                end
-            end
-        end
+    if opts.nolog == false or opts.log == true then
+        sctx.log_state = true
     end
     
-    if sctx.action ~= "PASS" and sctx.action ~= "ALLOW" and sctx.action ~= "CHAIN" then
-        ngx_var.twaf_attack_info = ngx_var.twaf_attack_info .. sctx.category .. ";"
-    end
-    
-    -- reqstat
-    stat[sctx.category] = (stat[sctx.category] or 0) + 1
-    
-    --action
-    return twaf_action:do_action(_twaf, sctx.action, sctx.action_meta)
+    return twaf_func:rule_log(_twaf, sctx)
 end
 
 local function _parse_var(_twaf, gcf, var, parse)
@@ -176,7 +150,7 @@ local function _do_operator(_twaf, sctx, rule, data, pattern, request, pf)
         else
             
             if rule.parse_pattern == true then
-                pattern = twaf_opts:parse_dynamic_value(pattern, request)
+                pattern = twaf_func:parse_dynamic_value(pattern, request)
             end
             
             return twaf_operators:operators(rule.operator, data, pattern, sctx)
@@ -313,8 +287,7 @@ local function _process_rule(_twaf, rule, ctx, sctx)
     sctx.action          =  (rule.action or "pass"):upper()
     sctx.version         =  rv.."-"..cv
     sctx.severity        =  rule.severity or "-"
-    sctx.category        =  rule.category or "-"
-    sctx.charactor_name  =  rule.charactor_name
+    sctx.rule_name       =  rule.rule_name
     
     local rule_match = true
     
@@ -328,7 +301,9 @@ local function _process_rule(_twaf, rule, ctx, sctx)
             
             local res = _parse_vars(_twaf, r, ctx, sctx)
             if res == false then
-                rule_match = false
+                rule_match                = false
+                request.MATCHED_VARS      = {}
+                request.MATCHED_VAR_NAMES = {}
                 break
             end
             
@@ -346,7 +321,7 @@ local function _process_rule(_twaf, rule, ctx, sctx)
             twaf_opts:opts(_twaf, ctx, request, k, v)
         end
         
-        return _log_action(_twaf, ctx, sctx, request, rule)
+        return _log_action(_twaf, sctx)
     end
     
     return false
@@ -357,11 +332,8 @@ local function _enable_id(_twaf, cf, rule, ctx)
     local flag
     local request    =  ctx.request
     local system_rid = _twaf.config.twaf_policy.system_rules_id or {}
-    local id         =  cf.rules_id[rule.id] or {}
     
-    for k, v in pairs(system_rid) do
-        id[k] = v
-    end
+    local id = system_rid[rule.id] or cf.rules_id[rule.id] or {}
     
     for _, r in ipairs(id) do
         
@@ -392,9 +364,7 @@ local function _process_rules(_twaf, rules, ctx, sctx)
     local gcf   = sctx.gcf
     
     for _, rule in ipairs(rules) do
-        
         if not rule.disable and _enable_id(_twaf, cf, rule, ctx) then
-        
             if type(rule.phase) ~= "table" then
                 rule.phase = {rule.phase}
             end
