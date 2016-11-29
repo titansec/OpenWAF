@@ -2,118 +2,13 @@
     "twaf_global":{
         "simulation":false
     },
-    "twaf_attack_response": {
-        "state": true,
-		"detail_state":true
-	},
-	"twaf_anti_hotlink":{
-        "state":true,
-        "ct_state":false,
-        "uri_ext":[
-            "javascript",
-            "css",
-            "html",
-            ""
-        ],
-        "mode":"referer",
-        "action_meta":403,
-        "action":"DENY"
-    },
-    "twaf_limit_conn": {
-        "state":true,
-        "trigger_thr":{
-            "req_flow_max":314572800,
-            "req_count_max":1000
-        },
-        "clean_thr":{
-            "new_conn_max":40,
-            "conn_max":250,
-            "req_max":150,
-            "uri_frequency_max": 20
-        },
-        "action":"DENY",
-        "action_meta":403
-    },
-    "twaf_cookie_guard": {
-        "http_only_state":true
-    },
-    "twaf_anti_mal_crawler":{
-        "state":true,
-        "force_scan_robots_state":true
-    },
-    "twaf_upload_radar": {
-        "state": false,
-        "ssdeep_state": true,
-        "clamav_state": true,
-        "image_rebuild_state": true,
-        "max_file_len": 10240000,
-        "source_white_list": ["jpeg", "png", "php"],
-        "uri_white_list":[],
-        "ssdeep_score": 90,
-        "action": "DENY",
-        "action_meta": 403
-    },
-    "twaf_anti_detection": {
-        "state": true
-    },
-    "twaf_anti_robot": {
-        "state": "$twaf_anti_robot_flag",
-        "mode": "captcha"
-    },
     "twaf_secrules":{
         "state": true,
-        "msg": [
-            "category",
-            "severity",
-            "action",
-            "meta",
-            "version",
-            "id",
-            "charactor_name",
-            { 
-                "transaction_time": "%{DURATION}",
-                "logdata": "%{MATCHED_VAR}",
-                "unique_id": "%{UNIQUE_ID}"
-            }
-        ],
         "rules_id" : {
         },
         "user_defined_rules": [
         ],
         "disable_vars":[
         ]
-    },
-    "twaf_add_resp_header": {
-        "server" : "",
-        "X-FRAME-OPTIONS": "SAMEORIGIN",
-        "X-Powered-By": ""
-    },
-    "twaf_log":{
-        "content_type":"INFLUXDB",
-        "security_log": {
-            "db":"qj_test",
-            "fileds":[
-                "unique_id",
-                "remote_addr",
-                "remote_port",
-                "userid",
-                "dev_uuid",
-                "original_dst_addr",
-                "original_dst_port",
-                "remote_user",
-                "time_local",
-                "msec",
-                "request_method",
-                "request_uri",
-                "request_protocol",
-                "response_status",
-                "bytes_sent",
-                "http_referer",
-                "http_user_agent",
-                "gzip_ratio",
-                "http_host"
-            ],
-            "time": true
-        }
     }
 }
