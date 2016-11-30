@@ -24,7 +24,7 @@
             "text/xml": true
         },
         "simulation":false,
-        "category_path": "/secone/webapng/lualib/twaf/conf/category.json"
+        "category_path": "/opt/OpenWA/conf/category.json"
     },
     "twaf_secrules":{
         "state": true,
