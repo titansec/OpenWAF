@@ -36,20 +36,7 @@
         "pre_path": "/opt/OpenWAF/",
         "path": "lib/twaf/inc/knowledge_db/twrules",
         "rules_id":{},
-        "user_rules":[],
-        "msg": [
-            "category",
-            "severity",
-            "action",
-            "action_meta",
-            "version",
-            "id",
-            "charactor_name",
-            { 
-                "transaction_time": "%{DURATION}",
-                "logdata": "%{MATCHED_VAR}"
-            }
-        ]
+        "user_rules":[]
     },
     "twaf_access_rule" : {
         "log_state":false,
