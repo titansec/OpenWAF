@@ -24,7 +24,7 @@
             "text/xml": true
         },
         "simulation":false,
-        "category_path": "/opt/OpenWA/conf/category.json"
+        "category_path": "/opt/OpenWAF/conf/category.json"
     },
     "twaf_secrules":{
         "state": true,
@@ -49,8 +49,7 @@
         "safe_state":true,
         "access_state":true,
         "upstream_state":true,
-        "shared_dict_name":"twaf_reqstat",
-        "content_type":"JSON"
+        "shared_dict_name":"twaf_reqstat"
     },
     "twaf_log": {
         "access_log_state":false,

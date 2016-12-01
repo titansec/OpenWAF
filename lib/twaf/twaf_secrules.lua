@@ -130,7 +130,7 @@ local function _do_operator(_twaf, sctx, rule, data, pattern, request, pf)
     
     if type(data) == "table" then
         for _, v in pairs(data) do
-            match, value = _do_operator(_twaf, sctx, rule, v, pattern, request)
+            local match, value = _do_operator(_twaf, sctx, rule, v, pattern, request)
             if match then
                 return true, value
             end
@@ -142,7 +142,7 @@ local function _do_operator(_twaf, sctx, rule, data, pattern, request, pf)
         
         if type(pattern) == "table" then
             for _, v in pairs(pattern) do
-                match, value = _do_operator(_twaf, sctx, rule, data, v, request)
+                local match, value = _do_operator(_twaf, sctx, rule, data, v, request)
                 if match then
                     return true, value
                 end

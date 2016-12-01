@@ -90,7 +90,9 @@ function _M.get_cookie_table(self, text_cookie)
     for _, value in ipairs(cookie_string) do
         value = _M:string_trim(value)
         local result = _M:string_split(value, "=")
-        cookie_table[result[1]] = result[2]
+        if result[1] then
+            cookie_table[result[1]] = result[2]
+        end
     end
     
     return cookie_table
