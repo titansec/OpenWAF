@@ -35,6 +35,11 @@ Version
 
 This document describes OpenWAF v0.0.1.161130_beta released on 30 Nov 2016.
 
+Docker Version  
+1. titansec/openwaf:0.0.1.161130_beta  
+&emsp;&emsp;SHA: 596dee9d2b9ce44d59dc445141f72b3607f9fbe6  
+&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/596dee9d2b9ce44d59dc445141f72b3607f9fbe6
+
 Synopsis
 ========
 ```nginx
