@@ -13,6 +13,7 @@ Table of Contents
 * [Synopsis](#synopsis)
 * [Description](#description)
 * [Installation](#installation)
+* [Docker](#docker)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -129,6 +130,7 @@ OpenWAF支持将上述功能封装为策略，不同的web application应用不�
 
 Installation
 ============
+若用[docker安装](#docker)，可省略步骤1-3
 ```
 1. 下载openresty
    详见 https://openresty.org/en/installation.html
@@ -198,6 +200,32 @@ Problems
 
 [Back to TOC](#table-of-contents)
 
+Docker
+======
+```
+1. pull docker images from repository
+   docker pull titansec/openwaf:0.0.1.161130_beta
+
+2. start-up docker
+   2.1 docker run, named openwaf
+       docker run -d --name openwaf titansec/openwaf:0.0.1.161130_beta
+   2.2 add bridge address, e.g. 192.168.39.12
+       pipework br0 openwaf 192.168.39.12/24@192.168.39.253
+   2.3 enter openwaf
+       docker-enter openwaf
+
+3. edit config
+   3.1 edit access rule
+       vi /opt/OpenWAF/conf/twaf_access_rule.json
+   3.2 edit log server addr
+       vi /opt/OpenWAF/conf/twaf_default_conf.json
+
+4. start-up OpenWAF
+    /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
+```
+
+[Back to TOC](#table-of-contents)
+
 Community
 =========
 
@@ -249,6 +277,10 @@ TODO
 * 16. 提供页面体验OpenWAF防护功能
 * 17. 放开动态配置规则引擎API
 * 18. 放开动态配置行为分析引擎API
+
+2016.11.30 添加50条规则；上传攻击响应页面模块
+
+2016.11.30 - 2016.12.01 上传OpenWAF docker版
 
 [Back to TOC](#table-of-contents)
 
