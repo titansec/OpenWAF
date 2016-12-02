@@ -10,9 +10,8 @@
         "action": "deny",
         "meta": "403",
         "severity": "low",
-        "category": "5Y2P6K6u6KeE6IyD",
-        "rule_name": "cHJvdG9jb2wuYWNjZXB0",
-        "desc": "Ê£ÄÊµãÊòØÂê¶Áº∫Â∞ëAcceptÂ§¥Â≠óÊÆµ,OPTIONSÊñπÊ≥ïÈô§Â§ñ",
+        "rule_name": "protocol.accept",
+        "desc": "ºÏ≤‚ «∑Ò»±…ŸAcceptÕ∑◊÷∂Œ,OPTIONS∑Ω∑®≥˝Õ‚",
         "match": [
             {
                 "vars": [
@@ -50,9 +49,8 @@
         "action": "deny",
         "meta": "403",
         "severity": "low",
-        "category": "5Y2P6K6u6KeE6IyD",
-        "rule_name": "cHJvdG9jb2wuYWNjZXB0LmE=",
-        "desc": "Ê£ÄÊµãAcceptÂ§¥Â≠óÊÆµÂÄºÊòØÂê¶‰∏∫Á©∫,OPTIONSÊñπÊ≥ïÈô§Â§ñ",
+        "rule_name": "protocol.accept.a",
+        "desc": "ºÏ≤‚AcceptÕ∑◊÷∂Œ÷µ «∑ÒŒ™ø’,OPTIONS∑Ω∑®≥˝Õ‚",
         "match": [
             {
                 "vars": [
@@ -79,75 +77,765 @@
         ]
     },
     {
-        "id": "200001",
+        "id": "000003",
         "release_version": "858",
         "charactor_version": "001",
-        "severity": "critical",
-        "category": "5rOo5YWl5pS75Ye7",
-        "rule_name": "YXR0YWNrLmluamVjdGlvbi5zcWwubGliaW5qZWN0aW9u",
         "opts": {
             "nolog": false
         },
         "phase": "access",
         "action": "deny",
         "meta": "403",
-        "desc": "Âà©Áî®Á¨¨‰∏âÊñπÊ®°ÂùóLibinjectionÈò≤SQLI",
-        "match": [{
-            "vars": [{
-                "var": "REQUEST_FILENAME"
+        "severity": "low",
+        "rule_name": "protocol.argLen",
+        "desc": "ºÏ≤‚≤Œ ˝≥§∂» «∑Ò≥¨π˝400",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "ARGS"
+                    }
+                ],
+                "transform": "length",
+                "operator": "greater",
+                "pattern": 400
+            }
+        ]
+    },
+    {
+        "id": "000004",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "low",
+        "rule_name": "protocol.argNameLen",
+        "desc": "–≠“ÈπÊ∑∂–‘‘º ¯£¨ºÏ≤‚≤Œ ˝√˚≥§∂»π˝≥§µƒHTTP«Î«Û",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "ARGS_NAMES"
+                    }
+                ],
+                "transform": "length",
+                "operator": "greater",
+                "pattern": 100
+            }
+        ]
+    },
+    {
+        "id": "000005",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "low",
+        "rule_name": "protocol.contentEncode",
+        "desc": "–≠“ÈπÊ∑∂–‘‘º ¯£¨ºÏ≤‚Content-Encoding«Î«ÛÕ∑µƒ÷µ≤ª∫œπÊµƒHTTP«Î«Û",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "Content-Encoding"
+                        }
+                    }
+                ],
+                "transform": "lowercase",
+                "operator": "contains",
+                "pattern": "identity"
+            }
+        ]
+    },
+    {
+        "id": "000006",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "low",
+        "rule_name": "protocol.contentLen",
+        "desc": "–≠“ÈπÊ∑∂–‘‘º ¯£¨ºÏ≤‚Content-Length«Î«ÛÕ∑µƒ÷µŒ™∑« ˝◊÷µƒHTTP«Î«Û",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "Content-Length"
+                        }
+                    }
+                ],
+                "operator": "regex",
+                "pattern": "^\\d+$",
+                "op_negated": true
+            }
+        ]
+    },
+    {
+        "id": "000007",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "low",
+        "rule_name": "protocol.contentType",
+        "desc": "–≠“ÈπÊ∑∂–‘‘º ¯£¨ºÏ≤‚«Î«Û∑Ω∑®”ÎContent-Type«Î«ÛÕ∑µƒ÷µ≤ª∆•≈‰µƒHTTP«Î«Û",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_METHOD"
+                    }
+                ],
+                "operator": "regex",
+                "pattern": "^(?:GET|HEAD|PROPFIND|OPTIONS)$",
+                "op_negated": true
             },
             {
-                "var": "ARGS_NAMES"
+                "vars": [
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "Content-Type"
+                        }
+                    }
+                ],
+                "operator": "regex",
+                "pattern": "^([^;\\s]+)"
             },
             {
-                "var": "ARGS",
-                "parse": {
-                    "ignore": [
-                        "__VIEWSTATE",
-                        "__EVENTVALIDATION"
-                    ]
+                "vars": [
+                    {
+                        "var": "TX",
+                        "parse": {
+                            "specific": "0"
+                        }
+                    }
+                ],
+                "operator": "regex",
+                "pattern": "(?:application\\/(?:x-www-form-urlencoded|xml)|multipart\\/form-data|text\\/xml)$",
+                "op_negated": true
+            }
+        ]
+    },
+    {
+        "id": "000008",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "low",
+        "rule_name": "protocol.contentType.a",
+        "desc": "–≠“ÈπÊ∑∂–‘‘º ¯£¨ºÏ≤‚Content-Type«Î«ÛÕ∑µƒ÷µ”ÎContent-Length«Î«ÛÕ∑µƒ÷µ≤ª∆•≈‰µƒHTTP«Î«Û",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "Content-Type"
+                        }
+                    }
+                ],
+                "transform": "counter",
+                "operator": "equal",
+                "pattern": 0
+            },
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "Content-Length"
+                        }
+                    }
+                ],
+                "operator": "equal",
+                "pattern": 0,
+                "op_negated": true
+            }
+        ]
+    },
+    {
+        "id": "000009",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "low",
+        "rule_name": "protocol.unicodeAbuse",
+        "desc": "–≠“ÈπÊ∑∂–‘‘º ¯£¨ºÏ≤‚«Î«ÛURI∫Õ«Î«ÛÃÂ÷–µƒ∑«∑®Unicode◊÷∑˚",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_URI"
+                    },
+                    {
+                        "var": "REQUEST_BODY"
+                    }
+                ],
+                "operator": "regex",
+                "pattern": "\\%u[fF]{2}[0-9a-fA-F]{2}"
+            }
+        ]
+    },
+    {
+        "id": "000010",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "low",
+        "rule_name": "protocol.host",
+        "desc": "–≠“ÈπÊ∑∂–‘‘º ¯£¨ºÏ≤‚≤ª∫¨Host«Î«ÛÕ∑µƒHTTP«Î«Û",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "Host"
+                        }
+                    }
+                ],
+                "transform": "counter",
+                "operator": "equal",
+                "pattern": 0
+            }
+        ]
+    },
+    {
+        "id": "100022",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "medium",
+        "rule_name": "attack.commentSpam",
+        "desc": "ºÏ≤‚¿¨ª¯–≈œ¢£¨ºÏ≤ÈUser-Agent«Î«ÛÕ∑µƒ÷µŒ™≥£º˚¿¨ª¯π„∏Ê∑¢ÀÕ’ﬂµƒHTTP«Î«Û",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "User-Agent"
+                        }
+                    }
+                ],
+                "operator": "regex",
+                "pattern": "^(?:m(?:o(?:zilla\\\\/4\\.0\\+?\\(|vable type)|i(?:crosoft url|ssigua)|j12bot\\\\/v1\\.0\\.8|sie)|e(?:mail(?:collector| ?siphon)|collector)|(?:blogsearchbot-marti|super happy fu)n|i(?:nternet explorer|sc systems irc)|ja(?:karta commons|va(?:\\\\/| )1\\.)|c(?:ore-project\\\\/|herrypicker)|p(?:sycheclone|ussycat|ycurl)|(?:grub crawl|omniexplor)er|a(?:utoemailspider|dwords)|w(?:innie poh|ordpress)|nut(?:scrape\\/|chcvs)|8484 boston project|user(?:[- ]agent:)?|l(?:ibwww-perl|wp)|di(?:amond|gger)|trackback\\\\/|httpproxy|<sc)"
+            }
+        ]
+    },
+    {
+        "id": "100023",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false,
+            "setvar": [
+                {
+                    "column": "TX",
+                    "key": "anomaly_score",
+                    "value": 5,
+                    "incr": true
                 }
-            }],
-            "transform": "uri_decode_uni",
-            "operator": "detect_sqli"
-        }]
+            ]
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "medium",
+        "rule_name": "attack.commentSpam.a",
+        "desc": "ºÏ≤‚¿¨ª¯–≈œ¢£¨ºÏ≤È≤Œ ˝÷–“‘http:ø™Õ∑µƒHTTP«Î«Û",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "ARGS"
+                    },
+                    {
+                        "var": "ARGS_NAMES"
+                    }
+                ],
+                "transform": [
+                    "uri_decode_uni",
+                    "html_decode",
+                    "compress_whitespace",
+                    "lowercase"
+                ],
+                "operator": "regex",
+                "pattern": "\\bhttp:"
+            },
+            {
+                "vars": [
+                    {
+                        "var": "ARGS"
+                    },
+                    {
+                        "var": "ARGS_NAMES"
+                    }
+                ],
+                "transform": [
+                    "uri_decode_uni",
+                    "html_decode",
+                    "compress_whitespace",
+                    "lowercase"
+                ],
+                "operator": "regex",
+                "pattern": "\\[url\\b"
+            },
+            {
+                "vars": [
+                    {
+                        "var": "ARGS"
+                    },
+                    {
+                        "var": "ARGS_NAMES"
+                    }
+                ],
+                "transform": [
+                    "uri_decode_uni",
+                    "html_decode",
+                    "compress_whitespace",
+                    "lowercase"
+                ],
+                "operator": "contains",
+                "pattern": "<a"
+            }
+        ]
+    },
+    {
+        "id": "100024",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false,
+            "setvar": [
+                {
+                    "column": "TX",
+                    "key": "anomaly_score",
+                    "value": 5,
+                    "incr": true
+                }
+            ]
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "medium",
+        "rule_name": "attack.commentSpam.b",
+        "desc": "ºÏ≤‚¿¨ª¯–≈œ¢£¨ºÏ≤È≤Œ ˝÷–∫¨”–4∏ˆº∞“‘…œhttp:/µƒHTTP«Î«Û",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "ARGS"
+                    },
+                    {
+                        "var": "ARGS_NAMES"
+                    }
+                ],
+                "transform": [
+                    "uri_decode_uni",
+                    "html_decode",
+                    "compress_whitespace",
+                    "lowercase"
+                ],
+                "operator": "regex",
+                "pattern": "(?:http:\\\\/.*?){4}"
+            }
+        ]
+    },
+    {
+        "id": "100025",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "high",
+        "rule_name": "attack.dirTraversal",
+        "desc": "ºÏ≤‚¬∑æ∂±È¿˙π•ª˜£¨ºÏ≤È«Î«ÛURI°¢«Î«ÛÕ∑°¢«Î«ÛÃÂ",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_URI"
+                    },
+                    {
+                        "var": "REQUEST_BODY"
+                    },
+                    {
+                        "var": "REQUEST_HEADERS"
+                    },
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "specific": "Referer"
+                        }
+                    }
+                ],
+                "operator": "regex",
+                "pattern": "(?i)(?:\\x5c|(?:%(?:2(?:5(?:2f|5c)|%46|f)|c(?:0%(?:9v|af)|1%1c)|u(?:221[56]|002f)|%32(?:%46|F)|e0%80%af|1u|5c)|\\\\/))(?:%(?:2(?:(?:52)?e|%45)|(?:e0%8|c)0%ae|u(?:002e|2024)|%32(?:%45|E))|\\.){2}(?:\\x5c|(?:%(?:2(?:5(?:2f|5c)|%46|f)|c(?:0%(?:9v|af)|1%1c)|u(?:221[56]|002f)|%32(?:%46|F)|e0%80%af|1u|5c)|\\\\/))"
+            }
+        ]
+    },
+    {
+        "id": "100026",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "high",
+        "rule_name": "attack.dirTraversal.a",
+        "desc": "ºÏ≤‚¬∑æ∂±È¿˙π•ª˜£¨ºÏ≤È«Î«ÛŒƒº˛√˚°¢≤Œ ˝",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_FILENAME"
+                    },
+                    {
+                        "var": "ARGS"
+                    }
+                ],
+                "transform": "uri_decode_uni",
+                "operator": "regex",
+                "pattern": "(?<![\\\"\\'])\\.\\.[\\/\\x5c]"
+            }
+        ]
+    },
+    {
+        "id": "100087",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "critical",
+        "rule_name": "attack.injection.cf",
+        "desc": "ºÏ≤‚’Î∂‘ColdFusion∑˛ŒÒ∆˜µƒ◊¢»Îπ•ª˜£¨ºÏ≤ÈCookie°¢≤Œ ˝",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_COOKIES"
+                    },
+                    {
+                        "var": "REQUEST_COOKIES_NAMES"
+                    },
+                    {
+                        "var": "ARGS"
+                    },
+                    {
+                        "var": "ARGS_NAMES"
+                    }
+                ],
+                "transform": [
+                    "html_decode",
+                    "lowercase"
+                ],
+                "operator": "regex",
+                "pattern": "\\bcf(?:usion_(?:d(?:bconnections_flush|ecrypt)|set(?:tings_refresh|odbcini)|getodbc(?:dsn|ini)|verifymail|encrypt)|_(?:(?:iscoldfusiondatasourc|getdatasourceusernam)e|setdatasource(?:password|username))|newinternal(?:adminsecurit|registr)y|admin_registry_(?:delete|set)|internaldebug)\\b"
+            }
+        ]
+    },
+    {
+        "id": "100088",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "critical",
+        "rule_name": "attack.injection.cf.a",
+        "desc": "ºÏ≤‚’Î∂‘ColdFusion∑˛ŒÒ∆˜µƒ◊¢»Îπ•ª˜£¨ºÏ≤È«Î«ÛURI°¢«Î«ÛÕ∑°¢«Î«ÛÃÂ",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_URI"
+                    },
+                    {
+                        "var": "REQUEST_BODY"
+                    },
+                    {
+                        "var": "REQUEST_HEADERS_NAMES"
+                    },
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "ignore": "Referer"
+                        }
+                    }
+                ],
+                "transform": [
+                    "uri_decode_uni",
+                    "html_decode",
+                    "lowercase"
+                ],
+                "operator": "regex",
+                "pattern": "\\bcf(?:usion_(?:d(?:bconnections_flush|ecrypt)|set(?:tings_refresh|odbcini)|getodbc(?:dsn|ini)|verifymail|encrypt)|_(?:(?:iscoldfusiondatasourc|getdatasourceusernam)e|setdatasource(?:password|username))|newinternal(?:adminsecurit|registr)y|admin_registry_(?:delete|set)|internaldebug)\b"
+            }
+        ]
+    },
+    {
+        "id": "100205",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "critical",
+        "rule_name": "attack.injection.ldap",
+        "desc": "ºÏ≤‚LDAP◊¢»Îπ•ª˜£¨ºÏ≤ÈCookie°¢≤Œ ˝",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_COOKIES"
+                    },
+                    {
+                        "var": "REQUEST_COOKIES_NAMES"
+                    },
+                    {
+                        "var": "ARGS_NAMES"
+                    },
+                    {
+                        "var": "ARGS"
+                    }
+                ],
+                "transform": [
+                    "html_decode",
+                    "lowercase"
+                ],
+                "operator": "regex",
+                "pattern": "(?:\\((?:\\W*?(?:objectc(?:ategory|lass)|homedirectory|[gu]idnumber|cn)\\b\\W*?=|[^\\w\\x80-\\xFF]*?[\\!\\&\\|][^\\w\\x80-\\xFF]*?\\()|\\)[^\\w\\x80-\\xFF]*?\\([^\\w\\x80-\\xFF]*?[\\!\\&\\|])"
+            }
+        ]
+    },
+    {
+        "id": "100206",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "critical",
+        "rule_name": "attack.injection.ldap.a",
+        "desc": "ºÏ≤‚LDAP◊¢»Îπ•ª˜£¨ºÏ≤È«Î«ÛURI°¢«Î«ÛÕ∑°¢«Î«ÛÃÂ",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_URI"
+                    },
+                    {
+                        "var": "REQUEST_BODY"
+                    },
+                    {
+                        "var": "REQUEST_HEADERS_NAMES"
+                    },
+                    {
+                        "var": "REQUEST_HEADERS",
+                        "parse": {
+                            "ignore": "Referer"
+                        }
+                    }
+                ],
+                "transform": [
+                    "html_decode",
+                    "lowercase"
+                ],
+                "operator": "regex",
+                "pattern": "(?:\\((?:\\W*?(?:objectc(?:ategory|lass)|homedirectory|[gu]idnumber|cn)\\b\\W*?=|[^\\w\\x80-\\xFF]*?[\\!\\&\\|][^\\w\\x80-\\xFF]*?\\()|\\)[^\\w\\x80-\\xFF]*?\\([^\\w\\x80-\\xFF]*?[\\!\\&\\|])"
+            }
+        ]
+    },
+    {
+        "id": "100207",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false,
+            "setvar": [
+                {
+                    "column": "TX",
+                    "key": "anomaly_score",
+                    "value": 10,
+                    "incr": true
+                }
+            ]
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "critical",
+        "rule_name": "attack.injection.osCmd",
+        "desc": "ºÏ≤‚√¸¡Ó◊¢»Îπ•ª˜£¨ºÏ≤ÈCookie°¢≤Œ ˝",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_COOKIES"
+                    },
+                    {
+                        "var": "REQUEST_COOKIES_NAMES"
+                    },
+                    {
+                        "var": "ARGS_NAMES"
+                    },
+                    {
+                        "var": "ARGS",
+                        "parse": {
+                            "ignore": [
+                                "__VIEWSTATE",
+                                "__EVENTVALIDATION"
+                            ]
+                        }
+                    }
+                ],
+                "transform": "normalise_path",
+                "operator": "regex",
+                "pattern": "(?i:(?:[\\;\\|\\`]\\W*?\\bcc|\\b(wget|curl))\\b|\\\\/cc(?:[\\'\\\"\\|\\;\\`\\-\\s]|$))"
+            }
+        ]
+    },
+    {
+        "id": "200001",
+        "release_version": "858",
+        "charactor_version": "001",
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": "403",
+        "severity": "critical",
+        "rule_name": "attack.injection.sql.libinjection",
+        "desc": "sqli∑¿ª§",
+        "match": [
+            {
+                "vars": [
+                    {
+                        "var": "REQUEST_FILENAME"
+                    },
+                    {
+                        "var": "ARGS_NAMES"
+                    },
+                    {
+                        "var": "ARGS",
+                        "parse": {
+                            "ignore": [
+                                "__VIEWSTATE",
+                                "__EVENTVALIDATION"
+                            ]
+                        }
+                    }
+                ],
+                "transform": "uri_decode_uni",
+                "operator": "detect_sqli"
+            }
+        ]
     },
     {
         "id": "200002",
         "release_version": "858",
         "charactor_version": "001",
-        "severity": "high",
-        "category": "6Leo56uZ5pS75Ye7",
-        "rule_name": "YXR0YWNrLnhzcy5saWJpbmplY3Rpb24=",
         "opts": {
             "nolog": false
         },
         "phase": "access",
         "action": "deny",
         "meta": "403",
-        "desc": "Âà©Áî®Á¨¨‰∏âÊñπÊ®°ÂùóLibinjectionÈò≤XSS",
+        "severity": "high",
+        "rule_name": "attack.xss.libinjection",
+        "desc": "xss∑¿ª§",
         "match": [
             {
-                "vars": [{
-                    "var": "REQUEST_METHOD"
-                }],
-                "pattern": "GET",
-                "operator": "equal"
+                "vars": [
+                    {
+                        "var": "REQUEST_METHOD"
+                    }
+                ],
+                "operator": "equal",
+                "pattern": "GET"
             },
             {
-                "vars": [{
-                    "var": "REQUEST_FILENAME"
-                },
-                {
-                    "var": "ARGS_NAMES"
-                },
-                {
-                    "var": "ARGS",
-                    "parse": {
-                        "ignore": ["__VIEWSTATE",
-                        "__EVENTVALIDATION"]
+                "vars": [
+                    {
+                        "var": "REQUEST_FILENAME"
+                    },
+                    {
+                        "var": "ARGS_NAMES"
+                    },
+                    {
+                        "var": "ARGS",
+                        "parse": {
+                            "ignore": [
+                                "__VIEWSTATE",
+                                "__EVENTVALIDATION"
+                            ]
+                        }
                     }
-                }],
+                ],
                 "transform": "html_decode",
                 "operator": "detect_xss"
             }
