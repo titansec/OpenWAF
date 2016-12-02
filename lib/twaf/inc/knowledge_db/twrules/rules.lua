@@ -1178,3 +1178,5 @@ _M.rules = {
     }
 },
 }
+
+return _M
