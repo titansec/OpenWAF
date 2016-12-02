@@ -13,7 +13,7 @@ _M.rules = {
     meta = 403,
     severity = "high",
     rule_name = "malicious.trojan.general",
-    desc = "¼ì²â·ÃÎÊÄ¾ÂíÒ³Ãæ£¬¼ì²éÇëÇóÍ·Ãû³ÆÖĞº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc = "æ£€æµ‹è®¿é—®æœ¨é©¬é¡µé¢ï¼Œæ£€æŸ¥è¯·æ±‚å¤´åç§°ä¸­å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -39,7 +39,7 @@ _M.rules = {
     meta = 403,
     severity = "high",
     rule_name = "malicious.trojan.general.a",
-    desc = "¼ì²âÄ¾Âí·ÃÎÊ£¬¼ì²éÇëÇóÎÄ¼şÃûÖĞÊÇ·ñº¬ÓĞ¹Ø¼ü×Ö",
+    desc = "æ£€æµ‹æœ¨é©¬è®¿é—®ï¼Œæ£€æŸ¥è¯·æ±‚æ–‡ä»¶åä¸­æ˜¯å¦å«æœ‰å…³é”®å­—",
     match = {
         {
             vars = {
@@ -69,7 +69,7 @@ _M.rules = {
     meta = 403,
     severity = "critical",
     rule_name = "malicious.webshell",
-    desc = "¼ì²âÏò³£¼û¾²Ì¬×ÊÔ´ÎÄ¼ş·¢³öµÄHTTP POSTÇëÇó",
+    desc = "æ£€æµ‹å‘å¸¸è§é™æ€èµ„æºæ–‡ä»¶å‘å‡ºçš„HTTP POSTè¯·æ±‚",
     match = {
         {
             vars = {
@@ -103,7 +103,7 @@ _M.rules = {
     meta = 403,
     severity = "critical",
     rule_name = "malicious.webshell.a",
-    desc = "¼ì²âÏò³£Í¼Æ¬¸ñÊ½ÎÄ¼şÇëÇóµ«·µ»ØtextÀàĞÍµÄÇëÇó",
+    desc = "æ£€æµ‹å‘å¸¸å›¾ç‰‡æ ¼å¼æ–‡ä»¶è¯·æ±‚ä½†è¿”å›textç±»å‹çš„è¯·æ±‚",
     match = {
         {
             vars = {
@@ -150,7 +150,7 @@ _M.rules = {
     meta = 403,
     severity = "critical",
     rule_name = "malicious.webshell.b",
-    desc = "¼ì²â¶ÔÉè±¸ÎÄ¼şÃûµÄÇëÇó",
+    desc = "æ£€æµ‹å¯¹è®¾å¤‡æ–‡ä»¶åçš„è¯·æ±‚",
     match = {
         {
             vars = {
@@ -162,7 +162,7 @@ _M.rules = {
             pattern = "(?i)^(?:aux|con|nul|prn|com\\d|lpt\\d).*\\.(?:asa|cer|aspx?|asax|ascx|ashx|asmx)"
         }
     }
-}
+},
 {
     id = "700001",
     release_version = "858",
@@ -175,7 +175,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.crawler.general",
-    desc  = "¼ì²âÍøÕ¾ÅÀÈ¡¹¤¾ß£¬¼ì²éUser-AgentÇëÇóÍ·µÄÖµÊÇ·ñº¬ÓĞ¹Ø¼ü×Ö",
+    desc  = "æ£€æµ‹ç½‘ç«™çˆ¬å–å·¥å…·ï¼Œæ£€æŸ¥User-Agentè¯·æ±‚å¤´çš„å€¼æ˜¯å¦å«æœ‰å…³é”®å­—",
     match = {
         {
             vars = {
@@ -204,7 +204,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.crawler.general.a",
-    desc  = "¼ì²âÍøÕ¾ÅÀÈ¡¹¤¾ß£¬¼ì²éUser-AgentÇëÇóÍ·µÄÖµÊÇ·ñº¬ÓĞ¹Ø¼ü×Ö",
+    desc  = "æ£€æµ‹ç½‘ç«™çˆ¬å–å·¥å…·ï¼Œæ£€æŸ¥User-Agentè¯·æ±‚å¤´çš„å€¼æ˜¯å¦å«æœ‰å…³é”®å­—",
     match = {
         {
             vars = {
@@ -232,7 +232,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.crawler.general.b",
-    desc  = "¼ì²âÍøÕ¾ÅÀÈ¡¹¤¾ß£¬¼ì²éUser-AgentÇëÇóÍ·µÄÖµÊÇ·ñº¬ÓĞ¹Ø¼ü×Ö",
+    desc  = "æ£€æµ‹ç½‘ç«™çˆ¬å–å·¥å…·ï¼Œæ£€æŸ¥User-Agentè¯·æ±‚å¤´çš„å€¼æ˜¯å¦å«æœ‰å…³é”®å­—",
     match = {
         {
             vars = {
@@ -260,7 +260,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.appscan",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éÇëÇóÍ·µÄÖµÊÇ·ñº¬ÓĞ¹Ø¼ü×Ö",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥è¯·æ±‚å¤´çš„å€¼æ˜¯å¦å«æœ‰å…³é”®å­—",
     match = {
         {
             vars = {
@@ -312,7 +312,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "auto.scanner.general",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éUser-AgentµÄÖµÎª¿ÕµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥User-Agentçš„å€¼ä¸ºç©ºçš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -340,7 +340,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.general.a",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -368,7 +368,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.general.b",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -396,7 +396,7 @@ _M.rules = {
     meta   = 403,
     severity = "medium",
     rule_name = "auto.scanner.nessus",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -425,7 +425,7 @@ _M.rules = {
     meta     = 403,
     severity = "high",
     rule_name = "auto.scanner.wvs",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éÇëÇóÍ·µÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥è¯·æ±‚å¤´çš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -457,7 +457,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.general.c",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -486,7 +486,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.crawler.general.c",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -514,7 +514,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.wvs.a",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éÇëÇóÍ·µÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥è¯·æ±‚å¤´çš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -540,7 +540,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.appscan.a",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éÇëÇóÍ·µÄÖµÊÇ·ñº¬ÓĞ¹Ø¼ü×Ö",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥è¯·æ±‚å¤´çš„å€¼æ˜¯å¦å«æœ‰å…³é”®å­—",
     match = {
         {
             vars = {
@@ -592,7 +592,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.appscan.b",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éÇëÇóÍ·µÄÖµÊÇ·ñº¬ÓĞ¹Ø¼ü×Ö",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥è¯·æ±‚å¤´çš„å€¼æ˜¯å¦å«æœ‰å…³é”®å­—",
     match = {
         {
             vars = {
@@ -644,7 +644,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.general.d",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éÇëÇóÍ·µÄÖµÊÇ·ñº¬ÓĞ¹Ø¼ü×Ö",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥è¯·æ±‚å¤´çš„å€¼æ˜¯å¦å«æœ‰å…³é”®å­—",
     match = {
         {
             vars = {
@@ -672,7 +672,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.general.e",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éÇëÇóÍ·¼°ÇëÇóÍ·µÄÖµ",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥è¯·æ±‚å¤´åŠè¯·æ±‚å¤´çš„å€¼",
     match = {
         {
             vars = {
@@ -700,7 +700,7 @@ _M.rules = {
     meta     = 403,
     severity = "medium",
     rule_name = "auto.scanner.general.f",
-    desc  = "¼ì²âÍøÕ¾É¨Ãè¹¤¾ß£¬¼ì²éÇëÇóURI",
+    desc  = "æ£€æµ‹ç½‘ç«™æ‰«æå·¥å…·ï¼Œæ£€æŸ¥è¯·æ±‚URI",
     match = {
         {
             vars = {
@@ -725,7 +725,7 @@ _M.rules = {
     meta   = 403,
     severity = "low",
     rule_name = "spider.alexa",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -754,7 +754,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.baidu",
-    desc  = "¼ì²â°Ù¶ÈËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹ç™¾åº¦æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -783,7 +783,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.catchbot",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -812,7 +812,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.google",
-    desc  = "¼ì²â¹È¸èËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹è°·æ­Œæœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -841,7 +841,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.iask",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -870,7 +870,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.loopip",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -899,7 +899,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.mailRu",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -928,7 +928,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.mlbot",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -957,7 +957,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.msn",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -986,7 +986,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.nutch",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -1015,7 +1015,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.sitesell",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -1044,7 +1044,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.sogou",
-    desc  = "¼ì²âËÑ¹·ËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç‹—æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -1073,7 +1073,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.soso",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -1102,7 +1102,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.yahoo",
-    desc  = "¼ì²âÑÅ»¢ËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹é›…è™æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -1131,7 +1131,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.yeti",
-    desc  = "¼ì²âËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
@@ -1160,7 +1160,7 @@ _M.rules = {
     meta     = 403,
     severity = "low",
     rule_name = "spider.youdao",
-    desc  = "¼ì²âÓĞµÀËÑË÷ÒıÇæÖ©Öë£¬¼ì²éUser-AgentµÄÖµº¬ÓĞ¹Ø¼ü×ÖµÄHTTPÇëÇó",
+    desc  = "æ£€æµ‹æœ‰é“æœç´¢å¼•æ“èœ˜è››ï¼Œæ£€æŸ¥User-Agentçš„å€¼å«æœ‰å…³é”®å­—çš„HTTPè¯·æ±‚",
     match = {
         {
             vars = {
