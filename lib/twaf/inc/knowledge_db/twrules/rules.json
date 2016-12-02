@@ -380,8 +380,7 @@
             ]
         },
         "phase": "access",
-        "action": "deny",
-        "meta": "403",
+        "action": "pass",
         "severity": "medium",
         "rule_name": "attack.commentSpam.a",
         "desc": "检测垃圾信息，检查参数中以http:开头的HTTP请求",
@@ -458,8 +457,7 @@
             ]
         },
         "phase": "access",
-        "action": "deny",
-        "meta": "403",
+        "action": "pass",
         "severity": "medium",
         "rule_name": "attack.commentSpam.b",
         "desc": "检测垃圾信息，检查参数中含有4个及以上http:/的HTTP请求",
@@ -725,8 +723,7 @@
             ]
         },
         "phase": "access",
-        "action": "deny",
-        "meta": "403",
+        "action": "pass",
         "severity": "critical",
         "rule_name": "attack.injection.osCmd",
         "desc": "检测命令注入攻击，检查Cookie、参数",
