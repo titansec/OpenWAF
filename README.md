@@ -227,6 +227,16 @@ Docker
 
 4. start-up OpenWAF
     /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
+    
+Problems
+1. pipework: command not found
+
+   git clone https://github.com/jpetazzo/pipework.git
+   cp pipework/pipework /usr/local/bin/
+   
+2. Warning: arping not found; interface may not be immediately reachable
+
+   apt-get install arping
 ```
 
 [Back to TOC](#table-of-contents)
