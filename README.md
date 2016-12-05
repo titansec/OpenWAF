@@ -213,10 +213,8 @@ Docker
 
 2. start-up docker
    2.1 docker run, named openwaf
-       docker run -d --name openwaf titansec/openwaf:0.0.1.161130_beta
-   2.2 add bridge address, e.g. 192.168.39.12
-       pipework br0 openwaf 192.168.39.12/24@192.168.39.253
-   2.3 enter openwaf
+       docker run -d -p 22:22 -p 80:80 -p 443:443 --name openwaf titansec/openwaf:0.0.1.161130_beta
+   2.2 enter openwaf
        docker-enter openwaf
 
 3. edit config
@@ -228,6 +226,12 @@ Docker
 4. start-up OpenWAF
     /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
     
+PS:
+#add bridge address, e.g. 192.168.39.12
+    pipework br0 ContainerName ip/gateway
+    如：
+    pipework br0 openwaf 192.168.39.12/24@192.168.39.253
+
 Problems
 1. pipework: command not found
 
