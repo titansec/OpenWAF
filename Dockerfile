@@ -1,0 +1,82 @@
+####################################################
+# Dockerfile to build OpenWAF container images
+# Based on jessie
+####################################################
+
+#Set the base image to jessie
+FROM debian:jessie
+
+#File Author
+MAINTAINER Miracle
+
+#make,c++ packages
+RUN echo "deb http://mirrors.163.com/debian/ jessie main" > /etc/apt/sources.list \
+    && echo "deb http://mirrors.163.com/debian/ jessie-updates main" >> /etc/apt/sources.list \
+    && echo "deb http://mirrors.163.com/debian-security/ jessie/updates main" >> /etc/apt/sources.list \
+    && echo "deb http://mirrors.163.com/debian/ jessie-backports main" >> /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y wget git sudo net-tools vim \
+    && apt-get install make gcc automake autoconf libtool g++  -y 
+    
+#1.install openrestry related
+RUN apt-get install libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl build-essential -y \
+    && apt-get install libgeoip-dev swig -y \
+    && apt-get install -t jessie-backports openssl -y \
+    && apt-get autoremove \
+    && cd /opt \
+    && wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.38.tar.gz \
+    && tar -xvf pcre-8.38.tar.gz \
+    && cd pcre-8.38 \
+    && ./configure --enable-jit \
+    && make && make install \
+    && cd /opt \
+    && rm -rf pcre-8.38.tar.gz pcre-8.38/ \
+    && cd /opt \
+    && wget https://openresty.org/download/openresty-1.11.2.1.tar.gz \
+    && tar -zxvf openresty-1.11.2.1.tar.gz \
+    && rm -rf openresty-1.11.2.1.tar.gz
+    
+#2. install OpenWAF
+RUN cd /opt \
+    #clone OpenWAF
+    && git clone https://github.com/titansec/OpenWAF.git \
+    #move conf file
+    && mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc \
+    #overwrite the configure file of openresty
+    && mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.1 \
+    #move third-party modules to openresty
+    && mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.1/bundle/ \
+    #delete some catalog
+    && rm -rf /opt/OpenWAF/lib/openresty
+    
+#3. install openresty
+#	&& wget -c http://www.lua.org/ftp/lua-5.1.4.tar.gz \
+#	&& tar zxf lua-5.1.4.tar.gz \
+#	&& cd lua-5.1.4 \
+#	&& make linux test \
+#	&& make install \
+RUN cd /opt/openresty-1.11.2.1/ \	
+    && ./configure \
+        --with-pcre-jit --with-ipv6 \
+        --with-http_stub_status_module \
+        --with-http_ssl_module \
+        --with-http_realip_module \
+        --with-http_sub_module \
+    && make \
+    && make install 
+    
+RUN apt-get install openssh-server -y --fix-missing	
+
+RUN sed -i "s/^PermitRootLogin.*/PermitRootLogin yes/" /etc/ssh/sshd_config
+    
+# 添加测试用户admin，密码admin，并且将此用户添加到sudoers里 
+RUN useradd admin \
+    && echo "root:root" | chpasswd  \
+    && echo "admin:admin" | chpasswd  \
+    && echo "admin   ALL=(ALL)       ALL" >> /etc/sudoers  
+    
+# 启动sshd服务并且暴露22端口 
+RUN mkdir /var/run/sshd  
+EXPOSE 22 
+
+CMD ["/usr/sbin/sshd", "-D"]
