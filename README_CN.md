@@ -33,7 +33,7 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v0.0.1.161130_beta released on 30 Nov 2016.
+This document describes OpenWAF v0.0.2.161205_beta released on 05 Dec 2016.
 
 Docker Version  
 1. titansec/openwaf:0.0.1.161130_beta  
@@ -200,7 +200,7 @@ Problems
    
 4. 提示PCRE不支持JIT 
    
-   编译pcre时，带上--enable-jit参数
+   编译pcre时，带上--enable-jit参数
 ```
 
 [Back to TOC](#table-of-contents)
@@ -213,20 +213,34 @@ Docker
 
 2. start-up docker
    2.1 docker run, named openwaf
-       docker run -d --name openwaf titansec/openwaf:0.0.1.161130_beta
-   2.2 add bridge address, e.g. 192.168.39.12
-       pipework br0 openwaf 192.168.39.12/24@192.168.39.253
-   2.3 enter openwaf
+       docker run -d -p 22:22 -p 80:80 -p 443:443 --name openwaf titansec/openwaf:0.0.1.161130_beta
+   2.2 enter openwaf
        docker-enter openwaf
 
 3. edit config
-   3.1 edit access rule
+   3.1 edit access rule
        vi /opt/OpenWAF/conf/twaf_access_rule.json
-   3.2 edit log server addr
+   3.2 edit log server addr
        vi /opt/OpenWAF/conf/twaf_default_conf.json
 
 4. start-up OpenWAF
     /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
+    
+PS:
+#add bridge address, e.g. 192.168.39.12
+    pipework br0 ContainerName ip/gateway
+    如：
+    pipework br0 openwaf 192.168.39.12/24@192.168.39.253
+
+Problems
+1. pipework: command not found
+
+   git clone https://github.com/jpetazzo/pipework.git
+   cp pipework/pipework /usr/local/bin/
+   
+2. Warning: arping not found; interface may not be immediately reachable
+
+   apt-get install arping
 ```
 
 [Back to TOC](#table-of-contents)
@@ -287,6 +301,29 @@ TODO
 
 Changes
 =======
+
+Time: 2016/12/05
+Version: v0.0.2.161205_beta  
+    1. New Module - twaf_attack_response
+        Return Custom response page When the request is rejected by OpenWAF
+    2. Api - api/stat[/policy_uuid]
+        Show statistical infomation
+    
+Time: 2016/12/05
+Version: v0.0.1.161130_beta
+    1. Docker
+        build OpenWAF with docker
+        
+Time: 2016/12/05
+Version: v0.0.1.161012_beta
+    1. log module
+        Send tcp/udp log
+    2. reqstat module
+        Statistics of request infomation
+    3. access rule
+        Publish applications 
+    4. rule engine
+        Access Control
 
 
 

@@ -33,7 +33,7 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v0.0.1.161130_beta released on 30 Nov 2016.
+This document describes OpenWAF v0.0.2.161205_beta released on 05 Dec 2016.
 
 Docker Version  
 1. titansec/openwaf:0.0.1.161130_beta  
@@ -301,6 +301,29 @@ TODO
 
 Changes
 =======
+
+Time: 2016/12/05
+Version: v0.0.2.161205_beta  
+    1. New Module - twaf_attack_response
+        Return Custom response page When the request is rejected by OpenWAF
+    2. Api - api/stat[/policy_uuid]
+        Show statistical infomation
+    
+Time: 2016/12/05
+Version: v0.0.1.161130_beta
+    1. Docker
+        build OpenWAF with docker
+        
+Time: 2016/12/05
+Version: v0.0.1.161012_beta
+    1. log module
+        Send tcp/udp log
+    2. reqstat module
+        Statistics of request infomation
+    3. access rule
+        Publish applications 
+    4. rule engine
+        Access Control
 
 
 
