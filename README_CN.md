@@ -304,26 +304,26 @@ Changes
 
 Time: 2016/12/05  
 Version: v0.0.2.161205_beta  
-    1. New Module - twaf_attack_response  
-        Return Custom response page When the request is rejected by OpenWAF  
-    2. Api - api/stat[/policy_uuid]  
-        Show statistical infomation  
+&emsp;&emsp;1. New Module - twaf_attack_response  
+&emsp;&emsp;&emsp;&emsp;Return Custom response page When the request is rejected by OpenWAF  
+&emsp;&emsp;2. Api - api/stat[/policy_uuid]  
+&emsp;&emsp;&emsp;&emsp;Show statistical infomation  
     
 Time: 2016/12/05  
 Version: v0.0.1.161130_beta  
-    1. Docker  
-        build OpenWAF with docker  
+&emsp;&emsp;1. Docker  
+&emsp;&emsp;&emsp;&emsp;build OpenWAF with docker  
         
 Time: 2016/12/05  
 Version: v0.0.1.161012_beta  
-    1. log module  
-        Send tcp/udp log  
-    2. reqstat module  
-        Statistics of request infomation  
-    3. access rule  
-        Publish applications  
-    4. rule engine  
-        Access Control  
+&emsp;&emsp;1. log module  
+&emsp;&emsp;&emsp;&emsp;Send tcp/udp log  
+&emsp;&emsp;2. reqstat module  
+&emsp;&emsp;&emsp;&emsp;Statistics of request infomation  
+&emsp;&emsp;3. access rule  
+&emsp;&emsp;&emsp;&emsp;Publish applications  
+&emsp;&emsp;4. rule engine  
+&emsp;&emsp;&emsp;&emsp;Access Control  
 
 [Back to TOC](#table-of-contents)
 
