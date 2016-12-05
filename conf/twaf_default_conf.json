@@ -1,12 +1,10 @@
 {
     "modules_order": {
         "access": [
-            "twaf_attack_response",
             "twaf_secrules"
         ]
     },
     "init_register" : {
-        "twaf_attack_response":   "lib.twaf.twaf_attack_response",
         "twaf_secrules":          "lib.twaf.twaf_secrules",
         
         "libinjection":           "resty.libinjection",
@@ -45,10 +43,6 @@
         "action":"DENY",
         "action_meta":403,
         "rules":{}
-    },
-    "twaf_attack_response": {
-        "state":true,
-        "detail_state":true
     },
     "twaf_reqstat": {
         "state":true,
