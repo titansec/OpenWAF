@@ -22,7 +22,7 @@ RUN echo "deb http://mirrors.163.com/debian/ jessie main" > /etc/apt/sources.lis
 RUN apt-get install libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl build-essential -y \
     && apt-get install libgeoip-dev swig -y \
     && apt-get install -t jessie-backports openssl -y \
-    && apt-get autoremove \
+    && apt-get autoremove curl -y \
     && cd /opt \
     && wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.38.tar.gz \
     && tar -xvf pcre-8.38.tar.gz \
