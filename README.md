@@ -371,7 +371,8 @@ twaf_access_rule
                 "ngx_ssl_cert": "path",            -- nginx认证所需PEM证书地址
                 "ngx_ssl_key": "path",             -- nginx认证所需PEM私钥地址
                 "host": "^1\\.1\\.1\\.1$",         -- 域名，正则匹配
-                "path": "\/",                      -- 路径，正则匹配
+                "port": 80,                        -- 端口号（缺省80）
+                "path": "\/",                      -- 路径，正则匹配
                 "server_ssl": false,               -- 后端服务器ssl开关
                 "forward": "server_5",             -- 后端服务器upstream名称
                 "forward_addr": "1.1.1.2",         -- 后端服务器ip地址
@@ -453,6 +454,15 @@ string类型，域名，正则匹配
     "host": "^.*\\.com$"
     "host": "www.baidu.com"
 ```
+
+###port
+**syntax:** *"port": number*
+
+**default:** *80*
+
+**context:** *twaf_access_rule*
+
+number类型，端口号
 
 ###path
 **syntax:** *"path": "regex"*
@@ -1045,19 +1055,6 @@ twaf_secrules
         "respbody_limit":524288,                                    -- 响应体检测阈值，大于阈值不检测
         "pre_path": "/opt/OpenWAF/",                                -- OpenWAF安装路径
         "path": "lib/twaf/inc/knowledge_db/twrules",                -- 特征规则库在OpenWAF中的路径
-        "msg": [                                                    -- 日志格式
-            "category",
-            "severity",
-            "action",
-            "meta",
-            "version",
-            "id",
-            "charactor_name",
-            {                                                       -- 字典中为变量
-                "transaction_time": "%{DURATION}",
-                "logdata": "%{MATCHED_VAR}"
-            }
-        ],
         "rules_id":{                                                -- 特征排除
             "111112": [{"REMOTE_HOST":"a.com", "URI":"^/ab"}]       -- 匹配中数组中信息则对应规则失效，数组中key为变量名称，值支持正则
             "111113": {}                                            -- 特征未被排除
