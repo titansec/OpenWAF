@@ -200,7 +200,7 @@ Problems
    
 4. 提示PCRE不支持JIT 
    
-   编译pcre时，带上--enable-jit参数
+   编译pcre时，带上--enable-jit参数
 ```
 
 [Back to TOC](#table-of-contents)
@@ -213,14 +213,14 @@ Docker
 
 2. start-up docker
    2.1 docker run, named openwaf
-       docker run -d -p 22:22 -p 80:80 -p 443:443 --name openwaf titansec/openwaf:0.0.1.161130_beta
+       docker run -d -p 22:22 -p 80:80 -p 443:443 --name openwaf titansec/openwaf:0.0.1.161130_beta
    2.2 enter openwaf
        docker-enter openwaf
 
 3. edit config
-   3.1 edit access rule
+   3.1 edit access rule
        vi /opt/OpenWAF/conf/twaf_access_rule.json
-   3.2 edit log server addr
+   3.2 edit log server addr
        vi /opt/OpenWAF/conf/twaf_default_conf.json
 
 4. start-up OpenWAF
@@ -229,8 +229,8 @@ Docker
 PS:
 #add bridge address, e.g. 192.168.39.12
     pipework br0 ContainerName ip/gateway
-    如：
-    pipework br0 openwaf 192.168.39.12/24@192.168.39.253
+    如：
+    pipework br0 openwaf 192.168.39.12/24@192.168.39.253
 
 Problems
 1. pipework: command not found
@@ -371,6 +371,7 @@ twaf_access_rule
                 "ngx_ssl_cert": "path",            -- nginx认证所需PEM证书地址
                 "ngx_ssl_key": "path",             -- nginx认证所需PEM私钥地址
                 "host": "^1\\.1\\.1\\.1$",         -- 域名，正则匹配
+                "port": 80,                        -- 端口号（缺省80）
                 "path": "\/",                      -- 路径，正则匹配
                 "server_ssl": false,               -- 后端服务器ssl开关
                 "forward": "server_5",             -- 后端服务器upstream名称
@@ -453,6 +454,15 @@ string类型，域名，正则匹配
     "host": "^.*\\.com$"
     "host": "www.baidu.com"
 ```
+
+###port
+**syntax:** *"port": number*
+
+**default:** *80*
+
+**context:** *twaf_access_rule*
+
+number类型，端口号
 
 ###path
 **syntax:** *"path": "regex"*
@@ -1045,19 +1055,6 @@ twaf_secrules
         "respbody_limit":524288,                                    -- 响应体检测阈值，大于阈值不检测
         "pre_path": "/opt/OpenWAF/",                                -- OpenWAF安装路径
         "path": "lib/twaf/inc/knowledge_db/twrules",                -- 特征规则库在OpenWAF中的路径
-        "msg": [                                                    -- 日志格式
-            "category",
-            "severity",
-            "action",
-            "meta",
-            "version",
-            "id",
-            "charactor_name",
-            {                                                       -- 字典中为变量
-                "transaction_time": "%{DURATION}",
-                "logdata": "%{MATCHED_VAR}"
-            }
-        ],
         "rules_id":{                                                -- 特征排除
             "111112": [{"REMOTE_HOST":"a.com", "URI":"^/ab"}]       -- 匹配中数组中信息则对应规则失效，数组中key为变量名称，值支持正则
             "111113": {}                                            -- 特征未被排除
@@ -1139,27 +1136,6 @@ OpenWAF的安装路径
 **context:** *twaf_secrules*
 
 特征规则库在OpenWAF中的路径
-
-###msg
-**syntax:** *msg table*
-
-**default:** *[
-            "category",
-            "severity",
-            "action",
-            "meta",
-            "version",
-            "id",
-            "charactor_name",
-            {
-                "transaction_time": "%{DURATION}",
-                "logdata": "%{MATCHED_VAR}"
-            }
-        ]*
-
-**context:** *twaf_secrules*
-
-日志格式
 
 ###rules_id
 **syntax:** *rules_id table*
@@ -2469,8 +2445,7 @@ OpenWAF中无capture指令，但使用regex默认开启capture功能
     "action": "deny",
     "meta": 403,
     "severity": "low",
-    "category": "5Y2P6K6u6KeE6IyD",
-    "charactor_name": "cHJvdG9jb2wucmVxSGVhZGVyLmM=",
+    "rule_name": "protocol.reqHeader.c",
     "desc": "协议规范性约束，检测含有不合规Range或Request-Range值的HTTP请求",
     "match": [
         {
