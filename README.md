@@ -1137,27 +1137,6 @@ OpenWAF的安装路径
 
 特征规则库在OpenWAF中的路径
 
-###msg
-**syntax:** *msg table*
-
-**default:** *[
-            "category",
-            "severity",
-            "action",
-            "meta",
-            "version",
-            "id",
-            "charactor_name",
-            {
-                "transaction_time": "%{DURATION}",
-                "logdata": "%{MATCHED_VAR}"
-            }
-        ]*
-
-**context:** *twaf_secrules*
-
-日志格式
-
 ###rules_id
 **syntax:** *rules_id table*
 
@@ -2466,8 +2445,7 @@ OpenWAF中无capture指令，但使用regex默认开启capture功能
     "action": "deny",
     "meta": 403,
     "severity": "low",
-    "category": "5Y2P6K6u6KeE6IyD",
-    "charactor_name": "cHJvdG9jb2wucmVxSGVhZGVyLmM=",
+    "rule_name": "protocol.reqHeader.c",
     "desc": "协议规范性约束，检测含有不合规Range或Request-Range值的HTTP请求",
     "match": [
         {
