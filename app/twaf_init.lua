@@ -6,7 +6,7 @@ require "resty.core"
 local twaf_config_m = require "lib.twaf.twaf_conf"
 local twaf_config = twaf_config_m:new()
 twaf_config:load_default_config("/opt/OpenWAF/conf/twaf_default_conf.json")
-twaf_config:load_access_rule("/opt/OpenWAF/conf")
+twaf_config:load_access_rule("/opt/OpenWAF/conf/twaf_access_rule.json")
 twaf_config:load_policy_config("/opt/OpenWAF/conf", {twaf_policy_conf = 1})
 twaf_config:load_rules()
 

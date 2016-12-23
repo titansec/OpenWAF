@@ -60,7 +60,7 @@ end
 
 local function _merge_table(self, path, modules_name)
 
-    local f = io.open(path.."/"..modules_name..".json")
+    local f = io.open(path)
     local conf_json = f:read("*a")
     f:close()
     local conf = cjson.decode(conf_json)
