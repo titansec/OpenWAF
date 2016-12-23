@@ -394,10 +394,10 @@ local function _process(_twaf, ctx, sctx)
     local rules     = _twaf.config.rules[ctx.phase]
     local storage   =  sctx.storage
     local shm       =  sctx.rules_shm
-    local key       =  modules_name.."_"..ctx.policy_uuid
+    local request   =  ctx.request
+    local key       =  modules_name.."_"..request.POLICYID
+    local var_store =  {}
     
-    local var_store  = {}
-    local request    = ctx.request
     for _, v in pairs(sctx.cf.disable_vars or {}) do
         var_store[v] = twaf_func:copy_value(request[v])
         request[v]   = nil
@@ -450,7 +450,7 @@ function _M.handler(self, _twaf)
     local request    = ctx.request
     local dict_name  = cf.shared_dict_name or gcf.dict_name
     local shm        = ngx_shared[dict_name]
-    local key        = modules_name.."_"..ctx.policy_uuid
+    local key        = modules_name.."_"..request.POLICYID
     
     sctx.cf          = cf
     sctx.gcf         = gcf

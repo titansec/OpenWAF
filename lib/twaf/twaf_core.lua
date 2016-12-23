@@ -35,11 +35,12 @@ function _M.ctx(self)
     local ctx = ngx.ctx[id]
     if not ctx then
         ctx = {
+            request  = {},
             debug    = {},
             events   = {
                 log  = {},
                 stat = {},
-				info = ""
+                info = ""
             },
         }
         ngx.ctx[id] = ctx
@@ -66,7 +67,8 @@ end
 
 function _M.get_config_param(self, param)
 
-    local policy_uuid = (self:ctx() or {}).policy_uuid
+    local request     = self:ctx().request or {}
+    local policy_uuid = request.POLICYID
     
     if policy_uuid and policy_uuid ~= "twaf_default_conf" then
         local policy = self.config.twaf_policy[policy_uuid]
@@ -83,7 +85,8 @@ end
 
 function _M.get_modules_config_param(self, modules, param)
 
-    local policy_uuid = (self:ctx() or {}).policy_uuid
+    local request     = self:ctx().request or {}
+    local policy_uuid = request.POLICYID
     
     if policy_uuid and policy_uuid ~= "twaf_default_conf" then
         local policy = self.config.twaf_policy[policy_uuid]
@@ -137,15 +140,14 @@ function _M.run(self, _twaf)
     local phase         =  ngx.get_phase()
     local modules_order = _twaf:get_config_param("modules_order") or {}
     local ctx           = _twaf:ctx()
-    local request       =  ctx.request or {}
+    local request       =  ctx.request
     
     -- request variables
     if twaf_request.request[phase] then
         twaf_request.request[phase](_twaf, request, ctx)
     end
     
-    ctx.request        =  request
-    ctx.phase          =  phase
+    ctx.phase   =  phase
     
     if not modules_order.access or #modules_order.access == 0 then
         return
@@ -179,7 +181,21 @@ function _M.run(self, _twaf)
         
         if ngx.ctx.reset_connection == true then return ngx.ERROR end
         
-    else -- "balancer" "log" "ssl_cert"
+    elseif phase == "log" then
+    
+        -- reqstat
+        twaf_reqstat:reqstat_log_handler(ctx.events.stat, request.POLICYID)
+        
+        -- log
+        local mod = _twaf.modfactory["twaf_log"]
+        if mod and mod.log then
+            mod:log(_twaf)
+        end
+        
+        -- collect
+        collectgarbage("collect")
+        
+    else -- "balancer" "ssl_cert"
     
         local mod = _twaf.modfactory["twaf_"..phase]
         if mod and mod[phase] then

@@ -37,6 +37,7 @@ function _M.handler(self, _twaf)
     local host
     local server            =  nil
     local ctx               = _twaf:ctx()
+    local request           =  ctx.request
     local uri               =  ngx_var.request_uri
     local twaf_https        =  ngx_var.twaf_https
     local request_host      =  ngx_req_get_headers()["host"]
@@ -93,8 +94,8 @@ function _M.handler(self, _twaf)
         ngx_var.twaf_upstream_server = "http://" .. server["forward"]
     end
     
-    ctx.policy_uuid = server.policy
-    ctx.user        = server.user
+    request.POLICYID = server.policy or _twaf.config.global_conf_uuid or "-"
+    request.USERID   = server.user   or "-"
     
     ctx.balancer      = {}
     ctx.balancer.addr = server.forward_addr

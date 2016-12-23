@@ -289,8 +289,8 @@ _M.request = {
         request.DURATION                     =  function() return (ngx.re.match(tostring((ngx.now() - ngx.req.start_time()) * 1000000), "([0-9]+)", "oij"))[1] end
         request.EXTEN                        =  ngx.var.exten
         
-        request.SESSION                      =  require "resty.session".start()
-        request.SESSION_DATA                 =  request.SESSION.data
+      --request.SESSION                      =  require "resty.session".start()
+      --request.SESSION_DATA                 =  request.SESSION.data
         
         request.REMOTE_ADDR                  =  ngx.var.remote_addr
         request.SCHEME                       =  ngx.var.scheme
@@ -341,8 +341,8 @@ _M.request = {
         request.TIME_LOCAL                   =  ngx.var.time_local
         request.ORIGINAL_DST_ADDR            =  ngx.var.original_dst_addr
         request.ORIGINAL_DST_PORT            =  tonumber(ngx.var.original_dst_port) or 0
-        request.USERID                       =  ctx.user or "-"
-        request.POLICYID                     =  ctx.policy_uuid or "-"
+      --request.USERID
+      --request.POLICYID
         request.HTTP_REFERER                 =  ngx.var.http_referer or "-"
         request.GZIP_RATIO                   =  ngx.var.gzip_ratio or "-"
         request.MSEC                         =  tonumber(ngx.var.msec) or 0.00

@@ -41,7 +41,7 @@
         "user_rules":[]
     },
     "twaf_access_rule" : {
-        "log_state":false,
+        "log_state":true,
         "action":"DENY",
         "action_meta":403,
         "rules":{}
