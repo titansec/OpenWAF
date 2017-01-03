@@ -33,12 +33,15 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v0.0.2.161205_beta released on 05 Dec 2016.
+This document describes OpenWAF v0.0.3.170103_beta released on 03 Jan 2017.
 
 Docker Version  
 1. titansec/openwaf:0.0.1.161130_beta  
 &emsp;&emsp;SHA: 596dee9d2b9ce44d59dc445141f72b3607f9fbe6  
-&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/596dee9d2b9ce44d59dc445141f72b3607f9fbe6
+&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/596dee9d2b9ce44d59dc445141f72b3607f9fbe6  
+2. titansec/openwaf:0.0.3.170103_beta  
+&emsp;&emsp;SHA: 28ce1556250301f26f31b46d9cd9dde5a3b3f03f  
+&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/28ce1556250301f26f31b46d9cd9dde5a3b3f03f  
 
 Synopsis
 ========
@@ -209,13 +212,13 @@ Docker
 ======
 ```
 1. pull docker images from repository
-   docker pull titansec/openwaf:0.0.1.161130_beta
+   docker pull titansec/openwaf
 
 2. start-up docker
    2.1 docker run, named openwaf
-       docker run -d -p 22:22 -p 80:80 -p 443:443 --name openwaf titansec/openwaf:0.0.1.161130_beta
+       docker run -d -p 22:22 -p 80:80 -p 443:443 --name openwaf titansec/openwaf
    2.2 enter openwaf
-       docker-enter openwaf
+       docker exec -it openwaf /bin/bash
 
 3. edit config
    3.1 edit access rule
