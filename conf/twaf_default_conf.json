@@ -2,12 +2,14 @@
     "modules_order": {
         "access": [
             "twaf_attack_response",
-            "twaf_secrules"
+            "twaf_secrules",
+            "twaf_anti_mal_crawler"
         ]
     },
     "init_register" : {
         "twaf_attack_response":   "lib.twaf.twaf_attack_response",
         "twaf_secrules":          "lib.twaf.twaf_secrules",
+        "twaf_anti_mal_crawler":  "lib.twaf.twaf_anti_mal_crawler",
         
         "libinjection":           "resty.libinjection",
         "twaf_access_rule":       "lib.twaf.twaf_access_rule",
@@ -49,6 +51,21 @@
     "twaf_attack_response": {
         "state":true,
         "detail_state":true
+    },
+    "twaf_anti_mal_crawler": {
+        "state":false,
+        "cookie_state":true,
+        "log_state":true,
+        "force_scan_robots_state":false,
+        "force_scan_times": 3,
+        "shared_dict_key":"remote_addr",
+        "timeout":300,
+        "crawler_cookie_name":"TWAF_CRAWLER",
+        "mal_cookie_name":"TWAF_MCRAWLER",
+        "trap_uri":"/abc/abc.html",
+        "trap_args":"id=1",
+        "action":"DENY",
+        "action_meta":403
     },
     "twaf_reqstat": {
         "state":true,

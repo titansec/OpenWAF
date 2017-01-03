@@ -10,5 +10,9 @@
         ],
         "disable_vars":[
         ]
+    },
+    "twaf_anti_mal_crawler":{
+        "state":true,
+        "force_scan_robots_state":true
     }
 }
