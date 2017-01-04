@@ -64,18 +64,11 @@ RUN cd /opt/openresty-1.11.2.1/ \
         --with-http_sub_module \
     && make \
     && make install 
-    
-RUN apt-get install openssh-server -y --fix-missing	
 
+#ssh
+RUN apt-get install openssh-server -y --fix-missing	
 RUN sed -i "s/^PermitRootLogin.*/PermitRootLogin yes/" /etc/ssh/sshd_config
-    
-# 添加测试用户admin，密码admin，并且将此用户添加到sudoers里 
-RUN useradd admin \
-    && echo "root:root" | chpasswd  \
-    && echo "admin:admin" | chpasswd  \
-    && echo "admin   ALL=(ALL)       ALL" >> /etc/sudoers  
-    
-# 启动sshd服务并且暴露22端口 
+RUN echo "root:root" | chpasswd
 RUN mkdir /var/run/sshd  
 EXPOSE 22 
 
