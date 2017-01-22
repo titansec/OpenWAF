@@ -123,14 +123,17 @@ OpenWAF是基于openresty的Web应用防护系统（WAF），他基于nginx_lua 
 OpenWAF支持将上述功能封装为策略，不同的web application应用不同的策略来防护。策略还可分享供他人参考。
 
 基础模块如下:
-* [静态配置管理器twaf_conf](https://github.com/titansec/openwaf_conf)
-* [日志twaf_log](https://github.com/titansec/openwaf_log)
-* [统计twaf_reqstat](https://github.com/titansec/openwaf_reqstat)
-* [核心层twaf_core](https://github.com/titansec/openwaf_core)
-* [接入规则twaf_access_rule](https://github.com/titansec/openwaf_access_rule)
+* [静态配置管理器 openwaf_conf](https://github.com/titansec/openwaf_conf)
+* [日志 openwaf_log](https://github.com/titansec/openwaf_log)
+* [统计 openwaf_reqstat](https://github.com/titansec/openwaf_reqstat)
+* [核心层 openwaf_core](https://github.com/titansec/openwaf_core)
+* [接入规则 openwaf_access_rule](https://github.com/titansec/openwaf_access_rule)
 
 功能模块如下:
-* [规则引擎twaf_secrules](https://github.com/titansec/openwaf_rule_engine)
+* [规则引擎 openwaf_rule_engine](https://github.com/titansec/openwaf_rule_engine)
+* [攻击响应页面 openwaf_attack_response](https://github.com/titansec/openwaf_attack_response)
+* [API openwaf_api](https://github.com/titansec/openwaf_api)
+* [防恶意爬虫 openwaf_anti_mal_crawler](https://github.com/titansec/openwaf_anti_mal_crawler)
 
 详细配置文档及示例请看上述各模块文档
   
@@ -294,10 +297,9 @@ TODO
 * 05. 上传基于频率的模糊识别防探测模块
 * 06. 上传WebShell上传防护模块
 * 07. 上传防CSRF模块
-* 08. 上传OpenWAF docker
-* 09. 提供页面体验OpenWAF防护功能
-* 10. 放开动态配置规则引擎API
-* 11. 放开动态配置行为分析引擎API
+* 08. 提供页面体验OpenWAF防护功能
+* 09. 放开动态配置规则引擎API
+* 10. 放开动态配置行为分析引擎API
 
 [Back to TOC](#table-of-contents)
 
