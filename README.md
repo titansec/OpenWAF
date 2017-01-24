@@ -111,31 +111,26 @@ Synopsis
 Description
 ===========
 
-OpenWAF是第一个全方位开源的Web应用防护系统（WAF），他基于nginx_lua API分析HTTP请求信息。OpenWAF由行为分析引擎和规则引擎两大功能引擎构成。其中规则引擎主要对单个请求进行分析，行为分析引擎主要负责跨请求信息追踪。
-   
-规则引擎的启发来自[modsecurity](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual)及[freewaf(lua-resty-waf)](https://github.com/p0pr0ck5/lua-resty-waf)，将ModSecurity的规则机制用lua实现。基于规则引擎可以进行协议规范，自动工具，注入攻击，跨站攻击，信息泄露，异常请求等安全防护，支持动态添加规则，及时修补漏洞。
-   
-行为分析引擎包含基于频率的模糊识别，防恶意爬虫，人机识别等防探测模块，防CSRF，防CC，防提权，文件上传防护等防攻击模块，cookie防篡改，防盗链，自定义响应头，攻击响应页面等防信息泄露模块。
-   
-除了两大引擎之外，还包含统计，日志，攻击响应页面，接入规则等基础模块。除了已有的功能模块，OpenWAF还支持动态修改配置，
-动态添加第三方模块，使得在不重启引擎中断业务的条件下，升级防护。
+OpenWAF is the first fully open source Web application protection system (WAF), based on nginx_lua API analysis of HTTP request information. OpenWAF is composed of two functional engines: behavior analysis engine and rule engine. The rule engine mainly analyzes the individual requests, and the behavior analysis engine is mainly responsible for the tracking of the request information.
+Rule engine inspired by [modsecurity](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual) and [freewaf(lua-resty-waf)](https://github.com/p0pr0ck5/lua-resty-waf), the ModSecurity rules will be implemented using lua. The rule engine can be based on the protocol specification, automatic tools, injection attacks, cross site attacks, information leaks and other security exception request, adding support for dynamic rules, timely repair vulnerabilities.
+Behavior analysis engine including fuzzy identification based on frequency, anti malware crawler, human-computer identification anti detection module, anti CSRF, anti CC, anti right, protection against attack file upload module, cookie tamper proof, anti-theft chain, custom headers and attack response page proof module of information disclosure.
+In addition to the two engines, but also includes statistics, log, attack response page, access rules and other basic modules. In addition to the existing functional modules, OpenWAF also supports dynamic modification of the configuration, the dynamic addition of third party modules, so that the engine does not restart under the conditions of the outage, upgrade protection.
+OpenWAF supports the above features as a strategy for different web application applications with different strategies to protect. The future will build a cloud platform, the strategy can also be shared for others.
 
-OpenWAF支持将上述功能封装为策略，不同的web application应用不同的策略来防护。将来还会打造云平台，策略还可分享供他人参考。
+basic modules:
+* [openwaf_conf](https://github.com/titansec/openwaf_conf)
+* [openwaf_log](https://github.com/titansec/openwaf_log)
+* [openwaf_reqstat](https://github.com/titansec/openwaf_reqstat)
+* [openwaf_core](https://github.com/titansec/openwaf_core)
+* [openwaf_access_rule](https://github.com/titansec/openwaf_access_rule)
 
-基础模块如下:
-* [静态配置管理器 openwaf_conf](https://github.com/titansec/openwaf_conf)
-* [日志 openwaf_log](https://github.com/titansec/openwaf_log)
-* [统计 openwaf_reqstat](https://github.com/titansec/openwaf_reqstat)
-* [核心层 openwaf_core](https://github.com/titansec/openwaf_core)
-* [接入规则 openwaf_access_rule](https://github.com/titansec/openwaf_access_rule)
+safe modules:
+* [openwaf_rule_engine](https://github.com/titansec/openwaf_rule_engine)
+* [openwaf_attack_response](https://github.com/titansec/openwaf_attack_response)
+* [openwaf_api](https://github.com/titansec/openwaf_api)
+* [openwaf_anti_mal_crawler](https://github.com/titansec/openwaf_anti_mal_crawler)
 
-功能模块如下:
-* [规则引擎 openwaf_rule_engine](https://github.com/titansec/openwaf_rule_engine)
-* [攻击响应页面 openwaf_attack_response](https://github.com/titansec/openwaf_attack_response)
-* [API openwaf_api](https://github.com/titansec/openwaf_api)
-* [防恶意爬虫 openwaf_anti_mal_crawler](https://github.com/titansec/openwaf_anti_mal_crawler)
-
-详细配置文档及示例请看上述各模块文档
+Detailed configuration documents and examples, please refer to the above module documentation
   
 [Back to TOC](#table-of-contents)
 
@@ -143,27 +138,27 @@ Installation
 ============
 若用[docker安装](#docker)，可省略步骤1-3
 ```
-1. 下载openresty
+1. get openresty
    详见 https://openresty.org/en/installation.html
    
    1.1 cd /opt
    1.2 wget -c https://openresty.org/download/openresty-1.11.2.1.tar.gz
    1.3 tar -xzvf openresty-1.11.2.1.tar.gz
 
-2. 安装OpenWAF
+2. install OpenWAF
    2.1 cd /opt
-   2.2 获取OpenWAF源文件
+   2.2 get OpenWAF
        git clone https://github.com/titansec/OpenWAF.git
-   2.3 移动配置文件
+   2.3 move OpenWAF configure
        mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc
-   2.4 覆盖openresty的configure文件
+   2.4 cover openresty configure
        mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.1
-   2.5 移动第三方模块至openresty中
+   2.5 the third-party modules move into openresty
        mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.1/bundle/
-   2.6 删除OpenWAF/lib/openresty目录
+   2.6 remove OpenWAF/lib/openresty
        rm -rf /opt/OpenWAF/lib/openresty
        
-3. 编译openresty
+3. compile openresty
    3.1 cd /opt/openresty-1.11.2.1/
    3.2 ./configure --with-pcre-jit --with-ipv6 \
                    --with-http_stub_status_module \
@@ -172,20 +167,19 @@ Installation
                    --with-http_sub_module
    3.3 make && make install
    
-4. 编辑配置文件
-   4.1 接入规则
+4. edit configure
+   4.1 edit host, server, url and so on
        vi /opt/OpenWAF/conf/twaf_access_rule.json
-       编辑域名，后端服务器地址等信息
-   4.2 日志服务器
+       
+   4.2 edit log server address
        vi /opt/OpenWAF/conf/twaf_default_conf.json
-       配置twaf_log日志接收服务器地址
    
-5. 启动引擎
+5. start OpenWAF
    /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
        
 Problems
 1. nginx:[emerg] at least OpenSSL 1.0.2e required but found OpenSSL xxx
-   更新OpenSSL版本至1.0.2e以上即可
+   Update OpenSSL version to 1.0.2e or more
    
    如：wget -c http://www.openssl.org/source/openssl-1.0.2h.tar.gz
       ./config
