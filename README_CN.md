@@ -3,7 +3,7 @@ Name
 
 OpenWAF
 
-Web application security protection system based on [openresty](https://github.com/openresty/openresty)
+第一个全方位开源的Web应用防护系统（WAF），更全面的防护功能，更多样的防护策略
 
 Table of Contents
 =================
@@ -111,7 +111,7 @@ Synopsis
 Description
 ===========
 
-OpenWAF是基于openresty的Web应用防护系统（WAF），他基于nginx_lua API分析HTTP请求信息。OpenWAF由行为分析引擎和规则引擎两大功能引擎构成。其中规则引擎主要对单个请求进行分析，行为分析引擎主要负责跨请求信息追踪。
+OpenWAF是第一个全方位开源的Web应用防护系统（WAF），他基于nginx_lua API分析HTTP请求信息。OpenWAF由行为分析引擎和规则引擎两大功能引擎构成。其中规则引擎主要对单个请求进行分析，行为分析引擎主要负责跨请求信息追踪。
    
 规则引擎的启发来自[modsecurity](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual)及[freewaf(lua-resty-waf)](https://github.com/p0pr0ck5/lua-resty-waf)，将ModSecurity的规则机制用lua实现。基于规则引擎可以进行协议规范，自动工具，注入攻击，跨站攻击，信息泄露，异常请求等安全防护，支持动态添加规则，及时修补漏洞。
    
@@ -120,7 +120,7 @@ OpenWAF是基于openresty的Web应用防护系统（WAF），他基于nginx_lua 
 除了两大引擎之外，还包含统计，日志，攻击响应页面，接入规则等基础模块。除了已有的功能模块，OpenWAF还支持动态修改配置，
 动态添加第三方模块，使得在不重启引擎中断业务的条件下，升级防护。
 
-OpenWAF支持将上述功能封装为策略，不同的web application应用不同的策略来防护。策略还可分享供他人参考。
+OpenWAF支持将上述功能封装为策略，不同的web application应用不同的策略来防护。将来还会打造云平台，策略还可分享供他人参考。
 
 基础模块如下:
 * [静态配置管理器 openwaf_conf](https://github.com/titansec/openwaf_conf)
