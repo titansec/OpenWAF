@@ -138,7 +138,7 @@ Installation
 ============
 若用[docker安装](#docker)，可省略步骤1-3
 ```
-1. get openresty
+1. install openresty
    详见 https://openresty.org/en/installation.html
    
    1.1 cd /opt
