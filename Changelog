@@ -1,0 +1,26 @@
+Time: 2017/01/03  
+Version: v0.0.3.170103_beta  
+    1. New Module - twaf_anti_mal_crawler  
+        Distinguish malicious crawler and some scan tools  
+Time: 2016/12/05  
+Version: v0.0.2.161205_beta  
+    1. New Module - twaf_attack_response  
+        Return custom response page When the request is rejected by OpenWAF  
+    2. Api - api/stat[/policy_uuid]  
+        Show statistical infomation  
+    
+Time: 2016/12/05  
+Version: v0.0.1.161130_beta  
+    1. Docker  
+        build OpenWAF with docker  
+        
+Time: 2016/12/05  
+Version: v0.0.1.161012_beta  
+    1. log module  
+        Send tcp/udp log  
+    2. reqstat module  
+        Statistics of request infomation  
+    3. access rule  
+        Publish applications  
+    4. rule engine  
+        Access Control  
