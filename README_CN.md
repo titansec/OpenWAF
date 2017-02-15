@@ -305,10 +305,15 @@ TODO
 Changes
 =======
 
+Time: 2017/01/03  
+Version: v0.0.3.170103_beta  
+&emsp;&emsp;1. New Module - twaf_anti_mal_crawler  
+&emsp;&emsp;&emsp;&emsp;Distinguish malicious crawler and some scan tools  
+
 Time: 2016/12/05  
 Version: v0.0.2.161205_beta  
 &emsp;&emsp;1. New Module - twaf_attack_response  
-&emsp;&emsp;&emsp;&emsp;Return Custom response page When the request is rejected by OpenWAF  
+&emsp;&emsp;&emsp;&emsp;Return custom response page When the request is rejected by OpenWAF  
 &emsp;&emsp;2. Api - api/stat[/policy_uuid]  
 &emsp;&emsp;&emsp;&emsp;Show statistical infomation  
     
