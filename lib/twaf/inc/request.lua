@@ -364,6 +364,10 @@ _M.request = {
         request.BYTES_SENT                   = function() return tonumber(ngx.var.bytes_sent) or 0 end
     end,
     body_filter = function(_twaf, request, ctx)
+    
+    request.RESPONSE_BODY = ngx.arg[1]
+    
+    --[[
         if ctx.buffers == nil then
             ctx.buffers  = {}
         end
@@ -388,6 +392,7 @@ _M.request = {
             ngx.arg[1] = request.RESPONSE_BODY
         end
     end
+    ]]
 }
 
 _M.parse_var = {
