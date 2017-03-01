@@ -391,8 +391,8 @@ _M.request = {
             request.RESPONSE_BODY = table.concat(ctx.buffers, '')
             ngx.arg[1] = request.RESPONSE_BODY
         end
-    end
     ]]
+    end
 }
 
 _M.parse_var = {
