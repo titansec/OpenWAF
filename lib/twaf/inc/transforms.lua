@@ -57,8 +57,8 @@ function _M.transforms(self, options, values)
             str = ngx.re.gsub(str, [=[&gt;]=], '>', "oij")
             str = ngx.re.gsub(str, [=[&quot;]=], '"', "oij")
             str = ngx.re.gsub(str, [=[&apos;]=], "'", "oij")
-            str = ngx.re.gsub(str, [=[&#(\d+);]=], function(n) return string.char(n[1]) end, "oij")
-            str = ngx.re.gsub(str, [=[&#x(\d+);]=], function(n) return string.char(tonumber(n[1],16)) end, "oij")
+            pcall(function() str = ngx.re.gsub(str, [=[&#(\d+);]=], function(n) return string.char(n[1]) end, "oij") end)
+            pcall(function() str = ngx.re.gsub(str, [=[&#x(\d+);]=], function(n) return string.char(tonumber(n[1],16)) end, "oij") end)
             str = ngx.re.gsub(str, [=[&amp;]=], '&', "oij")
             return str
         end,
