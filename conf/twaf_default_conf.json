@@ -3,13 +3,15 @@
         "access": [
             "twaf_attack_response",
             "twaf_secrules",
-            "twaf_anti_mal_crawler"
+            "twaf_anti_mal_crawler",
+            "twaf_limit_conn"
         ]
     },
     "init_register" : {
         "twaf_attack_response":   "lib.twaf.twaf_attack_response",
         "twaf_secrules":          "lib.twaf.twaf_secrules",
         "twaf_anti_mal_crawler":  "lib.twaf.twaf_anti_mal_crawler",
+        "twaf_limit_conn":        "lib.twaf.twaf_anti_cc.twaf_anti_cc",
         
         "libinjection":           "resty.libinjection",
         "twaf_access_rule":       "lib.twaf.twaf_access_rule",
@@ -66,6 +68,29 @@
         "trap_args":"id=1",
         "action":"DENY",
         "action_meta":403
+    },
+    "twaf_limit_conn": {
+        "state":false,
+        "log_state":true,
+        "trigger_state":true,
+        "clean_state":true,
+        "trigger_thr":{    
+            "req_flow_max":107374182,
+            "req_count_max":10000
+        },
+        "clean_thr":{
+            "new_conn_max":40,
+            "conn_max":100,
+            "req_max":50,
+            "uri_frequency_max": 3000
+        },
+        "timer_flush_expired":10,
+        "interval":10,
+        "shared_dict_name":"twaf_limit_conn",
+        "shared_dict_key":"remote_addr",
+        "action":"DENY",
+        "action_meta":403,
+        "timeout":30
     },
     "twaf_reqstat": {
         "state":true,

@@ -14,5 +14,20 @@
     "twaf_anti_mal_crawler":{
         "state":true,
         "force_scan_robots_state":true
+    },
+    "twaf_limit_conn": {
+        "state":true,
+        "trigger_thr":{    
+            "req_flow_max":107374182,
+            "req_count_max":10000
+        },
+        "clean_thr":{
+            "new_conn_max":40,
+            "conn_max":100,
+            "req_max":50,
+            "uri_frequency_max": 3000
+        },
+        "action":"DENY",
+        "action_meta":403
     }
 }
