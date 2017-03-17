@@ -284,16 +284,17 @@ Please submit bug reports, wishlists, or patches by
 TODO
 ====
 
-* 01. 上传人机识别模块
-* 02. 上传防盗链模块
-* 03. 上传防CC模块
-* 04. 上传cookie防篡改模块
-* 05. 上传基于频率的模糊识别防探测模块
-* 06. 上传WebShell上传防护模块
-* 07. 上传防CSRF模块
-* 08. 提供页面体验OpenWAF防护功能
-* 09. 放开动态配置规则引擎API
-* 10. 放开动态配置行为分析引擎API
+* 01. upload anti rebot module
+* 02. upload anti hotlink module
+* 03. upload cookie guard module
+* 04. upload anti detection module
+* 05. upload anti webshell module
+* 06. upload anti csrf module
+* 07. 提供页面体验OpenWAF防护功能
+* 08. 放开动态配置规则引擎API
+* 09. 放开动态配置行为分析引擎API
+* 10. 完善cc防护的文档
+* 11. 发布包含cc防护的最新版docker
 
 [Back to TOC](#table-of-contents)
 
