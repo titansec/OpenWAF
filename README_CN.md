@@ -134,6 +134,7 @@ OpenWAF支持将上述功能封装为策略，不同的web application应用不�
 * [攻击响应页面 openwaf_attack_response](https://github.com/titansec/openwaf_attack_response)
 * [API openwaf_api](https://github.com/titansec/openwaf_api)
 * [防恶意爬虫 openwaf_anti_mal_crawler](https://github.com/titansec/openwaf_anti_mal_crawler)
+* [防CC openwaf_anti_cc](https://github.com/titansec/openwaf_anti_cc)
 
 详细配置文档及示例请看上述各模块文档
   

@@ -129,6 +129,7 @@ safe modules:
 * [openwaf_attack_response](https://github.com/titansec/openwaf_attack_response)
 * [openwaf_api](https://github.com/titansec/openwaf_api)
 * [openwaf_anti_mal_crawler](https://github.com/titansec/openwaf_anti_mal_crawler)
+* [openwaf_anti_cc](https://github.com/titansec/openwaf_anti_cc)
 
 Detailed configuration documents and examples, please refer to the above module documentation
   
