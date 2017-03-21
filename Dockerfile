@@ -24,13 +24,13 @@ RUN apt-get install libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl
     && apt-get install -t jessie-backports openssl -y \
     && apt-get autoremove curl -y \
     && cd /opt \
-    && wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.38.tar.gz \
-    && tar -xvf pcre-8.38.tar.gz \
-    && cd pcre-8.38 \
+    && wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.40.tar.gz \
+    && tar -xvf pcre-8.40.tar.gz \
+    && cd pcre-8.40 \
     && ./configure --enable-jit \
     && make && make install \
     && cd /opt \
-    && rm -rf pcre-8.38.tar.gz pcre-8.38/ \
+    && rm -rf pcre-8.40.tar.gz pcre-8.40/ \
     && cd /opt \
     && wget https://openresty.org/download/openresty-1.11.2.1.tar.gz \
     && tar -zxvf openresty-1.11.2.1.tar.gz \
