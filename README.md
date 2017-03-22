@@ -33,15 +33,18 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v0.0.3.170103_beta released on 03 Jan 2017.
+This document describes OpenWAF v0.0.4 released on 22 Mar 2017.
 
 Docker Version  
 1. titansec/openwaf:0.0.1.161130_beta  
 &emsp;&emsp;SHA: 596dee9d2b9ce44d59dc445141f72b3607f9fbe6  
 &emsp;&emsp;https://github.com/titansec/OpenWAF/tree/596dee9d2b9ce44d59dc445141f72b3607f9fbe6  
-2. titansec/openwaf:0.0.3.170103_beta(titansec/openwaf:latest)  
+2. titansec/openwaf:0.0.3.170103_beta  
 &emsp;&emsp;SHA: 28ce1556250301f26f31b46d9cd9dde5a3b3f03f  
 &emsp;&emsp;https://github.com/titansec/OpenWAF/tree/28ce1556250301f26f31b46d9cd9dde5a3b3f03f  
+3. titansec/openwaf:v0.0.4(titansec/openwaf:latest)  
+&emsp;&emsp;SHA: cdef1e0eac4f12c374feb6ac3c3c465610daaf6c  
+&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/cdef1e0eac4f12c374feb6ac3c3c465610daaf6c  
 
 Synopsis
 ========
