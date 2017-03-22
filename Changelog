@@ -1,7 +1,22 @@
+Time: 2017/03/20  
+Version: v0.0.4  
+    1. New Module - twaf_anti_cc  
+        Anti http flood  
+    2. Performance optimization
+        optimaize RESPONSE_BODY variable to reduce memory
+    3. add QQ group
+        QQ group: 579790127
+    4. fix
+        4.1 loading error -- wrong comment
+        4.2 return 500 response code -- string.char not support GBK
+    5. Update docker version
+    6. New Release - 0.0.4
+    
 Time: 2017/01/03  
 Version: v0.0.3.170103_beta  
     1. New Module - twaf_anti_mal_crawler  
-        Distinguish malicious crawler and some scan tools  
+        Distinguish malicious crawler and some scan tools 
+    
 Time: 2016/12/05  
 Version: v0.0.2.161205_beta  
     1. New Module - twaf_attack_response  
@@ -13,7 +28,7 @@ Time: 2016/12/05
 Version: v0.0.1.161130_beta  
     1. Docker  
         build OpenWAF with docker  
-        
+    
 Time: 2016/12/05  
 Version: v0.0.1.161012_beta  
     1. log module  
@@ -24,3 +39,4 @@ Version: v0.0.1.161012_beta
         Publish applications  
     4. rule engine  
         Access Control  
+    
