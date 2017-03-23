@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.3.170103_beta"
+    _VERSION = "0.0.4"
 }
 
 local cjson                                = require "cjson"
