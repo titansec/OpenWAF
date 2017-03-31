@@ -299,10 +299,10 @@ TODO
 * 04. 上传基于频率的模糊识别防探测模块
 * 05. 上传WebShell上传防护模块
 * 06. 上传防CSRF模块
-* 07. 提供页面体验OpenWAF防护功能
-* 08. 放开动态配置规则引擎API
-* 09. 放开动态配置行为分析引擎API
-* 10. 发布包含cc防护的最新版docker
+* 07. 放开动态配置规则引擎API
+* 08. 放开动态配置行为分析引擎API
+
+[MORE](https://github.com/miracleqi/OpenWAF_TODO)
 
 [Back to TOC](#table-of-contents)
 

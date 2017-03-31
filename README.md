@@ -294,10 +294,10 @@ TODO
 * 04. upload anti detection module
 * 05. upload anti webshell module
 * 06. upload anti csrf module
-* 07. 提供页面体验OpenWAF防护功能
-* 08. 放开动态配置规则引擎API
-* 09. 放开动态配置行为分析引擎API
-* 10. 发布包含cc防护的最新版docker
+* 07. 放开动态配置规则引擎API
+* 08. 放开动态配置行为分析引擎API
+
+[MORE](https://github.com/miracleqi/OpenWAF_TODO)
 
 [Back to TOC](#table-of-contents)
 
