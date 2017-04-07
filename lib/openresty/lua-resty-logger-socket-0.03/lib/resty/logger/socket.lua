@@ -105,6 +105,10 @@ local function _do_connect()
 
         sock:settimeout(timeout)
     end
+    
+    if not sock then
+        return nil, "sock is nil"
+    end
 
     -- "host"/"port" and "path" have already been checked in init()
     if host and port then
