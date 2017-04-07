@@ -140,7 +140,9 @@ Detailed configuration documents and examples, please refer to the above module 
 
 Installation
 ============
-若用[docker安装](#docker)，可省略步骤1-3
+
+[安装请看最新整理的文档](https://github.com/titansec/OpenWAF/blob/master/doc/%E8%BD%BB%E6%9D%BE%E7%8E%A9%E8%BD%ACOpenWAF%E4%B9%8B%E5%85%A5%E9%97%A8%E7%AF%87.md)
+
 ```
 1. install openresty
    详见 https://openresty.org/en/installation.html
