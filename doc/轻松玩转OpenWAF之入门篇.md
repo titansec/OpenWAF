@@ -157,7 +157,7 @@ Docker容器
 
 #### 使用OpenWAF提供的nginx配置文件
 
-    如果用 OpenWAF 默认的 /etc/ngx_openwaf.conf 配置文件（默认监听 80 端口），且未体验过 OpenWAF，那么只用看此例即可
+    如果用 OpenWAF 默认的 /etc/ngx_openwaf.conf 配置文件（默认监听 80 端口）
     
     修改 /opt/OpenWAF/conf/twaf_access_rule.json 文件中第一条接入规则的"forward_addr"值  
     
@@ -192,6 +192,7 @@ Docker容器
     include /opt/OpenWAF/conf/twaf_main.conf;
     include /opt/OpenWAF/conf/twaf_api.conf;
 ```
+  
     要防护的 server 或 location 级别添加如下一行：
 ```
     include /opt/OpenWAF/conf/twaf_server.conf;
