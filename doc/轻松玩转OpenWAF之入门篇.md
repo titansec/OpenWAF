@@ -60,8 +60,8 @@ Table of Contents
     
 ```txt
    1.1 cd /opt  
-   1.2 wget -c https://openresty.org/download/openresty-1.11.2.1.tar.gz  
-   1.3 tar -xzvf openresty-1.11.2.1.tar.gz  
+   1.2 wget -c https://openresty.org/download/openresty-1.11.2.2.tar.gz  
+   1.3 tar -xzvf openresty-1.11.2.2.tar.gz  
 ```
 
 2. 安装 OpenWAF  
@@ -75,9 +75,9 @@ Table of Contents
    2.3 将 nginx 配置文件移至 /etc 目录下
        mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc  
    2.4 覆盖 OpenResty 的 configure
-       mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.1  
+       mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.2  
    2.5 将 OpenResty 第三方模块移至 OpenResty 目录下
-       mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.1/bundle/  
+       mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/  
    2.6 删除空目录 OpenWAF/lib/openresty  
        rm -rf /opt/OpenWAF/lib/openresty  
 ```
@@ -85,7 +85,7 @@ Table of Contents
 3. 编译 openresty  
 
 ```txt
-   3.1 cd /opt/openresty-1.11.2.1/  
+   3.1 cd /opt/openresty-1.11.2.2/  
    3.2 ./configure --with-pcre-jit --with-ipv6 \  
                    --with-http_stub_status_module \  
                    --with-http_ssl_module \  
