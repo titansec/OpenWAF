@@ -111,9 +111,12 @@ Docker容器
 发布应用
 =======
 
-* [简介](#简介)
-* [接入规则配置简要说明](#接入规则配置简要说明)
-* [发布应用举例](#发布应用举例)
+* [简介](#简介)  
+* [接入规则配置简要说明](#接入规则配置简要说明)  
+* [发布应用举例](#发布应用举例)  
+    * [初次使用OpenWAF](#初次使用openwaf)  
+        * [使用OpenWAF提供的nginx配置文件](#使用openwaf提供的nginx配置文件)   
+        * [使用自己原有的nginx配置](#使用自己原有的nginx配置)  
 
 简介
 ----
@@ -149,10 +152,12 @@ Docker容器
 发布应用举例
 -----------
     接下来结合nginx配置举例讲解接入规则的使用  
-    
-例1：一步体验 OpenWAF  
+    
+### 初次使用OpenWAF
 
-    如果用 OpenWAF 默认的 /etc/ngx_openwaf.conf 配置文件，且未体验过 OpenWAF，那么只用看此例1即可
+#### 使用OpenWAF提供的nginx配置文件
+
+    如果用 OpenWAF 默认的 /etc/ngx_openwaf.conf 配置文件（默认监听 80 端口），且未体验过 OpenWAF，那么只用看此例即可
     
     修改 /opt/OpenWAF/conf/twaf_access_rule.json 文件中第一条接入规则的"forward_addr"值  
     
@@ -176,5 +181,26 @@ Docker容器
     默认SQLI，CC防护都是开启的，可以进行SQL注入或CC攻击，看防护效果  
 
     深入防护，深入测试，请看其他文档  
+    
+#### 使用自己原有的nginx配置
+
+    拥有自己的nginx配置，仅需以下两步即可体验OpenWAF防护
+    
+1. nginx配置修改  
+    在 nginx 的 http 级别添加如下两行：
+```
+    include /opt/OpenWAF/conf/twaf_main.conf;
+    include /opt/OpenWAF/conf/twaf_api.conf;
+```
+    要防护的 server 或 location 级别添加如下一行：
+```
+    include /opt/OpenWAF/conf/twaf_server.conf;
+```
+
+2. OpenWAF接入规则修改  
+    修改/opt/OpenWAF/conf/twaf_access_rule.json文件  
+    将"state"值设为false即可
+    
+
 
 
