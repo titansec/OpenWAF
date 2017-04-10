@@ -148,8 +148,8 @@ Installation
    详见 https://openresty.org/en/installation.html
    
    1.1 cd /opt
-   1.2 wget -c https://openresty.org/download/openresty-1.11.2.1.tar.gz
-   1.3 tar -xzvf openresty-1.11.2.1.tar.gz
+   1.2 wget -c https://openresty.org/download/openresty-1.11.2.2.tar.gz
+   1.3 tar -xzvf openresty-1.11.2.2.tar.gz
 
 2. install OpenWAF
    2.1 cd /opt
@@ -158,14 +158,14 @@ Installation
    2.3 move OpenWAF configure
        mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc
    2.4 cover openresty configure
-       mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.1
+       mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.2
    2.5 the third-party modules move into openresty
-       mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.1/bundle/
+       mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/
    2.6 remove OpenWAF/lib/openresty
        rm -rf /opt/OpenWAF/lib/openresty
        
 3. compile openresty
-   3.1 cd /opt/openresty-1.11.2.1/
+   3.1 cd /opt/openresty-1.11.2.2/
    3.2 ./configure --with-pcre-jit --with-ipv6 \
                    --with-http_stub_status_module \
                    --with-http_ssl_module \

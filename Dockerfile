@@ -32,9 +32,9 @@ RUN apt-get install libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl
     && cd /opt \
     && rm -rf pcre-8.40.tar.gz pcre-8.40/ \
     && cd /opt \
-    && wget https://openresty.org/download/openresty-1.11.2.1.tar.gz \
-    && tar -zxvf openresty-1.11.2.1.tar.gz \
-    && rm -rf openresty-1.11.2.1.tar.gz
+    && wget https://openresty.org/download/openresty-1.11.2.2.tar.gz \
+    && tar -zxvf openresty-1.11.2.2.tar.gz \
+    && rm -rf openresty-1.11.2.2.tar.gz
     
 #2. install OpenWAF
 RUN cd /opt \
@@ -43,9 +43,9 @@ RUN cd /opt \
     #move conf file
     && mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc \
     #overwrite the configure file of openresty
-    && mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.1 \
+    && mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.2 \
     #move third-party modules to openresty
-    && mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.1/bundle/ \
+    && mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/ \
     #delete some catalog
     && rm -rf /opt/OpenWAF/lib/openresty
     
@@ -55,7 +55,7 @@ RUN cd /opt \
 #	&& cd lua-5.1.4 \
 #	&& make linux test \
 #	&& make install \
-RUN cd /opt/openresty-1.11.2.1/ \	
+RUN cd /opt/openresty-1.11.2.2/ \	
     && ./configure \
         --with-pcre-jit --with-ipv6 \
         --with-http_stub_status_module \

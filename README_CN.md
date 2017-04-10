@@ -153,8 +153,8 @@ Installation
    详见 https://openresty.org/en/installation.html
    
    1.1 cd /opt
-   1.2 wget -c https://openresty.org/download/openresty-1.11.2.1.tar.gz
-   1.3 tar -xzvf openresty-1.11.2.1.tar.gz
+   1.2 wget -c https://openresty.org/download/openresty-1.11.2.2.tar.gz
+   1.3 tar -xzvf openresty-1.11.2.2.tar.gz
 
 2. 安装OpenWAF
    2.1 cd /opt
@@ -163,14 +163,14 @@ Installation
    2.3 移动配置文件
        mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc
    2.4 覆盖openresty的configure文件
-       mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.1
+       mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.2
    2.5 移动第三方模块至openresty中
-       mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.1/bundle/
+       mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/
    2.6 删除OpenWAF/lib/openresty目录
        rm -rf /opt/OpenWAF/lib/openresty
        
 3. 编译openresty
-   3.1 cd /opt/openresty-1.11.2.1/
+   3.1 cd /opt/openresty-1.11.2.2/
    3.2 ./configure --with-pcre-jit --with-ipv6 \
                    --with-http_stub_status_module \
                    --with-http_ssl_module \
