@@ -44,6 +44,11 @@ function _M.handler(self, _twaf)
     local request_port      =  tonumber(ngx.var.server_port) or 0
     local cf                = _twaf.config.twaf_access_rule
     
+    if cf.state ~= true then
+        request.POLICYID = _twaf.config.global_conf_uuid
+        return
+    end
+    
     if type(request_host) == "table" then
         return _log_action(_twaf, cf)
     end
