@@ -1,3 +1,12 @@
+Time: 2017/04/10  
+Version: v0.0.5  
+    1. Rules
+        Delete 30 rules which severity is "low".
+    2. fix
+        Failed to install on Ubuntu: undefined symbol GeoIP_continent_by_id
+    3. Update docker version to 0.0.5
+    4. New Release - 0.0.5
+
 Time: 2017/03/20  
 Version: v0.0.4  
     1. New Module - twaf_anti_cc  
