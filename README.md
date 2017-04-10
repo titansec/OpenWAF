@@ -33,7 +33,7 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v0.0.4 released on 22 Mar 2017.
+This document describes OpenWAF v0.0.5 released on 10 Apr 2017.
 
 Docker Version  
 1. titansec/openwaf:0.0.1.161130_beta  
@@ -1440,7 +1440,7 @@ $twaf_https
 
 "set $twaf_https 1"，则表示请求通过ssl加密
 
-"set $twaf_https 1"，则表示请求未通过ssl加密
+"set $twaf_https 0"，则表示请求未通过ssl加密
 
 ```
 server {
