@@ -55,10 +55,10 @@
         "detail_state":true
     },
     "twaf_anti_mal_crawler": {
-        "state":false,
+        "state":true,
         "cookie_state":true,
         "log_state":true,
-        "force_scan_robots_state":false,
+        "force_scan_robots_state":true,
         "force_scan_times": 3,
         "shared_dict_key":"remote_addr",
         "timeout":300,
@@ -70,7 +70,7 @@
         "action_meta":403
     },
     "twaf_limit_conn": {
-        "state":false,
+        "state":true,
         "log_state":true,
         "trigger_state":true,
         "clean_state":true,
