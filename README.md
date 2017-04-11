@@ -42,9 +42,11 @@ Docker Version
 2. titansec/openwaf:0.0.3.170103_beta  
 &emsp;&emsp;SHA: 28ce1556250301f26f31b46d9cd9dde5a3b3f03f  
 &emsp;&emsp;https://github.com/titansec/OpenWAF/tree/28ce1556250301f26f31b46d9cd9dde5a3b3f03f  
-3. titansec/openwaf:v0.0.4(titansec/openwaf:latest)  
+3. titansec/openwaf:v0.0.4  
 &emsp;&emsp;SHA: cdef1e0eac4f12c374feb6ac3c3c465610daaf6c  
 &emsp;&emsp;https://github.com/titansec/OpenWAF/tree/cdef1e0eac4f12c374feb6ac3c3c465610daaf6c  
+4. titansec/openwaf:v0.0.5(titansec/openwaf:latest)  
+&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/f9a3a6cfb8b75b1f4af9f44477a5b64337a7da47  
 
 Synopsis
 ========
