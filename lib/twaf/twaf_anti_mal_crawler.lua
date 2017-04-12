@@ -155,7 +155,7 @@ function _M.handler(self, _twaf)
         return _log_action(_twaf, cf)
     end
     
-    if uri_len == 11 or uri == "/robots.txt"  then
+    if uri_len == 11 and uri == "/robots.txt"  then
         if cookie_state == true and not crawler_cookie then
             --crc32(time ip agent crawler_cookie_name time)
             local crawler_cookie_value = twaf_func:set_cookie_value(request, cf.crawler_cookie_name)
