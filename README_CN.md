@@ -1252,8 +1252,7 @@ twaf_anti_cc
             "req_max":50,                                    -- 单一源ip每秒请求总数
             "uri_frequency_max":3000                         -- 单一路径每秒请求总数
         },
-        "event_id":"710002",                                 -- 事件ID
-        "event_severity":"high",                             -- 事件严重等级
+        "attacks": 1,                                        -- 在一次CC攻击过程中，某ip触发清洗值的次数大于attacks，则此ip会一直被拦截，直到CC攻击结束
         "timer_flush_expired":10,                            -- 清理shared_dict过期数据的时间间隔
         "interval":10,                                       -- 进入CC防护后发送日志的时间间隔，单位秒
         "shared_dict_name":"twaf_limit_conn",                -- 存放其他信息的shared_dict
@@ -1350,6 +1349,24 @@ table类型，清洗阈值
         "uri_frequency_max":3000                         -- 单一路径每秒请求总数，默认3000个/秒
     }
 ```
+
+attacks
+-------
+**syntax:** *"attacks": number*
+
+**default:** *1*
+
+**context:** *twaf_limit_conn*
+
+在一次 CC 攻击过程中，某ip触发清洗阈值的次数大于 attacks ，则此 ip 会一直被拦截，直到 CC 攻击结束
+
+此前，在一次 CC 攻击过程中，当达到清洗阈值时，才会进行拦截。若未达到清洗阈值，即使之前被拦截过，也可正常访问后端服务器
+
+正确设置此参数，可以大大提升 CC 防护性能
+
+若想恢复以前的 CC 防护机制，只需 attacks 设为 0 即可
+
+此参数出现在 OpenWAF-0.0.6 版本， twaf_anti_cc 的 0.0.3 版本
 
 timer_flush_expired
 -------------------
