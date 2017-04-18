@@ -84,6 +84,7 @@
             "req_max":50,
             "uri_frequency_max": 3000
         },
+        "attacks": 1,
         "timer_flush_expired":10,
         "interval":10,
         "shared_dict_name":"twaf_limit_conn",

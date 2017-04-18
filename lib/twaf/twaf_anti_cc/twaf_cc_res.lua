@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "0.0.3"
 }
 
 local cjson            = require "cjson.safe"
@@ -171,6 +171,10 @@ function _M.anti_cc_res(self, _twaf, ctx)
         for k, v in pairs(value) do
             tb.log[k] = v
         end
+    end
+    
+    if tb.ip[addr] and cf.attacks and cf.attacks > 0 and tb.ip[addr] > cf.attacks then
+        ctx.res = true
     end
     
     if ctx.res == false then

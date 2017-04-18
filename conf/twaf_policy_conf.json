@@ -27,6 +27,7 @@
             "req_max":50,
             "uri_frequency_max": 3000
         },
+        "attacks": 1,
         "action":"DENY",
         "action_meta":403
     }
