@@ -11,7 +11,7 @@ Table of Contents
 * [twaf_main](#twaf_main)
     * [twaf_init](#twaf_init)
 * [twaf_api](#twaf_api)
-* [twaf_server](#twaf_server]
+* [twaf_server](#twaf_server)
     * [twaf_access_rule](#twaf_access_rule)
 
 nginx配置
