@@ -440,9 +440,9 @@ forward_addr 和 forward_port 只在 upstream 中使用 balancer_by_lua 才会�
 }
 ```
 
-从以上配置可以看出，access_rule 节省了因域名，监听端口，路径，upstream等因素造成的配置复杂性
+从以上配置可以看出，access_rule 节省了因域名，监听端口，路径，upstream 等因素造成的配置复杂性
 
-而且，以后可通过api，动态添加接入规则，不需中断业务，而修改nginx配置，可能会中断业务
+而且，以后可通过 api，动态添加接入规则，不需中断业务，而修改 nginx 配置，可能会中断业务
 
 注意：在上例中，www.aaa.com 站点下，有 '/' 和 '/a' 两个路径，access_rule 是数组，因此，要将有关 '/a' 的配置放在 '/' 前
 
@@ -490,12 +490,12 @@ forward_addr 和 forward_port 只在 upstream 中使用 balancer_by_lua 才会�
 }
 ```
 
-这里可以看到，仅仅是配置了根目录的接入规则，并不需单独为'/a'进行配置  
+这里可以看到，仅仅是配置了根目录的接入规则，并不需单独为 '/a' 进行配置  
 
-因为访问 www.aaa.com/a 目录下资源，已经匹配中了这条接入规则，但对应的nginx配置中并没有 proxy_pass，  
+因为访问 www.aaa.com/a 目录下资源，已经匹配中了这条接入规则，但对应的 nginx 配置中并没有 proxy_pass，  
 因此 forward ，forward_addr 和 forward_port 三个参数并不会生效
 
-当然如果你很任性，非要添加有关'/a'目录的接入规则，则配置如下：
+当然如果你很任性，非要添加有关 '/a' 目录的接入规则，则配置如下：
 
 ```
 {
