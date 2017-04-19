@@ -438,6 +438,7 @@ forward_addr 和 forward_port 只在 upstream 中使用 balancer_by_lua 才会�
         ]
     }
 }
+```
 
 从以上配置可以看出，access_rule 节省了因域名，监听端口，路径，upstream等因素造成的配置复杂性
 
