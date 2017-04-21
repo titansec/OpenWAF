@@ -336,8 +336,6 @@ _M.request = {
         
         request.HTTP_USER_AGENT              =  ngx.var.http_user_agent
         request.HTTP_COOKIE                  =  ngx.var.http_cookie
-        request.RAW_HEADER                   =  ngx.req.raw_header()
-        request.RAW_HEADER_TRUE              =  ngx.req.raw_header(true)
         request.TIME_LOCAL                   =  ngx.var.time_local
         request.ORIGINAL_DST_ADDR            =  ngx.var.original_dst_addr
         request.ORIGINAL_DST_PORT            =  tonumber(ngx.var.original_dst_port) or 0
@@ -355,6 +353,9 @@ _M.request = {
         request.GEO_ID                       =  (request.GEO or {})["id"]
         request.GEO_CONTINENT                =  (request.GEO or {})["continent"]
         request.GEO_NAME                     =  (request.GEO or {})["name"]
+        
+        pcall(function() request.RAW_HEADER       =  ngx.req.raw_header() end)
+        pcall(function() request.RAW_HEADER_TRUE  =  ngx.req.raw_header(true) end)
         
     end,
     header_filter = function(_twaf, request)
