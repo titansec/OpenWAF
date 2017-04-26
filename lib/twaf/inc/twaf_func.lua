@@ -777,7 +777,7 @@ function _M.rule_log(self, _twaf, info)
     request.MATCHED_VAR_NAMES = {}
     
     -- action
-    return twaf_action:do_action(_twaf, info.action, info.meta)
+    return twaf_action:do_action(_twaf, info.action, info.action_meta)
 end
 
 return _M
