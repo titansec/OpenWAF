@@ -2848,6 +2848,7 @@ Others
 ------
 
 * [allow](#allow)
+* [allow_phase](#allow_phase)
 * [deny](#deny)
 * [id](#id)
 * [nolog](#nolog)
@@ -2874,10 +2875,24 @@ Others
 
 allow
 -----
-Stops rule processing of the current phase on a successful match and allows the transaction to proceed.
+Stops processing of the current phase but also skipping over all other phases.
 
 ```
 "action": "allow"
+```
+
+一旦执行此动作，则后面的防护规则及其他安全模块均不进行安全检测，此动作一般用于白名单
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+allow_phase
+-----------
+Stops processing of the current phase.
+
+```
+"action": "allow_phase"
 ```
 
 [Back to OTHERS](#others)
