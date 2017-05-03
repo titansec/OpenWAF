@@ -436,14 +436,14 @@ end
 
 function _M.handler(self, _twaf)
 
-    local cf           = _twaf:get_config_param(modules_name)
-    local gcf          = _twaf:get_config_param("twaf_global")
+    local ctx  = _twaf:ctx()
+    local cf   = _twaf:get_config_param(modules_name)
+    local gcf  = _twaf:get_config_param("twaf_global")
     
-    if not twaf_func:state(cf.state) then
+    if not twaf_func:state(cf.state) or ctx.trust == true then
         return true
     end
     
-    local ctx  = _twaf:ctx()
     if not ctx[modules_name] then ctx[modules_name] = {} end
     local sctx =  ctx[modules_name]
     
@@ -477,7 +477,8 @@ function _M.header_filter(self, _twaf)
     local cf   = _twaf:get_config_param(modules_name)
     
     if  not twaf_func:state(cf.header_filter_state) or 
-        not sctx or sctx.header_filter then
+        not sctx or sctx.header_filter or 
+        ctx.trust == true then
         return true
     end
     
@@ -493,7 +494,8 @@ function _M.body_filter(self, _twaf)
     local cf   = _twaf:get_config_param(modules_name)
     
     if  not twaf_func:state(cf.body_filter_state) or
-        ctx.short_circuit or not sctx then
+        ctx.short_circuit or not sctx or
+        ctx.trust == true then
         return true
     end
     

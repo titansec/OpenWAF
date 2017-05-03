@@ -61,7 +61,12 @@ function _M.do_action(self, _twaf, action, meta)
             return false
         end,
         ALLOW = function(_twaf, meta)
-            -- stop processing the current phase
+            -- stopping processing of the current phase but also skipping over all other phases
+            _twaf:ctx().trust = true
+            return true
+        end,
+        ALLOW_PHASE = function(_twaf, meta)
+            -- stopping processing of the current phase
             return true
         end,
         CHAIN = function(_twaf, meta)
