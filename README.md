@@ -3319,7 +3319,7 @@ add_resp_headers
 ```
 例如隐藏server字段:
 "opts": {
-    "add"_resp_headers": {
+    "add_resp_headers": {
         "server": ""
     }
 }
