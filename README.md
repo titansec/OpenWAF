@@ -13,7 +13,6 @@ Table of Contents
 * [Synopsis](#synopsis)
 * [Description](#description)
 * [Installation](#installation)
-* [Docker](#docker)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -143,113 +142,7 @@ Detailed configuration documents and examples, please refer to the above module 
 Installation
 ============
 
-[安装请看最新整理的文档](https://github.com/titansec/OpenWAF/blob/master/doc/%E8%BD%BB%E6%9D%BE%E7%8E%A9%E8%BD%ACOpenWAF%E4%B9%8B%E5%85%A5%E9%97%A8%E7%AF%87.md)
-
-```
-1. install openresty
-   详见 https://openresty.org/en/installation.html
-   
-   1.1 cd /opt
-   1.2 wget -c https://openresty.org/download/openresty-1.11.2.2.tar.gz
-   1.3 tar -xzvf openresty-1.11.2.2.tar.gz
-
-2. install OpenWAF
-   2.1 cd /opt
-   2.2 get OpenWAF
-       git clone https://github.com/titansec/OpenWAF.git
-   2.3 move OpenWAF configure
-       mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc
-   2.4 cover openresty configure
-       mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.2
-   2.5 the third-party modules move into openresty
-       mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/
-   2.6 remove OpenWAF/lib/openresty
-       rm -rf /opt/OpenWAF/lib/openresty
-       
-3. compile openresty
-   3.1 cd /opt/openresty-1.11.2.2/
-   3.2 ./configure --with-pcre-jit --with-ipv6 \
-                   --with-http_stub_status_module \
-                   --with-http_ssl_module \
-                   --with-http_realip_module \
-                   --with-http_sub_module
-   3.3 make && make install
-   
-4. edit configure
-   4.1 edit host, server, url and so on
-       vi /opt/OpenWAF/conf/twaf_access_rule.json
-       
-   4.2 edit log server address
-       vi /opt/OpenWAF/conf/twaf_default_conf.json
-   
-5. start OpenWAF
-   /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
-       
-Problems
-1. nginx:[emerg] at least OpenSSL 1.0.2e required but found OpenSSL xxx
-   Update OpenSSL version to 1.0.2e or more
-   
-   如：wget -c http://www.openssl.org/source/openssl-1.0.2h.tar.gz
-      ./config
-      make && make install
-      
-   PS: 
-      1. 查看当前openssl版本命令： openssl version
-      2. 若更新openssl后，版本未变，请详看http://www.cnblogs.com/songqingbo/p/5464620.html
-      3. 若依然提示版本问题，编译openresty时带上--with-openssl=/path/to/openssl-xxx/
-      
-2. 提示找不到GeoIP.h
-   
-   apt-get install libgeoip-dev
-   
-3. 提示找不到swig
-
-   apt-get install swig
-   
-4. 提示PCRE不支持JIT 
-   
-   编译pcre时，带上--enable-jit参数
-```
-
-[Back to TOC](#table-of-contents)
-
-Docker
-======
-```
-1. pull docker images from repository
-   docker pull titansec/openwaf
-
-2. start-up docker
-   2.1 docker run, named openwaf
-       docker run -d -p 22:22 -p 80:80 -p 443:443 --name openwaf titansec/openwaf
-   2.2 enter openwaf
-       docker exec -it openwaf /bin/bash
-
-3. edit config
-   3.1 edit access rule
-       vi /opt/OpenWAF/conf/twaf_access_rule.json
-   3.2 edit log server addr
-       vi /opt/OpenWAF/conf/twaf_default_conf.json
-
-4. start-up OpenWAF
-    /usr/local/openresty/nginx/sbin/nginx -c /etc/ngx_openwaf.conf
-    
-PS:
-#add bridge address, e.g. 192.168.39.12
-    pipework br0 ContainerName ip/gateway
-    如：
-    pipework br0 openwaf 192.168.39.12/24@192.168.39.253
-
-Problems
-1. pipework: command not found
-
-   git clone https://github.com/jpetazzo/pipework.git
-   cp pipework/pipework /usr/local/bin/
-   
-2. Warning: arping not found; interface may not be immediately reachable
-
-   apt-get install arping
-```
+[请看 OpenWAF 安装文档](https://github.com/titansec/OpenWAF/blob/master/doc/%E8%BD%BB%E6%9D%BE%E7%8E%A9%E8%BD%ACOpenWAF%E4%B9%8B%E5%AE%89%E8%A3%85%E7%AF%87.md)
 
 [Back to TOC](#table-of-contents)
 
