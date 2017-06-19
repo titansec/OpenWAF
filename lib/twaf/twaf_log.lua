@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "0.0.3"
 }
 
 local twaf_func           = require "lib.twaf.inc.twaf_func"
@@ -33,6 +33,8 @@ local function _get_var(request, key, size_limit)
     
     if type(request[key]) == "function" then
         str = twaf_func:table_to_string(request[key]())
+    elseif key:sub(1,1) == "%" then
+        str = twaf_func:parse_dynamic_value(key ,request)
     else
         str = twaf_func:table_to_string(request[key])
     end
