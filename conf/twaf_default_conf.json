@@ -42,7 +42,7 @@
         "pre_path": "/opt/OpenWAF/",
         "path": "lib/twaf/inc/knowledge_db/twrules",
         "rules_id":{},
-        "user_rules":[]
+        "user_defined_rules":[]
     },
     "twaf_access_rule" : {
         "log_state":true,
@@ -110,6 +110,7 @@
         "flush_limit":0,
         "drop_limit":65507,
         "max_retry_times":5,
+        "size_limit": 200,
         "ssl":false,
         "safe_event_format": {
             "ctx": [

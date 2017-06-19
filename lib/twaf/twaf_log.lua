@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func           = require "lib.twaf.inc.twaf_func"
@@ -27,7 +27,7 @@ local function _transfer_quotation_mark(str)
     return ngx.re.gsub(str, [=[."]=], func, "oij")
 end
 
-local function _get_var(request, key)
+local function _get_var(request, key, size_limit)
 
     local str = nil
     
@@ -39,6 +39,10 @@ local function _get_var(request, key)
     
     if type(str) == "string" then
         str = _transfer_quotation_mark(str)
+        local len = #str
+        if len > size_limit then
+            str = str:sub(1, size_limit).." - left "..tostring(len - size_limit)
+        end
     end
     
     if str == nil then
@@ -48,7 +52,7 @@ local function _get_var(request, key)
     return str
 end
 
-local function _add_tags_and_fileds(request, raw_msg, counter)
+local function _add_tags_and_fileds(request, raw_msg, size_limit, counter)
     local log = ""
     
     if raw_msg.db then
@@ -57,9 +61,9 @@ local function _add_tags_and_fileds(request, raw_msg, counter)
     
     if raw_msg.tags then
         for _, v in ipairs(raw_msg.tags) do
-            local value = _get_var(request, v:upper())
-            if type(value) == "string" then value = "\""..value.."\"" end
-            log = log..v.."="..value..","
+            local value = _get_var(request, v:upper(), size_limit)
+            
+            log = log..v.."=".."\""..value.."\""..","
         end
     end
     
@@ -67,9 +71,8 @@ local function _add_tags_and_fileds(request, raw_msg, counter)
     log     = log .. " "
     
     for i, v in ipairs(raw_msg.fileds) do
-        local value = _get_var(request, v:upper())
-        if type(value) == "string" then value = "\""..value.."\"" end
-        log = log..v.."="..value..","
+        local value = _get_var(request, v:upper(), size_limit)
+        log = log..v.."=".."\""..value.."\""..","
     end
     
     log = log:sub(1, -2)
@@ -87,7 +90,7 @@ local function _add_timestamp(request, raw_msg, log)
     return log
 end
 
-local function _set_msg_influxdb(request, events, raw_msg, flag)
+local function _set_msg_influxdb(request, events, raw_msg, size_limit, flag)
 
     local log     = ""
     local counter = 1
@@ -98,12 +101,12 @@ local function _set_msg_influxdb(request, events, raw_msg, flag)
     end
     
     if flag == "access_log" then
-        local tf = _add_tags_and_fileds(request, raw_msg, counter)
+        local tf = _add_tags_and_fileds(request, raw_msg, size_limit, counter)
         return _add_timestamp(request, raw_msg, tf)
     end
     
     for modules_name, event in pairs(events) do
-        local tf = _add_tags_and_fileds(request, raw_msg, counter)
+        local tf = _add_tags_and_fileds(request, raw_msg, size_limit, counter)
         log = log .. tf
         
         for k, v in pairs(event) do
@@ -122,7 +125,7 @@ local function _set_msg_influxdb(request, events, raw_msg, flag)
     return false
 end
 
-local function _set_msg_json(request, events, raw_msg, flag)
+local function _set_msg_json(request, events, raw_msg, size_limit, flag)
 
     if type(raw_msg) ~= "table" then
         ngx.log(ngx.ERR, "the format of message is not a table")
@@ -133,7 +136,7 @@ local function _set_msg_json(request, events, raw_msg, flag)
     
     for _, v in pairs(raw_msg) do
         if type(v) == "string" then
-            log[v] = _get_var(request, v:upper())
+            log[v] = _get_var(request, v:upper(), size_limit)
         end
     end
     
@@ -174,17 +177,20 @@ end
 
 function _M:set_msg(ctx, cf, log_format, flag)
 
-    if not ctx then
-        return false
+    if not ctx then return false end
+    
+    local request    =  ctx.request
+    local events     =  ctx.events.log
+    local size_limit =  tonumber(cf.size_limit)
+    
+    if not size_limit or size_limit <= 20 or size_limit >= 1000 then
+        size_limit = 200
     end
     
-    local request =  ctx.request
-    local events  =  ctx.events.log
-    
     if cf.content_type == "JSON" then
-        return _set_msg_json(request, events, log_format, flag)
+        return _set_msg_json(request, events, log_format, size_limit, flag)
     elseif cf.content_type == "INFLUXDB" then
-        return _set_msg_influxdb(request, events, log_format, flag)
+        return _set_msg_influxdb(request, events, log_format, size_limit, flag)
     end
     
     return false
