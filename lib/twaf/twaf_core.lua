@@ -134,6 +134,20 @@ local function _filter_order(_twaf, phase, modules_order)
     end
 end
 
+local function _add_resp_headers(_twaf, ctx)
+    local cf = _twaf:get_config_param("twaf_add_resp_header") or {}
+    
+    for k, v in pairs(ctx.add_resp_headers or {}) do
+        cf[k] = v
+    end
+    
+    for k, v in pairs(cf) do
+        if v ~= "nil" then
+            ngx.header[k] = v
+        end
+    end
+end
+
 function _M.run(self, _twaf)
 
     local res
@@ -172,6 +186,8 @@ function _M.run(self, _twaf)
     elseif phase == "header_filter" then
     
         _filter_order(_twaf, phase, modules_order)
+        
+        _add_resp_headers(_twaf, ctx)
         
     elseif phase == "body_filter" then
     
