@@ -38,8 +38,6 @@ http {
         include                     /opt/OpenWAF/conf/twaf_server.conf;
         ssl_certificate_by_lua_file /opt/OpenWAF/app/twaf_ssl_cert.lua;
         
-        set $twaf_https 1;
-
         location / {
             proxy_pass $twaf_upstream_server;
         }
@@ -235,8 +233,6 @@ ssl_certificate_by_lua 阶段用于 ssl 认证，涉及到 access_rule 配置的
         
         include                     /opt/OpenWAF/conf/twaf_server.conf;  #添加 WAF 防护
         ssl_certificate_by_lua_file /opt/OpenWAF/app/twaf_ssl_cert.lua;  #动态指定 SSL 证书
-        
-        set $twaf_https 1;
 
         location / {
             ...
