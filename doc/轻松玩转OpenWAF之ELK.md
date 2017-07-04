@@ -134,13 +134,19 @@ OpenWAF配置
     
     访问结果如下：
     
-    <img src="http://i.imgur.com/0rSpXc8.png">
+<img src="http://i.imgur.com/BPYPBfB.png">
     
     此时，访问 192.168.39.19:5601，在 kibana 上查看日志
     
     若第一次使用 kibana，需要生成一个索引，如下（使用默认）：
     
-    kibana 功能强大，可以做各种图，用来分析日志，生成报表，更多功能请看 kibana 官方文档。
+<img src="http://i.imgur.com/oH2toG6.png">
+
+    kibana 日志显示如下：
+    
+<img src="http://i.imgur.com/jzDlUuu.png">
+    
+    kibana 功能强大，可以做各种图，用来分析日志，生成报表，更多功能请看 [kibana](https://www.elastic.co/guide/en/kibana/current/index.html) 官方文档。
 
 
 
