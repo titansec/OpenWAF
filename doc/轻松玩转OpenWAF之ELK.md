@@ -146,8 +146,7 @@ OpenWAF配置
     
 <img src="http://i.imgur.com/jzDlUuu.png">
 
-kibana 功能强大，可以做各种图，用来分析日志，生成报表，更多功能请看  
-[kibana官方文档](https://www.elastic.co/guide/en/kibana/current/index.html)
+kibana 功能强大，可以做各种图，用来分析日志，生成报表，更多功能请看 [kibana官方文档](https://www.elastic.co/guide/en/kibana/current/index.html)
 
 
 
