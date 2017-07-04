@@ -134,6 +134,8 @@ OpenWAF配置
     
     访问结果如下：
     
+    <img src="http://i.imgur.com/0rSpXc8.png">
+    
     此时，访问 192.168.39.19:5601，在 kibana 上查看日志
     
     若第一次使用 kibana，需要生成一个索引，如下（使用默认）：
