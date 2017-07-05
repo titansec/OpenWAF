@@ -1,14 +1,16 @@
 {
-    "protocol_specifications" : { "cname": "协议规范", "rule_name": "protocol\\..*"},
-    "automatic_tool"          : { "cname": "自动工具", "rule_name": "(?:auto|spider)\\..*"},
-    "injection_attack"        : { "cname": "注入攻击", "rule_name": "attack\\.injection\\..*"},
-    "XSS_attack"              : { "cname": "跨站攻击", "rule_name": "attack\\.xss.*"},
-    "other_attack"            : { "cname": "其它攻击", "rule_name": "attack\\.(?!injection|xss|upload).*"},
-    "information_leakage"     : { "cname": "信息泄漏", "rule_name": "leakage\\..*"},
-    "malicious_page"          : { "cname": "恶意页面", "rule_name": "(?:malicious|risk)\\..*"},
-    "hotfix"                  : { "cname": "热补丁",   "rule_name": "fix\\..*"},
-    "upload_attack"           : { "cname": "上传攻击", "rule_name": "attack\\.upload.*"},
-    "exception_request"       : { "cname": "异常请求", "rule_name": "exception\\..*"},
-    "abnormal_score"          : { "cname": "异常评分", "rule_name": "behavior\\.anomaly_score"},
-    "CC_attack"               : { "cname": "CC攻击",   "rule_name": "ddos\\.cc"}
+    "protocol_specifications" : { "chinese_name": "协议规范", "rule_name": "protocol\\..*"},
+    "automatic_tool"          : { "chinese_name": "自动工具", "rule_name": "(?:auto|spider)\\..*"},
+    "injection_attack"        : { "chinese_name": "注入攻击", "rule_name": "attack\\.injection\\..*"},
+    "XSS_attack"              : { "chinese_name": "跨站攻击", "rule_name": "attack\\.xss.*"},
+    "upload_attack"           : { "chinese_name": "上传攻击", "rule_name": "attack\\.upload.*"},
+    "other_attack"            : { "chinese_name": "其它攻击", "rule_name": "attack\\.(?!injection|xss|upload).*"},
+    "information_leakage"     : { "chinese_name": "信息泄漏", "rule_name": "leakage\\..*"},
+    "malicious_page"          : { "chinese_name": "恶意页面", "rule_name": "(?:malicious|risk)\\..*"},
+    "hotfix"                  : { "chinese_name": "热补丁",   "rule_name": "fix\\..*"},
+    "exception_request"       : { "chinese_name": "异常请求", "rule_name": "exception\\..*"},
+    "abnormal_score"          : { "chinese_name": "异常评分", "rule_name": "behavior\\.anomaly_score"},
+    "CC_attack"               : { "chinese_name": "CC攻击",   "rule_name": "ddos\\.cc"},
+    "audit_log"               : { "chinese_name": "审计日志", "rule_name": "audit\\..*"},
+    "time_geo"                : { "chinese_name": "时域控制", "rule_name": "time_geo.*"}
 }
