@@ -6,6 +6,9 @@ local _M = {
     _VERSION = "0.0.1"
 }
 
+local ffi        = require "ffi"
+local twaf_func  = require "lib.twaf.inc.twaf_func"
+
 function _M.transforms(self, options, values)
     local func = {
         base64_decode = function(value)
@@ -18,15 +21,57 @@ function _M.transforms(self, options, values)
                 return value
             end
         end,
+        base64_decode_ext = function(value)
+            if not value then return nil end
+            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
+            
+            local val = tostring(value)
+            local len = #val
+            local buf = ffi.new(ffi.typeof("char[?]"), len)
+            local n = twaf_func.decode_lib.decode_base64_ext(buf, val, len)
+            
+            return twaf_func.ffi_str(buf, n)
+        end,
         base64_encode = function(value)
             if not value then return nil end
             
             return ngx.encode_base64(value)
         end,
+        css_decode = function(waf, value)
+            if not value then return nil end
+            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            
+            local n = twaf_func.decode_lib.css_decode(buf, len)
+            
+            return twaf_func.ffi_str(buf, n)
+        end,
         compress_whitespace = function(value)
             if type(value) ~= "string" then return value end
             
             return ngx.re.gsub(value, [=[\s+]=], ' ', "oij")
+        end,
+        counter = function(value)
+            if not value then return 0 end
+            
+            if type(value) == "table" then
+                return #value
+            end
+            
+            return 1
+        end,
+        escape_seq_decode = function(value)
+            if not value then return nil end
+            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            
+            local n = twaf_func.decode_lib.escape_seq_decode(buf, len)
+            
+            return twaf_func.ffi_str(buf, n)
         end,
         hex_decode = function(value)
             if type(value) ~= "string" then return value end
@@ -62,6 +107,17 @@ function _M.transforms(self, options, values)
             str = ngx.re.gsub(str, [=[&amp;]=], '&', "oij")
             return str
         end,
+        js_decode = function(waf, value)
+            if not value then return nil end
+            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            
+            local n = twaf_func.decode_lib.js_decode(buf, len)
+            
+            return twaf_func.ffi_str(buf, n)
+        end,
         length = function(value)
             if not value then
                 return 0
@@ -88,6 +144,9 @@ function _M.transforms(self, options, values)
             
             return ngx.md5_bin(value)
         end,
+        none = function(value)
+            return value
+        end,
         normalise_path = function(value)
             if type(value) ~= "string" then return value end
             
@@ -106,18 +165,21 @@ function _M.transforms(self, options, values)
             
             return ngx.re.gsub(value, [=[\/\*|\*\/|--|#]=], '', "oij")
         end,
+        remove_nulls = function(value)
+            return ngx.re.gsub(value, [=[\0+]=], '', "oij")
+        end,
         remove_whitespace = function(value)
             if type(value) ~= "string" then return value end
             
             return ngx.re.gsub(value, [=[\s+]=], '', "oij")
         end,
-        remove_nulls = function(value)
-            return ngx.re.gsub(value, [=[\0+]=], '', "oij")
-        end,
         replace_comments = function(value)
             if type(value) ~= "string" then return value end
             
             return ngx.re.gsub(value, [=[\/\*(\*(?!\/)|[^\*])*\*\/]=], ' ', "oij")
+        end,
+        replace_nulls = function(waf, value)
+            return ngx.re.gsub(value, [[\0]], ' ', "oij")
         end,
         sha1 = function(value)
             if not value then return nil end
@@ -131,17 +193,19 @@ function _M.transforms(self, options, values)
                 value = string.sub(value, 3)
                 local str
                 if (pcall(function()
-                    str = value:gsub('..', function (cc)
-                        return string.char(tonumber(cc, 16))
-                    end)
-                end)) then
+                    str = value:gsub('..', 
+                        function (cc) 
+                           return string.char(tonumber(cc, 16)) 
+                        end)
+                    end)) 
+                then
                     return str
-                else
-                    return value
                 end
-            else
+                
                 return value
             end
+            
+            return value
         end,
         trim = function(value)
             if type(value) ~= "string" then return value end
@@ -176,15 +240,19 @@ function _M.transforms(self, options, values)
             --Escape str as a URI component
             return ngx.escape_uri(value)
         end,
-        counter = function(value)
-            if not value then return 0 end
+        utf8_to_unicode = function(value)
+            if type(value) ~= "string" then return value end
+            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
             
-            if type(value) == "table" then
-                return #value
-            end
+            local inp_len = #value
+            local inp     = twaf_func.ffi_copy(value, inp_len)
+            local outp    = ffi.new(ffi.typeof("char[?]"), inp_len * 7 + 1)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
             
-            return 1
-        end,
+            local outp_len = twaf_func.decode_lib.utf8_to_unicode(outp, inp, inp_len, changed)
+            
+            return twaf_func.ffi_str(outp, outp_len)
+        end
     }
     
     if not func[options] then

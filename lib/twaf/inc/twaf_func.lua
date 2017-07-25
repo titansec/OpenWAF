@@ -6,6 +6,7 @@ local _M = {
     _VERSION = "0.0.1"
 }
 
+local ffi                   =  require "ffi"
 local cjson                 =  require "cjson.safe"
 local twaf_action           =  require "lib.twaf.inc.action"
 
@@ -19,6 +20,45 @@ local ngx_var               =  ngx.var
 local ngx_get_phase         =  ngx.get_phase
 local ngx_socket_tcp        =  ngx.socket.tcp
 local ngx_req_get_uri_args  =  ngx.req.get_uri_args
+
+ffi.cdef[[
+int js_decode(unsigned char *input, long int input_len);
+int css_decode(unsigned char *input, long int input_len);
+int decode_base64_ext(char *plain_text, const unsigned char *input, int input_len);
+int escape_seq_decode(unsigned char *input, int input_len);
+int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsigned char *changed);
+]]
+
+function _M.ffi_copy(value, len)
+    local buf = ffi.new(ffi.typeof("char[?]"), len)
+    ffi.copy(buf, value)
+    return buf
+end
+
+function _M.ffi_str(value, len)
+    return ffi.string(value, len)
+end
+
+function _M.load_lib(cpath, lib_name)
+
+    for k, v in (cpath or ""):gmatch("[^;]+") do
+        local lib_path = k:match("(.*/)")
+        if lib_path then
+            -- "lib_path" could be nil. e.g, the dir path component is "."
+            lib_path = lib_path .. (lib_name or "")
+            
+            local f = io.open(lib_path)
+            if f ~= nil then
+                f:close()
+                return ffi.load(lib_path)
+            end
+        end
+    end
+    
+    ngx.log(ngx.WARN, "load lib failed - ", lib_name)
+end
+
+_M.decode_lib = _M.load_lib(package.cpath, 'decode.so')
 
 function _M.string_trim(self, str)
     return (str:gsub("^%s*(.-)%s*$", "%1"))
@@ -214,8 +254,8 @@ function _M.check_cookie_value(self, cookie, request, key, timeout)
     local now       = request.TIME_EPOCH      or ngx.time()
     local addr      = request.REMOTE_ADDR     or ngx.var.remote_addr
     local agent     = request.http_user_agent or ngx.var.http_user_agent or ""
-    local crc32_buf =  time..addr..agent..key..time
-    local crc32     =  ngx.crc32_long(crc32_buf)
+    local crc32_buf = time..addr..agent..key..time
+    local crc32     = ngx.crc32_long(crc32_buf)
     
     if crc == crc32 then
         if timeout and (now - time) > timeout then
