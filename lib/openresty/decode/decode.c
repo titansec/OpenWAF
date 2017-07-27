@@ -1,7 +1,7 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "../apr-1.0/apr_strings.h"
 
 /**
  * NOTE: Be careful as these can ONLY be used on static values for X.
@@ -514,30 +514,26 @@ int escape_seq_decode(unsigned char *input, int input_len) {
  */
 
 int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsigned char *changed) {
-    static apr_pool_t *mp = NULL; //
     int unicode_len = 0, length = 0;
     unsigned int d = 0, count = 0;
     unsigned char c, *utf;
     char *rval, *data;
-    unsigned int i, len, j;
+    unsigned int i, len;
     unsigned int bytes_left = input_len;
-    unsigned char *unicode = NULL;
     
-    apr_pool_create(&mp, NULL); //
-    
+    changed[0] = '0';
     len = input_len * 7 + 1;
-    data = rval = apr_palloc(mp, len);
+    data = rval = (char *)malloc(len);
+    
     if (rval == NULL) return 0;
-    changed[0] = '0';  //
-
     if (input == NULL) return 0;
-
+    
     for(i = 0; i < bytes_left;)  {
         unicode_len = 0; d = 0;
         utf = (unsigned char *)&input[i];
-
+        
         c = *utf;
-
+        
         /* If first byte begins with binary 0 it is single byte encoding */
         if ((c & 0x80) == 0) {
             /* single byte unicode (7 bit ASCII equivilent) has no validation */
@@ -548,7 +544,6 @@ int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsi
                 else
                     *data++ = c;
             }
-
         }
         /* If first byte begins with binary 110 it is two byte encoding*/
         else if ((c & 0xE0) == 0xC0) {
@@ -564,31 +559,9 @@ int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsi
                     d = ((c & 0x1F) << 6) | (*(utf + 1) & 0x3F);
                     *data++ = '%';
                     *data++ = 'u';
-                    unicode = (unsigned char *)apr_psprintf(mp, "%x", d);
-                    length = strlen((const char *)unicode);
-
-                    switch(length)  {
-                        case 1:
-                            *data++ = '0';
-                            *data++ = '0';
-                            *data++ = '0';
-                            break;
-                        case 2:
-                            *data++ = '0';
-                            *data++ = '0';
-                            break;
-                        case 3:
-                            *data++ = '0';
-                            break;
-                        case 4:
-                        case 5:
-                            break;
-                    }
-
-                    for(j=0; j<length; j++) {
-                        *data++ = unicode[j];
-                    }
-
+                    length = sprintf(data, "%04x", d);
+                    data += length;
+                    
                     changed[0] = '1';
                 }
             }
@@ -609,33 +582,10 @@ int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsi
                     d = ((c & 0x0F) << 12) | ((*(utf + 1) & 0x3F) << 6) | (*(utf + 2) & 0x3F);
                     *data++ = '%';
                     *data++ = 'u';
-                    unicode = (unsigned char *)apr_psprintf(mp, "%x", d);
-                    length = strlen((const char *)unicode);
-
-                    switch(length)  {
-                        case 1:
-                            *data++ = '0';
-                            *data++ = '0';
-                            *data++ = '0';
-                            break;
-                        case 2:
-                            *data++ = '0';
-                            *data++ = '0';
-                            break;
-                        case 3:
-                            *data++ = '0';
-                            break;
-                        case 4:
-                        case 5:
-                            break;
-                    }
-
-                    for(j=0; j<length; j++) {
-                        *data++ = unicode[j];
-                    }
-
+                    length = sprintf(data, "%04x", d);
+                    data += length;
+                    
                     changed[0] = '1';
-
                 }
             }
         }
@@ -661,33 +611,10 @@ int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsi
                     d = ((c & 0x07) << 18) | ((*(utf + 1) & 0x3F) << 12) | ((*(utf + 2) & 0x3F) << 6) | (*(utf + 3) & 0x3F);
                     *data++ = '%';
                     *data++ = 'u';
-                    unicode = (unsigned char *)apr_psprintf(mp, "%x", d);
-                    length = strlen((const char *)unicode);
-
-                    switch(length)  {
-                        case 1:
-                            *data++ = '0';
-                            *data++ = '0';
-                            *data++ = '0';
-                            break;
-                        case 2:
-                            *data++ = '0';
-                            *data++ = '0';
-                            break;
-                        case 3:
-                            *data++ = '0';
-                            break;
-                        case 4:
-                        case 5:
-                            break;
-                    }
-
-                    for(j=0; j<length; j++) {
-                        *data++ = unicode[j];
-                    }
-
+                    length = sprintf(data, "%04x", d);
+                    data += length;
+                    
                     changed[0] = '1';
-
                 }
             }
         }
@@ -697,14 +624,14 @@ int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsi
             if(count <= len)
                 *data++ = c;
         }
-
+        
         /* invalid UTF-8 character number range (RFC 3629) */
         if ((d >= 0xD800) && (d <= 0xDFFF)) {
             count++;
             if(count <= len)
                 *data++ = c;
         }
-
+        
         /* check for overlong */
         if ((unicode_len == 4) && (d < 0x010000)) {
             /* four byte could be represented with less bytes */
@@ -724,18 +651,18 @@ int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsi
             if(count <= len)
                 *data++ = c;
         }
-
+        
         if(unicode_len > 0) {
             i += unicode_len;
         } else {
             i++;
         }
     }
-
+    
     *data ='\0';
-    
     memcpy(output, rval, data - rval);
+    length = data - rval;
+    free(rval);
     
-  //return rval;
-    return data - rval;
+    return length;
 }

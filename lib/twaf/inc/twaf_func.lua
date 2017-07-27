@@ -30,7 +30,7 @@ int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsi
 ]]
 
 function _M.ffi_copy(value, len)
-    local buf = ffi.new(ffi.typeof("char[?]"), len)
+    local buf = ffi.new(ffi.typeof("char[?]"), len + 1)
     ffi.copy(buf, value)
     return buf
 end

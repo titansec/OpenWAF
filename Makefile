@@ -6,7 +6,7 @@ CC = gcc
 CFLAGS=-fpic -Wall -O3
 LFLAGS=-shared
 
-SO_LIBS = decode.so ssdeep.so
+SO_LIBS = decode.so
 MAKE_LIBS = decode
 INSTALL_LIBS = install-decode
 CLEAN_LIBS = clean-decode
