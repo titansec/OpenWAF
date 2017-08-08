@@ -272,7 +272,7 @@ twaf_access_rule
 
 ```txt
 {
-    "twaf_access_rule": [
+    "twaf_access_rule": {
         "rules": [                                 -- 注意先后顺序
             {                                      
                 "client_ssl": false,               -- 客户端认证的开关，与ngx_ssl组成双向认证
