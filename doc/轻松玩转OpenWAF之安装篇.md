@@ -90,6 +90,8 @@ PS:
     mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc
     mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.2
     cp -RP /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/
+    cd /opt/OpenWAF
+    make install
 ```
 
 ```txt
