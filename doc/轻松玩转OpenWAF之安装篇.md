@@ -89,8 +89,7 @@ PS:
     git clone https://github.com/titansec/OpenWAF.git
     mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc
     mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.2
-    mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/
-    rm -rf /opt/OpenWAF/lib/openresty
+    cp -RP /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/
 ```
 
 ```txt

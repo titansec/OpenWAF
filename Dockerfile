@@ -45,9 +45,7 @@ RUN cd /opt \
     #overwrite the configure file of openresty
     && mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.11.2.2 \
     #move third-party modules to openresty
-    && mv /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/ \
-    #delete some catalog
-    && rm -rf /opt/OpenWAF/lib/openresty
+    && cp -RP /opt/OpenWAF/lib/openresty/* /opt/openresty-1.11.2.2/bundle/
     
 #3. install openresty
 #	&& wget -c http://www.lua.org/ftp/lua-5.1.4.tar.gz \
