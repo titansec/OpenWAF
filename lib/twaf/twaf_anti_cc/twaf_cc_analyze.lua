@@ -31,31 +31,38 @@ function _M.anti_cc_kcond(self, _twaf, ctx)
         return false
     end
     
-    if flag == false and request.CONNECTION_REQUESTS == 1 then
+    if flag == false and clean_thr.new_conn_max ~= 0 then
     
-        if clean_thr.new_conn_max ~= 0 then
+        if request.CONNECTION_REQUESTS == 1 then
             dict:add(key.."_new_conn", 0, 1)
-            local new_conn = dict:incr(key.."_new_conn", 1)
-            
-            if new_conn >= clean_thr.new_conn_max then
-                 flag  = new_conn
-                 value = "new_conn_max '"..clean_thr.new_conn_max.."'"
-            end
+            dict:incr(key.."_new_conn", 1)
         end
         
-        if flag == false and clean_thr.conn_max ~= 0 then
+        local new_conn = dict:get(key.."_new_conn") or 0
         
-            dict:add(key.."_conn", 0, 1)
-            local conn = dict:incr(key.."_conn", 1)
-            
-            if ctx.typ == evil then
-                dict:set(key.."_conn", conn, ctx.timeout)
-            end
-            
-            if conn >= clean_thr.conn_max then
-                 flag  = conn
-                 value = "conn_max '"..clean_thr.conn_max.."'"
-            end
+        if new_conn >= clean_thr.new_conn_max then
+             flag  = new_conn
+             value = "new_conn_max '"..clean_thr.new_conn_max.."'"
+        end
+    end
+        
+    if flag == false and clean_thr.conn_max ~= 0 then
+    
+        if request.CONNECTION_REQUESTS == 1 then
+            dict:add(key.."_conn", 0, ctx.timeout)
+            dict:incr(key.."_conn", 1)
+        end
+        
+        local conn = dict:get(key.."_conn") or 0
+        
+        if ctx.typ == evil then
+            if conn == 0 then conn = 1 end
+            dict:set(key.."_conn", conn, ctx.timeout)
+        end
+        
+        if conn >= clean_thr.conn_max then
+             flag  = conn
+             value = "conn_max '"..clean_thr.conn_max.."'"
         end
     end
     
