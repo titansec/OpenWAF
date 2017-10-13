@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local cjson                = require "cjson.safe"
@@ -26,6 +26,8 @@ local function _log_action(_twaf, sctx)
     
     if opts.nolog == false or opts.log == true then
         sctx.log_state = true
+    else
+        sctx.log_state = false
     end
     
     return twaf_func:rule_log(_twaf, sctx)
@@ -391,7 +393,7 @@ local function _process(_twaf, ctx, sctx)
     end
     
     local res       =  false
-    local rules     = _twaf.config.rules[ctx.phase]
+    local rules     =  {}
     local storage   =  sctx.storage
     local shm       =  sctx.rules_shm
     local request   =  ctx.request
@@ -405,6 +407,11 @@ local function _process(_twaf, ctx, sctx)
     
     repeat
     
+    -- user defined rules
+    rules = sctx.cf.user_defined_rules or {}
+    res = _process_rules(_twaf, rules, ctx, sctx)
+    if res ~= false then break end
+    
     -- system rules
     local iwsc_result = true
     if type(ctx.iwsc_result) == "number" and ctx.iwsc_result >= 0 then
@@ -412,14 +419,10 @@ local function _process(_twaf, ctx, sctx)
     end
     
     if iwsc_result == true then
-        res = _process_rules(_twaf, rules, ctx, sctx)
+        rules = _twaf.config.rules[ctx.phase] or {}
+        res   = _process_rules(_twaf, rules, ctx, sctx)
         if res ~= false then break end
     end
-    
-    -- user defined rules
-    rules = sctx.cf.user_defined_rules or {}
-    res = _process_rules(_twaf, rules, ctx, sctx)
-    if res ~= false then break end
     
     until true
     
