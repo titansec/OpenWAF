@@ -36,6 +36,7 @@ function _M.handler(self, _twaf)
 
     local host
     local server            =  nil
+    local server_scheme     =  "http"
     local ctx               = _twaf:ctx()
     local request           =  ctx.request
     local uri               =  ngx_var.request_uri
@@ -89,15 +90,15 @@ function _M.handler(self, _twaf)
         end
     end
     
-    if server == nil then
+    if not server or not server.forward then
         return _log_action(_twaf, cf)
     end
     
-    if twaf_func:state(server["server_ssl"]) == true then
-        ngx_var.twaf_upstream_server = "https://" .. (server["forward"] or "-")
-    else
-        ngx_var.twaf_upstream_server = "http://" .. (server["forward"] or "-")
+    if server.server_ssl == true then
+        server_scheme = "https"
     end
+    
+    ngx.var.twaf_upstream_server = server_scheme.."://"..server.forward
     
     request.POLICYID = server.policy or _twaf.config.global_conf_uuid or "-"
     request.USERID   = server.user   or "-"
