@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.3"
+    _VERSION = "0.0.4"
 }
 
 local cjson            = require "cjson.safe"
@@ -39,16 +39,31 @@ local function _content_log(_twaf, ctx, status)
     ctx.events.log                    =  {}
     ctx.events.log[rule_name]         =  log
     
+    local function remove_func(request, log_format)
+        for k, v in pairs(log_format) do 
+            v = v:upper()
+            if type(request[v]) == "function" then
+                request[v] = "-"
+            end
+        end
+    end
+    
     if cf.log_state == true then
-        local log_format = log_cf.security_log
+    
+        local request = ctx.request
+        
         if log_cf.content_type == "INFLUXDB" then
-            log_cf.security_log.fileds = {"unique_id"}
+            remove_func(request, log_cf.security_log.fileds)
         elseif log_cf.content_type == "JSON" then
-            log_cf.security_log = {"unique_id"}
+            remove_func(request, log_cf.security_log)
         end
         
+        request.TIME_EPOCH  =  ngx.time()
+        request.MSEC        =  request.TIME_EPOCH
+        request.TIME_LOCAL  =  "-"
+        
         socket.init(log_cf)
-        local security_msg = twaf_log:set_msg(ctx, log_cf, log_cf.security_log, 2)
+        local security_msg = twaf_log:set_msg(ctx, log_cf, log_cf.security_log, "security_log")
         socket.log(security_msg)
     end
     
