@@ -83,7 +83,7 @@ function _M.ssl_cert(self, _twaf)
     for _, rule in ipairs(cf.rules) do
         local ngx_ssl = twaf_func:state(rule.ngx_ssl)
         if ngx_ssl == true then
-            local from, to, err = ngx.re.find(dn, rule["host"], "jo")
+            local from, to, err = ngx.re.find(dn, rule["host"], "jio")
             if from then
                 conf = rule
                 break

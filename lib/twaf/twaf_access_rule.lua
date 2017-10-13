@@ -75,7 +75,7 @@ function _M.handler(self, _twaf)
             access_rule_flag = false
         end
         
-        if access_rule_flag and not ngx.re.find(host, rule.host, "jo") then
+        if access_rule_flag and not ngx.re.find(host, rule.host, "jio") then
             access_rule_flag = false
         end
         
