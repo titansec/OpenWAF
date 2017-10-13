@@ -3,7 +3,7 @@
 --Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func             = require "lib.twaf.inc.twaf_func"
@@ -79,6 +79,7 @@ function _M.handler(self, _twaf)
     local mal_cookie      =  request_cookies[cf.mal_cookie_name]
     local crawler_cookie  =  request_cookies[cf.crawler_cookie_name]
     local cookie_state    =  twaf_func:state(cf.cookie_state)
+    local dict_state      =  twaf_func:state(cf.dict_state)
     local dict_name       =  cf.shared_dict_name or gcf.dict_name
     local dict            =  ngx_shared[dict_name]
     local policy          =  request.POLICYID
@@ -99,7 +100,7 @@ function _M.handler(self, _twaf)
     
     repeat
     
-    if dict:get(key.."_mal") then
+    if dict_state and dict:get(key.."_mal") then
         value    = 1
         mal_flag = "mal crawler dict"
         break
@@ -120,7 +121,7 @@ function _M.handler(self, _twaf)
     end
     
     --check if there is crawler cookie
-    if (cookie_state and crawler_cookie) or dict:get(key.."_crawler") then
+    if (cookie_state and crawler_cookie) or (dict_state and dict:get(key.."_crawler")) then
         local method = request.REQUEST_METHOD
         if method ~= "GET" and method ~= "HEAD" then
             value    = method
@@ -151,7 +152,8 @@ function _M.handler(self, _twaf)
         table.insert(request.MATCHED_VAR_NAMES, mal_flag)
         
         tctx[modules_name] = nil
-        dict:set(key.."_mal", 1, timeout)
+        if dict_state then dict:set(key.."_mal", 1, timeout) end
+        
         return _log_action(_twaf, cf)
     end
     
@@ -163,7 +165,7 @@ function _M.handler(self, _twaf)
             twaf_func:set_cookie(crawler_cookie)
         end
         
-        dict:set(key.."_crawler", 1, timeout)
+        if dict_state then dict:set(key.."_crawler", 1, timeout) end
         return false
     end
     

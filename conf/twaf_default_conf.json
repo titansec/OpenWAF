@@ -56,6 +56,7 @@
     },
     "twaf_anti_mal_crawler": {
         "state":true,
+        "dict_state": false,
         "cookie_state":true,
         "log_state":true,
         "force_scan_robots_state":true,
