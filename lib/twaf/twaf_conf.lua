@@ -161,7 +161,7 @@ function _M.rule_group_phase(self, tb, rules)
 end
 
 local function _load_rules_lua(secrules, pre_path, path)
-    local file = io.popen("ls "..pre_path..path.."/*.lua")
+    local file = io.popen("ls "..pre_path..path.."/*.lua 2>/dev/null")
     if not file then return end
     
     local paths = file:read("*a")
@@ -182,7 +182,7 @@ local function _load_rules_lua(secrules, pre_path, path)
 end
 
 local function _load_rules_json(secrules, pre_path, path)
-    local file = io.popen("ls "..pre_path..path.."/*.json")
+    local file = io.popen("ls "..pre_path..path.."/*.json 2>/dev/null")
     if not file then return end
     
     local paths = file:read("*a")
