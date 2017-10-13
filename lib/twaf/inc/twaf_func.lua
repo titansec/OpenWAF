@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local ffi                   =  require "ffi"
@@ -820,4 +820,118 @@ function _M.rule_log(self, _twaf, info)
     return twaf_action:do_action(_twaf, info.action, info.action_meta)
 end
 
+function _M:print_G(_twaf)
+
+    local gcf = _twaf:get_config_param("twaf_global")
+    local shm =  gcf.dict_name
+    
+    if not shm then return end
+    local dict = ngx.shared[shm]
+    if not dict then return end
+    
+    local path = dict:get("twaf_print_G")
+    if not path then return end
+    
+    dict:delete("twaf_print_G")
+    
+    local data = {}
+    local tablePrinted = {}
+    
+    local printTableItem = function(tb, k, v, printTableItem)
+        k = tostring(k)
+        if type(v) == "table" then
+            if not tablePrinted[v] then
+                tb[k] = {}
+                tablePrinted[v] = true
+                for m, n in pairs(v) do
+                    printTableItem(tb[k], m, n, printTableItem)
+                end
+            else
+                tb[k] = "'"..k.."' have existed"
+            end
+        else
+            tb[k] = tostring(v)
+        end
+    end
+    
+    printTableItem(data, "_G", _G, printTableItem)
+    
+    local f = io.open(path, "a+")
+    f:write(cjson.encode(data))
+    f:close()
+    
+    return
+end
+
+function _M:print_ctx(_twaf)
+
+    local gcf = _twaf:get_config_param("twaf_global")
+    local shm =  gcf.dict_name
+    
+    if not shm then return end
+    local dict = ngx.shared[shm]
+    if not dict then return end
+    
+    local path = dict:get("twaf_print_ctx")
+    if not path then return end
+    
+    dict:delete("twaf_print_ctx")
+    
+    local func = function(tb, func, data, tablePrinted)
+    
+        data = data or {}
+        tablePrinted = tablePrinted or {}
+    
+        if type(tb) ~= "table" then
+            return tostring(tb) 
+        end
+        
+        for k, v in pairs(tb) do
+            if type(v) == "table" then
+                if not tablePrinted[v] then
+                    tablePrinted[v] = true
+                    data[k] = func(v, func, data[k], tablePrinted)
+                else
+                    data[k] = "'"..k.."' have existed"
+                end
+            else
+                data[k] = tostring(v)
+            end
+        end
+        
+        return data
+    end
+    
+    local data = func(_twaf:ctx(), func)
+    
+    local f = io.open(path, "a+")
+    f:write(cjson.encode(data))
+    f:close()
+end
+
+function _M.table_merge(tb1, tb2)
+
+    if type(tb1) ~= "table" or type(tb2) ~= "table" then return tb1 end
+    
+    for k, v in pairs(tb2) do
+        tb1[k] = v
+    end
+    
+    return tb1
+end
+
+-- check json body
+function _M.api_check_json_body(log)
+    ngx.req.read_body()
+    local body = ngx.req.get_body_data()
+    
+    local res, data = pcall(cjson.decode, body)
+    if not res or type(data) ~= "table" then
+        log.success = 0
+        log.reason  = "request body: json expected, got " .. (body or "nil")
+        return nil
+    end
+    
+    return data
+end
 return _M

@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.5"
+    _VERSION = "0.0.6"
 }
 
 local cjson                                = require "cjson"
@@ -207,6 +207,12 @@ function _M.run(self, _twaf)
         if mod and mod.log then
             mod:log(_twaf)
         end
+        
+        -- print _G
+        twaf_func:print_G(_twaf)
+        
+        -- print ctx
+        twaf_func:print_ctx(_twaf)
         
         -- collect
         collectgarbage("collect")
