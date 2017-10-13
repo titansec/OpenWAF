@@ -37,6 +37,7 @@
         "reqbody_state": true,
         "header_filter_state": true,
         "body_filter_state": false,
+        "system_rules_state": true,
         "reqbody_limit":134217728,
         "respbody_limit":524288,
         "pre_path": "/opt/OpenWAF/",

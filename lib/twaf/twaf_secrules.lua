@@ -418,6 +418,10 @@ local function _process(_twaf, ctx, sctx)
         iwsc_result = false
     end
     
+    if sctx.cf.system_rules_state ~= true then
+        iwsc_result = false
+    end
+    
     if iwsc_result == true then
         rules = _twaf.config.rules[ctx.phase] or {}
         res   = _process_rules(_twaf, rules, ctx, sctx)
