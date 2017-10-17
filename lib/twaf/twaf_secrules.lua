@@ -291,6 +291,10 @@ local function _process_rule(_twaf, rule, ctx, sctx)
     sctx.severity        =  rule.severity or "-"
     sctx.rule_name       =  rule.rule_name
     
+    if (tonumber(rule.recommend) or 9) < (tonumber(sctx.cf.recommend) or 9) then
+        sctx.action = "WARN"
+    end
+    
     local rule_match = true
     
     if not rule.match then

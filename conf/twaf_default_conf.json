@@ -42,6 +42,7 @@
         "respbody_limit":524288,
         "pre_path": "/opt/OpenWAF/",
         "path": "lib/twaf/inc/knowledge_db/twrules",
+        "recommend": 9,
         "rules_id":{},
         "user_defined_rules":[]
     },
