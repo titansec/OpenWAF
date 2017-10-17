@@ -214,9 +214,11 @@ local function _log_access_stat(safe_event, key)
     end
     
     if safe_event then
-        for k, _ in pairs(safe_event) do
-            reqstat_dict:incr(key.."_attack_total", 1)
-            break
+        for k, v in pairs(safe_event) do
+            if v == "DENY" or v == "WARN" or v == "RESET_CONNECTION" then
+                reqstat_dict:incr(key.."_attack_total", 1)
+                break
+            end
         end
     end
 	
@@ -239,13 +241,15 @@ local function _log_safe_stat(safe_event, key)
         return
     end
     
-    for k, _ in pairs(safe_event) do
-        reqstat_dict:add(key.."_"..k, 0)
-        reqstat_dict:incr(key.."_"..k, 1)
-        
-        if not stat_safe[k] then
-            stat_safe[k] = 1
-            reqstat_dict:set(modules_name.."_safe_keys", cjson.encode(stat_safe))
+    for k, v in pairs(safe_event) do
+        if v == "DENY" or v == "WARN" or v == "RESET_CONNECTION" then
+            reqstat_dict:add(key.."_"..k, 0)
+            reqstat_dict:incr(key.."_"..k, 1)
+            
+            if not stat_safe[k] then
+                stat_safe[k] = 1
+                reqstat_dict:set(modules_name.."_safe_keys", cjson.encode(stat_safe))
+            end
         end
     end
 end

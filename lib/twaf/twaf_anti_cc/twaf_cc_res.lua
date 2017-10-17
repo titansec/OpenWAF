@@ -104,7 +104,7 @@ local function _log_action(_twaf, request, cf, log)
         _twaf:ctx().events.log[rule_name] = log
     end
     
-    if cf.action ~= "PASS" and cf.action ~= "ALLOW" and cf.action ~= "CHAIN" then
+    if cf.action == "DENY" then
         ngx_var.twaf_attack_info = ngx_var.twaf_attack_info .. rule_name .. ";"
     end
     

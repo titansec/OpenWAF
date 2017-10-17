@@ -60,6 +60,14 @@ function _M.do_action(self, _twaf, action, meta)
             -- not match, countinue other rules or modules
             return false
         end,
+        AUDIT = function (_twaf)
+            -- not match, countinue other rules or modules
+            return false
+        end,
+        WARN = function (_twaf)
+            -- not match, countinue other rules or modules
+            return false
+        end,
         ALLOW = function(_twaf, meta)
             -- stopping processing of the current phase but also skipping over all other phases
             _twaf:ctx().trust = true
@@ -105,6 +113,7 @@ function _M.do_action(self, _twaf, action, meta)
             return true
         end,
         ROBOT = function(_twaf)
+            ngx.var.twaf_attack_info = ""
             _twaf.modfactory.twaf_anti_robot:handler(_twaf)
         end,
         RESET_CONNECTION = function()

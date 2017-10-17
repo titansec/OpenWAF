@@ -187,12 +187,9 @@ local function _parse_request_body(_twaf, request, ctx, request_headers)
                 table.insert(files, filename)
                 request.FILES = files
                 
-                local from, to, name = filename:find("(.+)%.")
-                if from then
-                    local fn = request.FILES_NAMES or {}
-                    table.insert(fn, name)
-                    request.FILES_NAMES = fn
-                end
+                local fn = request.FILES_NAMES or {}
+                table.insert(fn, name)
+                request.FILES_NAMES = fn
                 
                 local from, to ,ct, data = v:find('Content%-Type: (.-)\r\n\r\n(.*)')
                 if from then
@@ -344,7 +341,7 @@ _M.request = {
         request.HTTP_REFERER                 =  ngx.var.http_referer or "-"
         request.GZIP_RATIO                   =  ngx.var.gzip_ratio or "-"
         request.MSEC                         =  tonumber(ngx.var.msec) or 0.00
-        request.URL                          =  (request.SCHEME or "-").."://"..(request.HTTP_HOST or "-")..(request.URI or "-")
+        request.URL                          =  (request.SCHEME or "").."://"..(request.HTTP_HOST or "")..(request.URI or "")
         request.IP_VERSION                   = _ip_version()
         
         request.GEO                          = _geo_look_up(_twaf, request.IP_VERSION, request.REMOTE_ADDR)
@@ -366,7 +363,8 @@ _M.request = {
     end,
     body_filter = function(_twaf, request, ctx)
     
-    request.RESPONSE_BODY = ngx.arg[1]
+        request.RESPONSE_STATUS = ngx.status
+        request.RESPONSE_BODY   = ngx.arg[1]
     
     --[[
         if ctx.buffers == nil then

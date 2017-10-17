@@ -191,7 +191,7 @@ function _M.operators(self, operator, subject, pattern, ctx)
         end,
         regex = function(subject, pattern)
         
-            local captures, err = ngx.re.match(tostring(subject), pattern, "oij")
+            local captures, err = ngx.re.match(tostring(subject), tostring(pattern), "oij")
             if not captures then
                 ctx.mp = "Pattern match "..pattern.." (negated)"
                 return false, subject

@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.3"
+    _VERSION = "0.0.4"
 }
 
 local cjson                = require "cjson.safe"
@@ -338,8 +338,11 @@ local function _enable_id(_twaf, cf, rule, ctx)
     local flag
     local request    =  ctx.request
     local system_rid = _twaf.config.twaf_policy.system_rules_id or {}
+    local id         = system_rid[rule.id] or cf.rules_id[rule.id] or {}
     
-    local id = system_rid[rule.id] or cf.rules_id[rule.id] or {}
+    if rule.disable then
+        return false
+    end
     
     for _, r in ipairs(id) do
         
@@ -369,8 +372,8 @@ local function _process_rules(_twaf, rules, ctx, sctx)
     local cf    = sctx.cf
     local gcf   = sctx.gcf
     
-    for _, rule in ipairs(rules) do
-        if not rule.disable and _enable_id(_twaf, cf, rule, ctx) then
+    for _, rule in ipairs(rules or {}) do
+        if _enable_id(_twaf, cf, rule, ctx) then
             if type(rule.phase) ~= "table" then
                 rule.phase = {rule.phase}
             end
@@ -485,10 +488,9 @@ function _M.header_filter(self, _twaf)
 
     local ctx  = _twaf:ctx()
     local sctx =  ctx[modules_name]
-    local cf   = _twaf:get_config_param(modules_name)
     
-    if  not twaf_func:state(cf.header_filter_state) or 
-        not sctx or sctx.header_filter or 
+    if  not sctx or sctx.header_filter or 
+        not twaf_func:state(sctx.cf.header_filter_state) or 
         ctx.trust == true then
         return true
     end
@@ -502,16 +504,15 @@ function _M.body_filter(self, _twaf)
 
     local ctx  = _twaf:ctx()
     local sctx =  ctx[modules_name]
-    local cf   = _twaf:get_config_param(modules_name)
     
-    if  not twaf_func:state(cf.body_filter_state) or
-        ctx.short_circuit or not sctx or
+    if  not sctx or ctx.short_circuit or 
+        not twaf_func:state(sctx.cf.body_filter_state) or
         ctx.trust == true then
         return true
     end
     
     local bytes_sent = tonumber(ngx.var.bytes_sent) or 0
-    if bytes_sent and bytes_sent > cf.respbody_limit then
+    if bytes_sent and bytes_sent > sctx.cf.respbody_limit then
         return true
     end
     
