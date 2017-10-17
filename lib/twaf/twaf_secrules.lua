@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "0.0.3"
 }
 
 local cjson                = require "cjson.safe"
@@ -320,7 +320,7 @@ local function _process_rule(_twaf, rule, ctx, sctx)
         request.RULE = rule
         
         for k, v in pairs(opts) do
-            twaf_opts:opts(_twaf, ctx, request, k, v)
+            twaf_opts:opts(_twaf, ctx, sctx, request, k, v)
         end
         
         return _log_action(_twaf, sctx)
