@@ -28,6 +28,7 @@ Table of Contents
     * [Transformation Functions](#transformation-functions)
     * [Operators](#operators)
     * [Others](#others)
+* [Donation](#donation)
 
 Version
 =======
@@ -3234,5 +3235,25 @@ add_resp_headers
 ```
 
 [Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+Donation
+========
+
+PayPal
+------
+
+[通过 PayPal 来支持 OpenWAF](https://www.paypal.me/miracleqi)
+
+Alipay
+------
+
+<img src="http://i.imgur.com/0rSpXc8.png">
+
+WeChat
+------
+
+<img src="http://i.imgur.com/FzbU2z4.png">
 
 [Back to TOC](#table-of-contents)
