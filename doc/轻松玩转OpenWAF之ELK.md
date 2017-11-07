@@ -69,9 +69,11 @@ Logstash
 PS:
     /root/logstash.conf 文件内容如下：
     
-    udp {                  # udp 服务配置
-        port => 60099      # 表示日志服务器监听在 60099 端口
-        codec => "json"    # 接收 json 格式信息
+    input{
+        udp {                  # udp 服务配置
+            port => 60099      # 表示日志服务器监听在 60099 端口
+            codec => "json"    # 接收 json 格式信息
+        }
     }
     output {
         elasticsearch {
