@@ -10,7 +10,7 @@ local twaf_func    = require "lib.twaf.inc.twaf_func"
 local api          = {}
 local prefix       = "/api/"
 local api_path     = "lib/twaf/twaf_api"
-local api_pre_path = "/secone/webapng/lualib/twaf/"
+local api_pre_path = "/opt/OpenWAF/"
 
 api.help           = {}
 api.help_tb        = {}
