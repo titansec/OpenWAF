@@ -1022,8 +1022,8 @@ twaf_secrules
         "pre_path": "/opt/OpenWAF/",                                -- OpenWAF安装路径
         "path": "lib/twaf/inc/knowledge_db/twrules",                -- 特征规则库在OpenWAF中的路径
         "rules_id":{                                                -- 特征排除
-            "111112": [{"REMOTE_HOST":"a.com", "URI":"^/ab"}]       -- 匹配中数组中信息则对应规则失效，数组中key为变量名称，值支持正则
-            "111113": {}                                            -- 特征未被排除
+            "111112": [{"REMOTE_HOST":"a.com", "URI":"^/ab"}],      -- 匹配中数组中信息则对应规则失效，数组中key为变量名称，值支持正则
+            "111113": {},                                           -- 特征未被排除
             "111114": [{}]                                          -- 特征被无条件排除
         }
     }
