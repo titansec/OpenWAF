@@ -33,7 +33,7 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v0.0.5 released on 10 Apr 2017.
+This document describes OpenWAF v0.0.6 released on 26 Dec 2017.
 
 Docker Version  
 1. titansec/openwaf:0.0.1.161130_beta  
