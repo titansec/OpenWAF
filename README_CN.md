@@ -277,7 +277,7 @@ twaf_access_rule
 
 ```txt
 {
-    "twaf_access_rule": [
+    "twaf_access_rule": {
         "rules": [                                 -- 注意先后顺序
             {                                      
                 "client_ssl": false,               -- 客户端认证的开关，与ngx_ssl组成双向认证
@@ -368,7 +368,7 @@ host
 
 **context:** *twaf_access_rule*
 
-string类型，域名，正则匹配
+string类型，域名，正则匹配(匹配时，忽略大小写)
 
 例如:
 ```
@@ -646,22 +646,28 @@ uri_ext表示对哪些资源进行盗链防护
 
 twaf_anti_mal_crawler
 ---------------------
-```json
+```txt
 {
-    "state":false,
-    "cookie_state":true,
-    "log_state":true,
-    "event_id":"710001",
-    "event_severity":"high",
-    "force_scan_robots_state":false,
-    "shared_dict_key":["remote_addr", "http_user_agent"],
-    "timeout":300,
-    "crawler_cookie_name":"crawler",
-    "mal_cookie_name":"mcrawler",
-    "trap_uri":"/abc/abc.html",
-    "trap_args":"id=1",
-    "action":"DENY",
-    "action_meta":403
+    "state": false,                                            -- 模块开关，支持 true，false
+    "log_state":true,                                          -- 日志开关
+
+    "dict_state": false,                                       -- shared_dict 开关
+    "shared_dict_name":"twaf_anti_mal_crawler",                -- shared_dict 名称,若为空，则值为 "twaf_global" 下的 "dict_name"
+    "shared_dict_key": "remote_addr",                          -- shared_dict 键值
+    "timeout":300,                                             -- shared_dict 保存状态有效时长（单位秒）
+    "timer_flush_expired":200,                                 -- shared_dict 清除过期信息的间隔时间（单位秒）,若为空，则值为 "twaf_global" 下的 "timer_flush_expired"
+
+    "cookie_state":true,                                       -- cookie机制开关
+    "crawler_cookie_name":"TWAF_crawler",                      -- 爬虫cookie名称
+    "mal_cookie_name":"TWAF_mcrawler",                         -- 恶意爬虫cookie名称
+
+    "force_scan_robots_state":true,                            -- 页面注入诱捕路径的开关
+    "force_scan_times": 3,                                     -- 注入诱捕路径的页面个数
+    "trap_uri":"/abc/abc.html",                                -- 诱捕路径
+    "trap_args":"id=1",                                        -- 诱捕参数
+
+    "action":"DENY",                                           -- 执行动作，支持 "ALLOW", "DENY", "REDIRECT", "ROBOT", "RESET_CONNECTION", "PASS" 等
+    "action_meta": 403                                         -- 执行动作的附属信息，若 action 为 DENY，action_meta为响应码，若 action 为 REDIRECT，action_meta 为重定向 url
 }
 ```
 state
@@ -673,18 +679,6 @@ state
 **context:** *twaf_anti_mal_crawler*
 
 模块开关，默认false（关闭），支持动态开关
-
-[Back to MCD](#twaf_anti_mal_crawler)
-
-cookie_state
-------------
-**syntax:** *cookie_state true|false|$dynamic_state*
-
-**default:** *true*
-
-**context:** *twaf_anti_mal_crawler*
-
-是否发送cookie,默认true（发送），支持动态开关
 
 [Back to MCD](#twaf_anti_mal_crawler)
 
@@ -700,27 +694,153 @@ log_state
 
 [Back to MCD](#twaf_anti_mal_crawler)
 
-event_id
---------
-**syntax:** *event_id <string>*
+dict_state
+----------
+**syntax:** *dict_state true|false*
 
-**default:** *"710001"*
+**default:** *false*
 
 **context:** *twaf_anti_mal_crawler*
 
-记录安全日志时，显示的事件ID
+shared_dict 开关。当 dict_state 为 true，某 IP 被此模块拦截，会被记录在内存中，在 timeout 时间内访问会被拦截(且重置timeout)
 
 [Back to MCD](#twaf_anti_mal_crawler)
 
-event_severity
---------------
-**syntax:** *event_severity critical|high|medium|low*
+shared_dict_name
+----------------
+**syntax:** *shared_dict_name <string>*
 
-**default:** *high*
+**default:** *nil*
 
 **context:** *twaf_anti_mal_crawler*
 
-记录安全日志时，显示的事件等级
+shared_dict 名称。对应 nginx 中的配置项，不可轻易修改
+
+若为空，则值为 "twaf_global" 下的 "dict_name"
+
+[Back to MCD](#twaf_anti_mal_crawler)
+
+shared_dict_key
+---------------
+**syntax:** *shared_dict_key <string>|<array>*
+
+**default:** *remote_addr*
+
+**context:** *twaf_anti_mal_crawler*
+
+shared_dict 键值。支持数组
+
+[Back to MCD](#twaf_anti_mal_crawler)
+
+timeout
+-------
+**syntax:** *timeout <number>*
+
+**default:** *300*
+
+**context:** *twaf_anti_mal_crawler*
+
+shared_dict 保存状态有效时长（单位秒）
+
+[Back to MCD](#twaf_anti_mal_crawler)
+
+timer_flush_expired
+-------------------
+**syntax:** *timeout <number>*
+
+**default:** *200*
+
+**context:** *twaf_anti_mal_crawler*
+
+shared_dict 清除过期信息的间隔时间（单位秒）,若为空，则值为 "twaf_global" 下的 "timer_flush_expired"
+
+[Back to MCD](#twaf_anti_mal_crawler)
+
+cookie_state
+------------
+**syntax:** *cookie_state true|false|$dynamic_state*
+
+**default:** *true*
+
+**context:** *twaf_anti_mal_crawler*
+
+是否发送cookie,默认true（发送），支持动态开关
+
+[Back to MCD](#twaf_anti_mal_crawler)
+
+crawler_cookie_name
+-------------------
+**syntax:** *crawler_cookie_name <string>*
+
+**default:** *"TWAF_crawler"*
+
+**context:** *twaf_anti_mal_crawler*
+
+爬虫 cookie 名称
+
+[Back to MCD](#twaf_anti_mal_crawler)
+
+mal_cookie_name
+---------------
+**syntax:** *mal_cookie_name <string>*
+
+**default:** *TWAF_mcrawler*
+
+**context:** *twaf_anti_mal_crawler*
+
+恶意爬虫cookie名称
+
+[Back to MCD](#twaf_anti_mal_crawler)
+    
+force_scan_robots_state
+-----------------------
+**syntax:** *force_scan_robots_state true|false*
+
+**default:** *true*
+
+**context:** *twaf_anti_mal_crawler*
+
+页面注入诱捕路径的开关
+
+某些扫描工具不会去访问 /robots.txt，因此在他访问的页面中插入禁爬目录的暗链
+
+[Back to MCD](#twaf_anti_mal_crawler)
+
+force_scan_times
+----------------
+**syntax:** *force_scan_times <number>*
+
+**default:** *3*
+
+**context:** *twaf_anti_mal_crawler*
+
+注入诱捕路径的页面数
+
+[Back to MCD](#twaf_anti_mal_crawler)
+
+trap_uri
+--------
+**syntax:** *trap_uri <string>*
+
+**default:** */abc/abc.html*
+
+**context:** *twaf_anti_mal_crawler*
+
+诱捕路径，访问此路径，被标识为恶意爬虫
+
+[Back to MCD](#twaf_anti_mal_crawler)
+
+trap_args
+---------
+**syntax:** *trap_args <string>*
+
+**default:** *id=1*
+
+**context:** *twaf_anti_mal_crawler*
+
+诱捕参数。携带此参数访问诱捕路径，不会标识为攻击
+
+[Back to MCD](#twaf_anti_mal_crawler)
 
 [Back to twaf_anti_mal_crawler](#twaf_anti_mal_crawler)
 
@@ -805,7 +925,8 @@ twaf_log
         "host":"127.0.0.1",           -- 日志服务器地址
         "port":60055,                 -- 日志服务器端口号
         "flush_limit":0,              -- 缓冲，当存储的日志大于阈值才发送
-        "drop_limit":1048576,
+        "size_limit": 200,            -- 控制日志中每一项的字符上限，如'raw_header'或请求体响应体，可能会使udp日志报错
+        "drop_limit":65507,           -- 缓冲上限，达到此值，丢弃当前日志，发送缓存并清空缓存，当sock_type为udp时，drop_limit值最大为65507（65508会报错message too long）
         "max_retry_times":5,          -- 最大容错次数
         "ssl":false,                  -- 是否开启ssl协议
         "access_log":{}               -- 访问日志格式
@@ -883,13 +1004,25 @@ flush_limit
 
 缓冲区大小，当存储的日志大于阈值才发送，默认值为0，即立即发送日志
 
+size_limit
+----------
+**syntax:** *"size_limit": number*
+
+**default:** *200*
+
+**context:** *twaf_log*
+
+控制日志中每一项的字符上限，如'raw_header'或请求体响应体，可能会使udp日志报错
+
 drop_limit
 ----------
 **syntax:** *"drop_limit": number*
 
-**default:** *1048576*
+**default:** *65507*
 
 **context:** *twaf_log*
+
+缓冲上限，达到此值，丢弃当前日志，发送缓存并清空缓存，当sock_type为udp时，drop_limit值最大为65507（65508会报错message too long）
 
 max_retry_times
 ---------------
@@ -1017,10 +1150,13 @@ twaf_secrules
         "reqbody_state": true,                                      -- 请求体检测开关
         "header_filter_state": true,                                -- 响应头检测开关
         "body_filter_state": true,                                  -- 响应体检测开关
+        "system_rules_state": true,                                 -- 系统规则集检测开关
         "reqbody_limit":134217728,                                  -- 请求体检测阈值，大于阈值不检测
         "respbody_limit":524288,                                    -- 响应体检测阈值，大于阈值不检测
         "pre_path": "/opt/OpenWAF/",                                -- OpenWAF安装路径
         "path": "lib/twaf/inc/knowledge_db/twrules",                -- 特征规则库在OpenWAF中的路径
+        "user_defined_rules":[                                      -- 用户自定义规则，数组
+        ],
         "rules_id":{                                                -- 特征排除
             "111112": [{"REMOTE_HOST":"a.com", "URI":"^/ab"}],      -- 匹配中数组中信息则对应规则失效，数组中key为变量名称，值支持正则
             "111113": {},                                           -- 特征未被排除
@@ -1069,6 +1205,22 @@ body_filter_state
 
 响应体检测开关，默认关闭，若开启需添加第三方模块[ngx_http_twaf_header_sent_filter_module暂未开源]
 
+system_rules_state
+-----------------
+**syntax:** *system_rules_state true|false*
+
+**default:** *true*
+
+**context:** *twaf_secrules*
+
+系统规则集检测开关
+
+lib/twaf/inc/knowledge_db/twrules 目录下的规则，都是系统规则
+
+除了系统规则外，还有 twaf_secrules 模块下 user_defined_rules 的用户自定义规则
+
+系统规则一般很少改动，而用户自定义规则却随着业务而增减，如动态配置缓存、压缩、时域控制和黑白名单等。
+
 reqbody_limit
 -------------
 **syntax:** *reqbody_limit number*
@@ -1111,6 +1263,18 @@ path
 
 特征规则库在OpenWAF中的路径
 
+user_defined_rules
+------------------
+**syntax:** *user_defined_rules <array>*
+
+**default:** *[]*
+
+**context:** *twaf_secrules*
+
+用户自定义规则
+
+先执行用户自定义规则，再执行系统规则
+        
 rules_id
 --------
 **syntax:** *rules_id table*
@@ -2748,6 +2912,8 @@ Others
 * [op_negated](#op_negated)
 * [parse](#parse)
 * [pass](#pass)
+* [warn](#warn)
+* [audit](#audit)
 * [phase](#phase)
 * [proxy_cache](#proxy_cache)
 * [redirect](#redirect)
@@ -2967,6 +3133,30 @@ Continues processing with the next rule in spite of a successful match.
 
 ```
 "action": "pass"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+warn
+----
+like 'pass'
+
+```
+"action": "warn"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+audit
+-----
+like 'pass'
+
+```
+"action": "audit"
 ```
 
 [Back to OTHERS](#others)
