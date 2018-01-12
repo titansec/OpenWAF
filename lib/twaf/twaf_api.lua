@@ -87,7 +87,7 @@ function _M.content(self, _twaf)
         break
     end
     
-    if not api[u[1]][method] then
+    if not api[u[1]] or not api[u[1]][method] then
         log.success = 0
         log.reason  = "no api -- " .. u[1]
         break
