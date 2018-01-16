@@ -801,7 +801,7 @@ function _M.rule_log(self, _twaf, info)
     info.category = _M:rule_category(_twaf, info.rule_name)
     
     -- reqstat
-    ctx.events.stat[info.category] = 1
+    ctx.events.stat[info.category] = (info.action or 'PASS'):upper()
     
     -- attack response
     if info.action ~= "PASS" and info.action ~= "ALLOW" and info.action ~= "CHAIN" then
