@@ -3,11 +3,37 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local ffi        = require "ffi"
 local twaf_func  = require "lib.twaf.inc.twaf_func"
+
+ffi.cdef[[
+int js_decode(unsigned char *input, long int input_len);
+int css_decode(unsigned char *input, long int input_len);
+int decode_base64_ext(char *plain_text, const unsigned char *input, int input_len);
+int escape_seq_decode(unsigned char *input, int input_len);
+int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsigned char *changed);
+int cmdline_execute(unsigned char *input, long int input_len);
+int compressWhitespace_execute(unsigned char *input, long int input_len);
+int hexDecode_execute(unsigned char *data, int len);
+int bytes2hex(char *output, unsigned char *data, int len);
+int html_entities_decode_inplace(unsigned char *input, int input_len);
+int normalize_path(unsigned char *input, int input_len, int win, unsigned char *changed);
+int removeComments_execute(unsigned char *input, long int input_len, unsigned char *changed);
+int removeCommentsChar_execute(unsigned char *input, long int input_len, unsigned char *changed);
+int removeNulls_execute(unsigned char *input, long int input_len, unsigned char *changed);
+int removeWhitespace_execute(unsigned char *input, long int input_len, unsigned char *changed);
+int replaceComments_execute(unsigned char *input, long int input_len, unsigned char *changed);
+int replaceNulls_execute(unsigned char *input, long int input_len);
+int trimLeft_execute(unsigned char *input, long int input_len);
+int trimRight_execute(unsigned char *input, long int input_len);
+int trim_execute(unsigned char *input, long int input_len);
+int sql_hex2bytes(unsigned char *data, int len);
+]]
+
+_M.transforms_lib = twaf_func.load_lib(package.cpath, 'transforms.so')
 
 function _M.transforms(self, options, values)
     local func = {
@@ -22,13 +48,13 @@ function _M.transforms(self, options, values)
             end
         end,
         base64_decode_ext = function(value)
-            if not value then return nil end
-            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
+            if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
             local val = tostring(value)
             local len = #val
             local buf = ffi.new(ffi.typeof("char[?]"), len)
-            local n = twaf_func.decode_lib.decode_base64_ext(buf, val, len)
+            local n = _M.transforms_lib.decode_base64_ext(buf, val, len)
             
             return twaf_func.ffi_str(buf, n)
         end,
@@ -37,21 +63,38 @@ function _M.transforms(self, options, values)
             
             return ngx.encode_base64(value)
         end,
-        css_decode = function(waf, value)
-            if not value then return nil end
-            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
+        css_decode = function(value)
+            if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
             
-            local n = twaf_func.decode_lib.css_decode(buf, len)
+            local n = _M.transforms_lib.css_decode(buf, len)
+            
+            return twaf_func.ffi_str(buf, n)
+        end,
+        cmd_line = function(value)
+            if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            
+            local n = _M.transforms_lib.cmdline_execute(buf, len)
             
             return twaf_func.ffi_str(buf, n)
         end,
         compress_whitespace = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            return ngx.re.gsub(value, [=[\s+]=], ' ', "oij")
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            
+            local n = _M.transforms_lib.compressWhitespace_execute(buf, len)
+            
+            return twaf_func.ffi_str(buf, n)
         end,
         counter = function(value)
             if not value then return 0 end
@@ -63,58 +106,57 @@ function _M.transforms(self, options, values)
             return 1
         end,
         escape_seq_decode = function(value)
-            if not value then return nil end
-            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
+            if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
             
-            local n = twaf_func.decode_lib.escape_seq_decode(buf, len)
+            local n = _M.transforms_lib.escape_seq_decode(buf, len)
             
             return twaf_func.ffi_str(buf, n)
         end,
         hex_decode = function(value)
             if type(value) ~= "string" then return value end
-            
-            local str
-
-            if (pcall(function()
-                str = value:gsub('..', function (cc)
-                    return string.char(tonumber(cc, 16))
-                end)
-            end)) then
-                return str
-            else
-                return value
-            end
-        end,
-        hex_encode = function(value)
-            if type(value) ~= "string" then return value end
-            
-            return (value:gsub('.', function (c)
-                return string.format('%02x', string.byte(c))
-            end))
-        end,
-        html_decode = function(value)
-            if type(value) ~= "string" then return value end
-            
-            local str = ngx.re.gsub(value, [=[&lt;]=], '<', "oij")
-            str = ngx.re.gsub(str, [=[&gt;]=], '>', "oij")
-            str = ngx.re.gsub(str, [=[&quot;]=], '"', "oij")
-            str = ngx.re.gsub(str, [=[&apos;]=], "'", "oij")
-            pcall(function() str = ngx.re.gsub(str, [=[&#(\d+);]=], function(n) return string.char(n[1]) end, "oij") end)
-            pcall(function() str = ngx.re.gsub(str, [=[&#x(\d+);]=], function(n) return string.char(tonumber(n[1],16)) end, "oij") end)
-            str = ngx.re.gsub(str, [=[&amp;]=], '&', "oij")
-            return str
-        end,
-        js_decode = function(waf, value)
-            if not value then return nil end
-            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
             
-            local n = twaf_func.decode_lib.js_decode(buf, len)
+            local n = _M.transforms_lib.hexDecode_execute(buf, len)
+            
+            return twaf_func.ffi_str(buf, n)
+        end,
+        hex_encode = function(value)
+            if type(value) ~= "string" then return value end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local outp = ffi.new(ffi.typeof("char[?]"), len * 2 + 1)
+            
+            local n = _M.transforms_lib.bytes2hex(outp, buf, len)
+            
+            return twaf_func.ffi_str(outp, n)
+        end,
+        html_decode = function(value)
+            if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            
+            local n = _M.transforms_lib.html_entities_decode_inplace(buf, len)
+            
+            return twaf_func.ffi_str(buf, n)
+        end,
+        js_decode = function(value)
+            if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            
+            local n = _M.transforms_lib.js_decode(buf, len)
             
             return twaf_func.ffi_str(buf, n)
         end,
@@ -149,37 +191,128 @@ function _M.transforms(self, options, values)
         end,
         normalise_path = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            while (ngx.re.match(value, [=[[^/][^/]*/\.\./|/\./|/{2,}]=], "oij")) do
-                value = ngx.re.gsub(value, [=[[^/][^/]*/\.\./|/\./|/{2,}]=], '/', "oij")
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
+            
+            local n = _M.transforms_lib.normalize_path(buf, len, 0, changed)
+            
+            if (twaf_func.ffi_str(changed, 1) == "0") then
+                return value
             end
-            return value
+            
+            return twaf_func.ffi_str(buf, n)
+        end,
+        normalise_path_win = function(value)
+            if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
+            
+            local n = _M.transforms_lib.normalize_path(buf, len, 1, changed)
+            
+            if (twaf_func.ffi_str(changed, 1) == "0") then
+                return value
+            end
+            
+            return twaf_func.ffi_str(buf, n)
         end,
         remove_comments = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            return ngx.re.gsub(value, [=[\/\*(\*(?!\/)|[^\*])*\*\/]=], '', "oij")
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
+            
+            local n = _M.transforms_lib.removeComments_execute(buf, len, changed)
+            
+            if (twaf_func.ffi_str(changed, 1) == "0") then
+                return value
+            end
+            
+            return twaf_func.ffi_str(buf, n)
         end,
         remove_comments_char = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            return ngx.re.gsub(value, [=[\/\*|\*\/|--|#]=], '', "oij")
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
+            
+            local n = _M.transforms_lib.removeCommentsChar_execute(buf, len, changed)
+            
+            if (twaf_func.ffi_str(changed, 1) == "0") then
+                return value
+            end
+            
+            return twaf_func.ffi_str(buf, n)
         end,
         remove_nulls = function(value)
-            return ngx.re.gsub(value, [=[\0+]=], '', "oij")
+            if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
+            
+            local n = _M.transforms_lib.removeNulls_execute(buf, len, changed)
+            
+            if (twaf_func.ffi_str(changed, 1) == "0") then
+                return value
+            end
+            
+            return twaf_func.ffi_str(buf, n)
         end,
         remove_whitespace = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            return ngx.re.gsub(value, [=[\s+]=], '', "oij")
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
+            
+            local n = _M.transforms_lib.removeWhitespace_execute(buf, len, changed)
+            
+            if (twaf_func.ffi_str(changed, 1) == "0") then
+                return value
+            end
+            
+            return twaf_func.ffi_str(buf, n)
         end,
         replace_comments = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            return ngx.re.gsub(value, [=[\/\*(\*(?!\/)|[^\*])*\*\/]=], ' ', "oij")
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
+            
+            local n = _M.transforms_lib.replaceComments_execute(buf, len, changed)
+            
+            if (twaf_func.ffi_str(changed, 1) == "0") then
+                return value
+            end
+            
+            return twaf_func.ffi_str(buf, n)
         end,
-        replace_nulls = function(waf, value)
-            return ngx.re.gsub(value, [[\0]], ' ', "oij")
+        replace_nulls = function(value)
+            if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
+            
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            
+            local changed = _M.transforms_lib.replaceNulls_execute(buf, len)
+            
+            if changed == 0 then return value end
+            
+            return twaf_func.ffi_str(buf, len)
         end,
         sha1 = function(value)
             if not value then return nil end
@@ -188,68 +321,94 @@ function _M.transforms(self, options, values)
         end,
         sql_hex_decode = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            if (string.find(value, '0x', 1, true)) then
-                value = string.sub(value, 3)
-                local str
-                if (pcall(function()
-                    str = value:gsub('..', 
-                        function (cc) 
-                           return string.char(tonumber(cc, 16)) 
-                        end)
-                    end)) 
-                then
-                    return str
-                end
-                
-                return value
-            end
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
             
-            return value
+            local n = _M.transforms_lib.sql_hex2bytes(buf, len)
+            
+            return twaf_func.ffi_str(buf, n)
         end,
         trim = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            return ngx.re.gsub(value, [=[^\s*|\s+$]=], '')
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
+            
+            local n = _M.transforms_lib.trim_execute(buf, len)
+            
+            if (n == 0) then return value end
+            
+            return twaf_func.ffi_str(buf + n, len - n)
+          --local str = _M:transforms("trim_left", value)
+          --return _M:transforms("trim_right", str)
         end,
         trim_left = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            return ngx.re.sub(value, [=[^\s+]=], '')
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            
+            local n = _M.transforms_lib.trimLeft_execute(buf, len)
+            
+            if (n == 0) then return value end
+            
+          --return value:sub(len-n+1)
+            return twaf_func.ffi_str(buf + n, len - n)
         end,
         trim_right = function(value)
             if type(value) ~= "string" then return value end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
-            return ngx.re.sub(value, [=[\s+$]=], '')
+            local len = #value
+            local buf = twaf_func.ffi_copy(value, len)
+            local changed = ffi.new(ffi.typeof("char[?]"), 1)
+            
+            local n = _M.transforms_lib.trimRight_execute(buf, len)
+            
+            if (n == len) then return value end
+            
+            return twaf_func.ffi_str(buf, n)
         end,
         uri_decode = function(value)
             if type(value) ~= "string" then return value end
             
-            --Unescape str as an escaped URI component.
+            --modsec: Decodes a URL-encoded input string.
+            --twaf:   Unescape str as an escaped URI component.
             return ngx.unescape_uri(value)
         end,
         uri_decode_uni = function(value)
             if type(value) ~= "string" then return value end
             
-            --Unescape str as an escaped URI component.
+            --modsec: Decodes a URL-encoded input string.
+            --twaf:   Unescape str as an escaped URI component.
             return ngx.unescape_uri(value)
         end,
         uri_encode = function(value)
             if type(value) ~= "string" then return value end
             
-            --Escape str as a URI component
+            --modsec: Encodes input string using URL encoding.
+            --twaf:   Escape str as a URI component
             return ngx.escape_uri(value)
         end,
         utf8_to_unicode = function(value)
             if type(value) ~= "string" then return value end
-            if type(twaf_func.decode_lib) ~= "userdate" then return nil end
+            if type(_M.transforms_lib) ~= "userdata" then return value end
             
             local inp_len = #value
             local inp     = twaf_func.ffi_copy(value, inp_len)
             local outp    = ffi.new(ffi.typeof("char[?]"), inp_len * 7 + 1)
             local changed = ffi.new(ffi.typeof("char[?]"), 1)
             
-            local outp_len = twaf_func.decode_lib.utf8_to_unicode(outp, inp, inp_len, changed)
+            local outp_len = _M.transforms_lib.utf8_to_unicode(outp, inp, inp_len, changed)
+            
+            if (twaf_func.ffi_str(changed, 1) == "0") then
+                return value
+            end
             
             return twaf_func.ffi_str(outp, outp_len)
         end

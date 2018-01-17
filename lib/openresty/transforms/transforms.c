@@ -13,6 +13,8 @@
 #define UNICODE_ERROR_CHARACTERS_MISSING    -1
 #define UNICODE_ERROR_INVALID_ENCODING      -2
 
+#define NBSP                                 160
+
 /**
  * Converts a byte given as its hexadecimal representation
  * into a proper byte. Handles uppercase and lowercase letters
@@ -505,7 +507,7 @@ int escape_seq_decode(unsigned char *input, int input_len) {
 
 /** \brief Decode utf-8 to unicode format.
  *
- * \param mp Pointer to memory pool
+ * \param output Pointer to memory pool
  * \param input Pointer to input data
  * \param input_len Input data length
  * \param changed Set if data is changed
@@ -665,4 +667,712 @@ int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsi
     free(rval);
     
     return length;
+}
+
+/* cmdline */
+
+/**
+* \brief cmdline transformation function
+*
+* \param input Pointer to input data
+* \param input_len Input data length
+*
+* \retval output_len
+*/
+int cmdline_execute(unsigned char *input, long int input_len)
+{
+    int space = 0;
+    unsigned char *s = input;
+    long int i = 0;
+    
+    /* Check characters */
+    while (i < input_len) {
+        switch(input[i]) {
+            /* remove some characters */
+            case '"':
+            case '\'':
+            case '\\':
+            case '^':
+                i++;
+                continue;
+                /* replace some characters to space (only one) */
+            case ' ':
+            case ',':
+            case ';':
+            case '\t':
+            case '\r':
+            case '\n':
+                if (!space) {
+                    *s++ = ' ';
+                    space++;
+                }
+                break;
+            case '/':
+            case '(':
+                /* remove space before / or ( */
+                if (space) s--;
+                space = 0;
+                *s++ = input[i];
+                break;
+                /* copy normal characters */
+            default :
+                *s++ = tolower(input[i]);
+                space = 0;
+                
+        }
+        
+        i++;
+    }
+
+    *s = 0;
+
+    return s - input;
+}
+
+/* compressWhitespace */
+
+int compressWhitespace_execute(unsigned char *input, long int input_len)
+{
+    long int i, j, count;
+
+    i = j = count = 0;
+    while(i < input_len) {
+        if (isspace(input[i])||(input[i] == NBSP)) {
+            count++;
+        } else {
+            if (count) {
+                input[j] = ' ';
+                count = 0;
+                j++;
+            }
+            input[j] = input[i];
+            j++;
+        }
+        i++;
+    }
+
+    if (count) {
+        input[j] = ' ';
+        j++;
+    }
+    
+    return j;
+}
+
+/* hexDecode */
+
+int hexDecode_execute(unsigned char *data, int len) {
+    unsigned char *d = data;
+    int i, count = 0;
+
+    if ((data == NULL)||(len == 0)) return 0;
+
+    for(i = 0; i <= len - 2; i += 2) {
+        *d++ = x2c(&data[i]);
+        count++;
+    }
+    *d = '\0';
+
+    return count;
+}
+
+/* hexEncode */
+
+/**
+ * Converts a series of bytes into its hexadecimal
+ * representation.
+ */
+int bytes2hex(char *output, unsigned char *data, int len) {
+    static const unsigned char b2hex[] = "0123456789abcdef";
+    int i, j;
+
+    j = 0;
+    for(i = 0; i < len; i++) {
+        output[j++] = b2hex[data[i] >> 4];
+        output[j++] = b2hex[data[i] & 0x0f];
+    }
+    output[j] = 0;
+
+    return j;
+}
+
+/** 
+ * 
+ * IMP1 Assumes NUL-terminated 
+ */ 
+int html_entities_decode_inplace(unsigned char *input, int input_len) {
+    unsigned char *d = input;
+    int i, count;
+    char *x;
+    
+    x = (char *)malloc(input_len);
+
+    if ((x == NULL)||(input == NULL)||(input_len <= 0)) return 0;
+
+    i = count = 0;
+    while((i < input_len)&&(count < input_len)) {
+        int z, copy = 1;
+
+        /* Require an ampersand and at least one character to
+         * start looking into the entity.
+         */
+        if ((input[i] == '&')&&(i + 1 < input_len)) {
+            int k, j = i + 1;
+
+            if (input[j] == '#') {
+                /* Numerical entity. */
+                copy++;
+
+                if (!(j + 1 < input_len)) goto HTML_ENT_OUT; /* Not enough bytes. */
+                j++;
+
+                if ((input[j] == 'x')||(input[j] == 'X')) {
+                    /* Hexadecimal entity. */
+                    copy++;
+
+                    if (!(j + 1 < input_len)) goto HTML_ENT_OUT; /* Not enough bytes. */
+                    j++; /* j is the position of the first digit now. */
+
+                    k = j;
+                    while((j < input_len)&&(isxdigit(input[j]))) j++;
+                    if (j > k) { /* Do we have at least one digit? */
+                        /* Decode the entity. */
+                        memcpy(x, (const char *)&input[k], j - k);
+                        x[j - k] = '\0';
+                        *d++ = (unsigned char)strtol(x, NULL, 16);
+                        count++;
+
+                        /* Skip over the semicolon if it's there. */
+                        if ((j < input_len)&&(input[j] == ';')) i = j + 1;
+                        else i = j;
+
+                        continue;
+                    } else {
+                        goto HTML_ENT_OUT;
+                    }
+                } else {
+                    /* Decimal entity. */
+                    k = j;
+                    while((j < input_len)&&(isdigit(input[j]))) j++;
+                    if (j > k) { /* Do we have at least one digit? */
+                        /* Decode the entity. */
+                        memcpy(x, (const char *)&input[k], j - k);
+                        x[j - k] = '\0';
+                        *d++ = (unsigned char)strtol(x, NULL, 10);
+                        count++;
+
+                        /* Skip over the semicolon if it's there. */
+                        if ((j < input_len)&&(input[j] == ';')) i = j + 1;
+                        else i = j;
+
+                        continue;
+                    } else {
+                        goto HTML_ENT_OUT;
+                    }
+                }
+            } else {
+                /* Text entity. */
+
+                k = j;
+                while((j < input_len)&&(isalnum(input[j]))) j++;
+                if (j > k) { /* Do we have at least one digit? */
+                    memcpy(x, (const char *)&input[k], j - k);
+                    x[j - k] = '\0';
+
+                    /* Decode the entity. */
+                    /* ENH What about others? */
+                    if (strcasecmp(x, "quot") == 0) *d++ = '"';
+                    else
+                        if (strcasecmp(x, "amp") == 0) *d++ = '&';
+                        else
+                            if (strcasecmp(x, "lt") == 0) *d++ = '<';
+                            else
+                                if (strcasecmp(x, "gt") == 0) *d++ = '>';
+                                else
+                                    if (strcasecmp(x, "nbsp") == 0) *d++ = NBSP;
+                                    else {
+                                        /* We do no want to convert this entity, copy the raw data over. */
+                                        copy = j - k + 1;
+                                        goto HTML_ENT_OUT;
+                                    }
+
+                    count++;
+
+                    /* Skip over the semicolon if it's there. */
+                    if ((j < input_len)&&(input[j] == ';')) i = j + 1;
+                    else i = j;
+
+                    continue;
+                }
+            }
+        }
+
+HTML_ENT_OUT:
+
+        for(z = 0; ((z < copy) && (count < input_len)); z++) {
+            *d++ = input[i++];
+            count++;
+        }
+    }
+
+    *d = '\0';
+    
+    free(x);
+
+    return count;
+}
+
+/* normalizePath */
+
+/**
+ *
+ * IMP1 Assumes NUL-terminated
+ */
+int normalize_path(unsigned char *input, int input_len, int win, unsigned char *changed) {
+    unsigned char *src;
+    unsigned char *dst;
+    unsigned char *end;
+    int ldst = 0;
+    int hitroot = 0;
+    int done = 0;
+    int relative;
+    int trailing;
+
+    changed[0] = '0';
+
+    /* Need at least one byte to normalize */
+    if (input_len <= 0) return 0;
+
+    /*
+     * ENH: Deal with UNC and drive letters?
+     */
+
+    src = dst = input;
+    end = input + (input_len - 1);
+    ldst = 1;
+
+    relative = ((*input == '/') || (win && (*input == '\\'))) ? 0 : 1;
+    trailing = ((*end == '/') || (win && (*end == '\\'))) ? 1 : 0;
+
+
+    while (!done && (src <= end) && (dst <= end)) {
+        /* Convert backslash to forward slash on Windows only. */
+        if (win) {
+            if (*src == '\\') {
+                *src = '/';
+                changed[0] = '1';
+            }
+            if ((src < end) && (*(src + 1) == '\\')) {
+                *(src + 1) = '/';
+                changed[0] = '1';
+            }
+        }
+
+        /* Always normalize at the end of the input. */
+        if (src == end) {
+            done = 1;
+        }
+
+        /* Skip normalization if this is NOT the end of the path segment. */
+        else if (*(src + 1) != '/') {
+            goto copy; /* Skip normalization. */
+        }
+
+        /*** Normalize the path segment. ***/
+
+        /* Could it be an empty path segment? */
+        if ((src != end) && *src == '/') {
+            /* Ignore */
+            changed[0] = '1';
+            goto copy; /* Copy will take care of this. */
+        }
+
+        /* Could it be a back or self reference? */
+        else if (*src == '.') {
+
+            /* Back-reference? */
+            if ((dst > input) && (*(dst - 1) == '.')) {
+                /* If a relative path and either our normalization has
+                 * already hit the rootdir, or this is a backref with no
+                 * previous path segment, then mark that the rootdir was hit
+                 * and just copy the backref as no normilization is possible.
+                 */
+                if (relative && (hitroot || ((dst - 2) <= input))) {
+                    hitroot = 1;
+
+                    goto copy; /* Skip normalization. */
+                }
+
+                /* Remove backreference and the previous path segment. */
+                dst -= 3;
+                while ((dst > input) && (*dst != '/')) {
+                    dst--;
+                }
+
+                /* But do not allow going above rootdir. */
+                if (dst <= input) {
+                    hitroot = 1;
+                    dst = input;
+
+                    /* Need to leave the root slash if this
+                     * is not a relative path and the end was reached
+                     * on a backreference.
+                     */
+                    if (!relative && (src == end)) {
+                        dst++;
+                    }
+                }
+
+                if (done) goto length; /* Skip the copy. */
+                src++;
+
+                changed[0] = '1';
+            }
+
+            /* Relative Self-reference? */
+            else if (dst == input) {
+                changed[0] = '1';
+
+                /* Ignore. */
+
+                if (done) goto length; /* Skip the copy. */
+                src++;
+            }
+
+            /* Self-reference? */
+            else if (*(dst - 1) == '/') {
+                changed[0] = '1';
+
+                /* Ignore. */
+
+                if (done) goto length; /* Skip the copy. */
+                dst--;
+                src++;
+            }
+        }
+
+        /* Found a regular path segment. */
+        else if (dst > input) {
+            hitroot = 0;
+        }
+
+copy:
+        /*** Copy the byte if required. ***/
+
+        /* Skip to the last forward slash when multiple are used. */
+        if (*src == '/') {
+            unsigned char *oldsrc = src;
+
+            while (   (src < end)
+                    && ((*(src + 1) == '/') || (win && (*(src + 1) == '\\'))) )
+            {
+                src++;
+            }
+            if (oldsrc != src) changed[0] = '1';
+
+            /* Do not copy the forward slash to the root
+             * if it is not a relative path.  Instead
+             * move over the slash to the next segment.
+             */
+            if (relative && (dst == input)) {
+                src++;
+                goto length; /* Skip the copy */
+            }
+        }
+
+        *(dst++) = *(src++);
+
+length:
+        ldst = (dst - input);
+    }
+
+    /* Make sure that there is not a trailing slash in the
+     * normalized form if there was not one in the original form.
+     */
+    if (!trailing && (dst > input) && *(dst - 1) == '/') {
+        ldst--;
+        dst--;
+    }
+
+    /* Always NUL terminate */
+    *dst = '\0';
+
+    return ldst;
+}
+
+/* removeComments */
+
+int removeComments_execute(unsigned char *input, long int input_len, unsigned char *changed) {
+    long int i, j, incomment;
+
+    changed[0] = '0';
+
+    i = j = incomment = 0;
+    while(i < input_len) {
+        if (incomment == 0) {
+            if ((input[i] == '/')&&(i + 1 < input_len)&&(input[i + 1] == '*')) {
+                changed[0] = '1';
+                incomment = 1;
+                i += 2;
+            } else if ((input[i] == '<')&&(i + 1 < input_len)&&(input[i + 1] == '!')&&
+                    (i + 2 < input_len)&&(input[i+2] == '-')&&(i + 3 < input_len)&&
+                    (input[i + 3] == '-') && (incomment == 0)) {
+                incomment = 1;
+                changed[0] = '1';
+                i += 4;
+            } else if ((input[i] == '-')&&(i + 1 < input_len)&&(input[i + 1] == '-')
+                        && (incomment == 0)) {
+                changed[0] = '1';
+                input[i] = ' ';
+                break;
+            } else if (input[i] == '#' && (incomment == 0)) {
+                changed[0] = '1';
+                input[i] = ' ';
+               break;
+            } else {
+                input[j] = input[i];
+                i++;
+                j++;
+            }
+        } else {
+            if ((input[i] == '*')&&(i + 1 < input_len)&&(input[i + 1] == '/')) {
+                incomment = 0;
+                i += 2;
+                input[j] = input[i];
+                i++;
+                j++;
+            } else if ((input[i] == '-')&&(i + 1 < input_len)&&(input[i + 1] == '-')&&
+                    (i + 2 < input_len)&&(input[i+2] == '>'))   {
+                incomment = 0;
+                i += 3;
+                input[j] = input[i];
+                i++;
+                j++;
+            } else {
+                i++;
+            }
+        }
+    }
+
+    if (incomment) {
+        input[j++] = ' ';
+    }
+
+    return j;
+}
+
+/* removeCommentsChar */
+
+int removeCommentsChar_execute(unsigned char *input, long int input_len, unsigned char *changed) {
+    long int i, j;
+
+    changed[0] = '0';
+
+    i = j = 0;
+    while(i < input_len) {
+        if ((input[i] == '/')&&(i + 1 < input_len)&&(input[i + 1] == '*')) {
+            changed[0] = '1';
+            i += 2;
+        } else if ((input[i] == '*')&&(i + 1 < input_len)&&(input[i + 1] == '/')) {
+            changed[0] = '1';
+            i += 2;
+        } else if ((input[i] == '<')&&(i + 1 < input_len)&&(input[i + 1] == '!')&&
+                    (i + 2 < input_len)&&(input[i+2] == '-')&&(i + 3 < input_len)&&
+                    (input[i + 3] == '-')) {
+            changed[0] = '1';
+            i += 4;
+        } else if ((input[i] == '-')&&(i + 1 < input_len)&&(input[i + 1] == '-')&&
+                    (i + 2 < input_len)&&(input[i+2] == '>'))   {
+            changed[0] = '1';
+            i += 3;
+        } else if ((input[i] == '-')&&(i + 1 < input_len)&&(input[i + 1] == '-')) {
+            changed[0] = '1';
+            i += 2;
+        } else if (input[i] == '#') {
+            changed[0] = '1';
+            i++;
+        } else {
+            input[j] = input[i];
+            i++;
+            j++;
+        }
+    }
+    input[j] = '\0';
+
+    return j;
+}
+
+/* removeNulls */
+
+int removeNulls_execute(unsigned char *input, long int input_len, unsigned char *changed) {
+    long int i, j;
+
+    changed[0] = '0';
+
+    i = j = 0;
+    while(i < input_len) {
+        if (input[i] == '\0') {
+            changed[0] = '1';
+        } else {
+            input[j] = input[i];
+            j++;
+        }
+        i++;
+    }
+
+    return j;
+}
+
+/* removeWhitespace */
+
+int removeWhitespace_execute(unsigned char *input, long int input_len, unsigned char *changed) {
+    long int i, j;
+
+    changed[0] = '0';
+
+    i = j = 0;
+    while(i < input_len) {
+        if (isspace(input[i])||(input[i] == NBSP)) {
+            /* do nothing */
+            changed[0] = '1';
+        } else {
+            input[j] = input[i];
+            j++;
+        }
+        i++;
+    }
+
+    return j;
+}
+
+/* replaceComments */
+
+int replaceComments_execute(unsigned char *input, long int input_len, unsigned char *changed) {
+    long int i, j, incomment;
+
+    changed[0] = '0';
+
+    i = j = incomment = 0;
+    while(i < input_len) {
+        if (incomment == 0) {
+            if ((input[i] == '/')&&(i + 1 < input_len)&&(input[i + 1] == '*')) {
+                changed[0] = '1';
+                incomment = 1;
+                i += 2;
+            } else {
+                input[j] = input[i];
+                i++;
+                j++;
+            }
+        } else {
+            if ((input[i] == '*')&&(i + 1 < input_len)&&(input[i + 1] == '/')) {
+                incomment = 0;
+                i += 2;
+                input[j] = ' ';
+                j++;
+            } else {
+                i++;
+            }
+        }
+    }
+
+    if (incomment) {
+        input[j++] = ' ';
+    }
+
+    return j;
+}
+
+/* replaceNulls */
+
+int replaceNulls_execute(unsigned char *input, long int input_len) {
+    long int i;
+    int changed = 0;
+
+    i = 0;
+    while(i < input_len) {
+        if (input[i] == '\0') {
+            changed = 1;
+            input[i] = ' ';
+        }
+        i++;
+    }
+
+    return changed;
+}
+
+/* trimLeft */
+
+int trimLeft_execute(unsigned char *input, long int input_len) {
+    long int i;
+
+    for(i = 0; i < input_len; i++) {
+        if (isspace(input[i]) == 0) {
+            break;
+        }
+    }
+
+    return i;
+}
+
+/* trimRight */
+
+int trimRight_execute(unsigned char *input, long int input_len) {
+    long int i = input_len - 1;
+
+    while(i >= 0) {
+        if (isspace(input[i]) == 0) {
+            break;
+        }
+        input[i] = '\0';
+        i--;
+    }
+
+    return i + 1;
+}
+
+/* trim */
+
+int trim_execute(unsigned char *input, long int input_len) {
+    int len = input_len;
+
+    len = trimRight_execute(input, len);
+    len = trimLeft_execute(input, len);
+
+    return len;
+}
+
+/* sqlHexDecode */
+
+/**
+ *
+ */
+int sql_hex2bytes(unsigned char *data, int len) {
+    unsigned char *d, *begin = data;
+
+    if ((data == NULL)||(len == 0)) return 0;
+
+    for( d = data; *data; *d++ = *data++) {
+        if ( *data != '0' ) continue;
+        if ( tolower(*++data) != 'x' ) {
+            data--;
+            continue;
+        }
+
+        data++;
+
+        // Do we need to keep "0x" if no hexa after?
+        if ( !VALID_HEX(data[0]) || !VALID_HEX(data[1]) ) {
+            data-=2;
+            continue;
+        }
+
+        while ( VALID_HEX(data[0]) && VALID_HEX(data[1]) )  {
+            *d++ = x2c(data);
+            data += 2;
+        }
+    }
+
+    *d = '\0';
+    return strlen((char *)begin);
 }

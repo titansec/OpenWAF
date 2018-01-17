@@ -6,15 +6,15 @@ CC = gcc
 CFLAGS=-fpic -Wall -O3
 LFLAGS=-shared
 
-SO_LIBS = decode.so
-MAKE_LIBS = decode
-INSTALL_LIBS = install-decode
-CLEAN_LIBS = clean-decode
+SO_LIBS = transforms.so
+MAKE_LIBS = transforms
+INSTALL_LIBS = install-transforms
+CLEAN_LIBS = clean-transforms
 
 all: $(MAKE_LIBS)
 
-decode: 
-	cd $(SRCDIR)/decode && make
+transforms: 
+	cd $(SRCDIR)/transforms && make
 
 
 clean: $(CLEAN_LIBS)
@@ -22,14 +22,14 @@ clean: $(CLEAN_LIBS)
 clean-libs:
 	cd $(DESTDIR) && rm $(SO_LIBS)
 
-clean-decode:
-	cd $(SRCDIR)/decode && make clean
+clean-transforms:
+	cd $(SRCDIR)/transforms && make clean
 
 
 install: $(INSTALL_LIBS) install-check
 
-install-decode:
-	cd $(SRCDIR)/decode && make install DESTDIR=$(DESTDIR)
+install-transforms:
+	cd $(SRCDIR)/transforms && make install DESTDIR=$(DESTDIR)
 
 install-check:
 	stat $(DESTDIR)/*.so > /dev/null

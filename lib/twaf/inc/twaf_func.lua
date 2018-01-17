@@ -21,14 +21,6 @@ local ngx_get_phase         =  ngx.get_phase
 local ngx_socket_tcp        =  ngx.socket.tcp
 local ngx_req_get_uri_args  =  ngx.req.get_uri_args
 
-ffi.cdef[[
-int js_decode(unsigned char *input, long int input_len);
-int css_decode(unsigned char *input, long int input_len);
-int decode_base64_ext(char *plain_text, const unsigned char *input, int input_len);
-int escape_seq_decode(unsigned char *input, int input_len);
-int utf8_to_unicode(char *output, unsigned char *input, long int input_len, unsigned char *changed);
-]]
-
 function _M.ffi_copy(value, len)
     local buf = ffi.new(ffi.typeof("char[?]"), len + 1)
     ffi.copy(buf, value)
@@ -57,8 +49,6 @@ function _M.load_lib(cpath, lib_name)
     
     ngx.log(ngx.WARN, "load lib failed - ", lib_name)
 end
-
-_M.decode_lib = _M.load_lib(package.cpath, 'decode.so')
 
 function _M.string_trim(self, str)
     return (str:gsub("^%s*(.-)%s*$", "%1"))
@@ -801,7 +791,7 @@ function _M.rule_log(self, _twaf, info)
     info.category = _M:rule_category(_twaf, info.rule_name)
     
     -- reqstat
-    ctx.events.stat[info.category] = (info.action or 'PASS'):upper()
+    ctx.events.stat[info.category] = (info.action or "PASS"):upper()
     
     -- attack response
     if info.action ~= "PASS" and info.action ~= "ALLOW" and info.action ~= "CHAIN" then
