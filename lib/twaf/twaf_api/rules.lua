@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -13,7 +13,7 @@ _M.api = {}
 _M.help = {}
 _M.api.rules = {}
 
--- get rules, e.g: GET host/path/rules/rule_id
+-- get rules, e.g: GET /api/rules/{rule_id}
 _M.api.rules.get         = function(_twaf, log, u)
 
     local conf  = _twaf.config
@@ -45,8 +45,8 @@ _M.api.rules.get         = function(_twaf, log, u)
     end
 end
 
--- post rules, e.g: POST host/path/rules
--- post rules, e.g: POST host/path/rules/checking
+-- post rules, e.g: POST /api/rules
+-- post rules, e.g: POST /api/rules/checking
 _M.api.rules.post        = function(_twaf, log, u)
 
 -- check request body
@@ -112,7 +112,7 @@ _M.api.rules.post        = function(_twaf, log, u)
     twaf_conf:rule_group_phase(conf.rules, data.config)
 end
 
--- update rules, e.g: PUT host/path/rules
+-- update rules, e.g: PUT /api/rules
 _M.api.rules.put         = function(_twaf, log, u)
 
 -- check request body
@@ -235,17 +235,16 @@ _M.api.rules.put         = function(_twaf, log, u)
     return
 end
 
--- delete rules, e.g: DELETE host/path/rules/{rule_id}
+-- delete rules, e.g: DELETE /api/rules/{rule_id}
 _M.api.rules.delete      = function(_twaf, log, u)
 end
 
 _M.help.rules = {
-    "GET host/path/rules",
-    "GET host/path/rules/rule_id",
-    "POST host/path/rules",
-    "POST host/path/rules/checking",
-    "PUT host/path/rules",
-    "DELETE host/path/rules/{rule_id}"
+    "GET /api/rules",
+    "GET /api/rules/{rule_id}",
+    "POST /api/rules",
+    "POST /api/rules/checking",
+    "PUT /api/rules"
 }
     
 return _M

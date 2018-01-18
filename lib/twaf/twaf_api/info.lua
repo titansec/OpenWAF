@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 _M.api = {}
@@ -16,7 +16,7 @@ _M.api.ctx = {}
 _M.api._G = {}
 _M.api.version = {}
 
--- get engine info, e.g: GET host/path/collectgarbage
+-- get engine info, e.g: GET /api/collectgarbage
 _M.api.collectgarbage.get = function(_twaf, log, u)
 
     local res = {}
@@ -27,7 +27,7 @@ _M.api.collectgarbage.get = function(_twaf, log, u)
     log.result = res
 end
 
--- get engine info, e.g: GET host/path/engine_info
+-- get engine info, e.g: GET /api/engine_info
 _M.api.engine_info.get = function(_twaf, log, u)
 
     local res = {}
@@ -48,7 +48,7 @@ _M.api.engine_info.get = function(_twaf, log, u)
     return
 end
 
--- get timer count, e.g: GET host/path/timer_count
+-- get timer count, e.g: GET /api/timer_count
 _M.api.timer_count.get = function(_twaf, log, u)
     local res         = {}
     res.running_count = ngx.timer.running_count()
@@ -57,7 +57,7 @@ _M.api.timer_count.get = function(_twaf, log, u)
     return
 end
 
--- get shm, e.g: GET host/path/shm/{shared_dict_name}
+-- get shm, e.g: GET /api/shm/{shared_dict_name}
 _M.api.shm.get  = function(_twaf, log, u)
     
     if not u[2] then
@@ -85,7 +85,7 @@ _M.api.shm.get  = function(_twaf, log, u)
     return
 end
 
--- get ctx, e.g: GET host/path/ctx/{output_file_path}
+-- get ctx, e.g: GET /api/ctx/{output_file_path}
 _M.api.ctx.get  = function(_twaf, log, u)
 
     local path =  u[2] or "/var/log/twaf_ctx.json"
@@ -112,7 +112,7 @@ _M.api.ctx.get  = function(_twaf, log, u)
 
 end
 
--- get _G, e.g: GET host/path/_G/{output_file_path}
+-- get _G, e.g: GET /api/_G/{output_file_path}
 _M.api._G.get  = function(_twaf, log, u)
 
     local path =  u[2] or "/var/log/twaf_G.json"
@@ -139,8 +139,8 @@ _M.api._G.get  = function(_twaf, log, u)
 
 end
 
--- get version, e.g: GET host/path/version
--- get version, e.g: GET host/path/version/{module_name}
+-- get version, e.g: GET /api/version
+-- get version, e.g: GET /api/version/{module_name}
 _M.api.version.get  = function(_twaf, log, u)
     if not u[2] then
         log.result = _twaf._VERSION
@@ -159,15 +159,15 @@ _M.api.version.get  = function(_twaf, log, u)
 end
 
 _M.help.collectgarbage = {
-    "GET host/path/collectgarbage"
+    "GET /api/collectgarbage"
 }
 
 _M.help.engine_info = {
-    "GET host/path/engine_info"
+    "GET /api/engine_info"
 }
 
 _M.help.timer_count = {
-    "GET host/path/timer_count \
+    "GET /api/timer_count \
      功能: 打印当前运行和待运行的定时器个数 \
      注: pending_count 表示待运行的定时器个数 \
          running_count 表示正运行的定时器个数 \
@@ -176,24 +176,24 @@ _M.help.timer_count = {
 }
 
 _M.help._G = {
-    "GET host/path/_G/{output_file_path} \
+    "GET /api/_G/{output_file_path} \
      功能: 打印 _G 至指定文件 \
      注: output_file_path 表示输出信息存储路径，默认路径 var/log/twaf_G.json"
 }
 
 _M.help.ctx = {
-    "GET host/path/ctx/{output_file_path} \
+    "GET /api/ctx/{output_file_path} \
      功能: 打印 ctx 至指定文件 \
      注: output_file_path 表示输出信息存储路径，默认路径 var/log/twaf_ctx.json"
 }
 
 _M.help.shm = {
-    "GET host/path/shm/{shared_dict_name}"
+    "GET /api/shm/{shared_dict_name}"
 }
 
 _M.help.version = {
-    "GET host/path/version",
-    "GET host/path/version/{module_name}"
+    "GET /api/version",
+    "GET /api/version/{module_name}"
 }
     
 return _M

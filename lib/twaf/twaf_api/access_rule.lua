@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -12,7 +12,7 @@ _M.api = {}
 _M.help = {}
 _M.api.access_rule = {}
 
--- get access_rule, e.g: GET host/path/access_rule/{user}/{uuid}
+-- get access_rule, e.g: GET /api/access_rule/{user}/{uuid}
 _M.api.access_rule.get        = function(_twaf, log, u)
 
     local rules    = _twaf.config.twaf_access_rule.rules
@@ -64,8 +64,8 @@ _M.api.access_rule.get        = function(_twaf, log, u)
     end
 end
 
--- post access_rule, e.g: POST host/path/access_rule/{user}/{pos}
--- post access_rule, e.g: POST host/path/access_rule/{user}/uuid/{uuid}
+-- post access_rule, e.g: POST /api/access_rule/{user}/{pos}
+-- post access_rule, e.g: POST /api/access_rule/{user}/uuid/{uuid}
 _M.api.access_rule.post       = function(_twaf, log, u)
 
     local mstsc =  "twaf_mstsc"
@@ -187,7 +187,7 @@ _M.api.access_rule.post       = function(_twaf, log, u)
     table.insert(rules, index, data.config)
 end
 
--- put access_rule, e.g: PUT host/path/access_rule/{user}/{uuid}
+-- put access_rule, e.g: PUT /api/access_rule/{user}/{uuid}
 _M.api.access_rule.put        = function(_twaf, log, u)
 
     local find_out = false
@@ -239,7 +239,7 @@ _M.api.access_rule.put        = function(_twaf, log, u)
     log.result = find_out
 end
 
--- delete access_rule, e.g: DELETE host/path/access_rule/{user}/{uuid}
+-- delete access_rule, e.g: DELETE /api/access_rule/{user}/{uuid}
 _M.api.access_rule.delete     = function(_twaf, log, u)
 
     local rules    = _twaf.config.twaf_access_rule.rules
@@ -270,11 +270,11 @@ _M.api.access_rule.delete     = function(_twaf, log, u)
 end
 
 _M.help.access_rule = {
-    "GET host/path/access_rule/{user}/{uuid}",
-    "POST host/path/access_rule/{user}/{pos}",
-    "POST host/path/access_rule/{user}/uuid/{uuid}",
-    "PUT host/path/access_rule/{user}/{uuid}",
-    "DELETE host/path/access_rule/{user}/{uuid}"
+    "GET /api/access_rule/{user}/{uuid}",
+    "POST /api/access_rule/{user}/{pos}",
+    "POST /api/access_rule/{user}/uuid/{uuid}",
+    "PUT /api/access_rule/{user}/{uuid}",
+    "DELETE /api/access_rule/{user}/{uuid}"
 }
     
 return _M

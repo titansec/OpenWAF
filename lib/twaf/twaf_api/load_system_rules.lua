@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_conf = require "lib.twaf.twaf_conf"
@@ -12,6 +12,7 @@ _M.api = {}
 _M.help = {}
 _M.api.load_system_rules = {}
 
+-- load_system_rules e.g: GET /api/load_system_rules
 _M.api.load_system_rules.get = function(_twaf, log, u)
     
     local delete_id = {}
@@ -28,11 +29,7 @@ _M.api.load_system_rules.get = function(_twaf, log, u)
 end
 
 _M.help.load_system_rules = {
-    "GET host/path/access_rule/{user}/{uuid}",
-    "POST host/path/access_rule/{user}/{pos}",
-    "POST host/path/access_rule/{user}/uuid/{uuid}",
-    "PUT host/path/access_rule/{user}/{uuid}",
-    "DELETE host/path/access_rule/{user}/{uuid}"
+    "GET /api/load_system_rules"
 }
     
 return _M

@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -12,7 +12,7 @@ _M.api = {}
 _M.help = {}
 _M.api.dynamic_config = {}
 
--- get dynamic config e.g: GET host/path/dynamic_config
+-- get dynamic config e.g: GET /api/dynamic_config
 _M.api.dynamic_config.get  = function(_twaf, log, u)
     local result = {}
     local config = _twaf.config
@@ -25,7 +25,7 @@ _M.api.dynamic_config.get  = function(_twaf, log, u)
     return
 end
 
--- post dynamic config e.g: POST host/path/dynamic_config
+-- post dynamic config e.g: POST /api/dynamic_config
 _M.api.dynamic_config.post = function(_twaf, log, u)
 
 -- check request body
@@ -58,11 +58,8 @@ _M.api.dynamic_config.post = function(_twaf, log, u)
 end
 
 _M.help.dynamic_config = {
-    "GET host/path/access_rule/{user}/{uuid}",
-    "POST host/path/access_rule/{user}/{pos}",
-    "POST host/path/access_rule/{user}/uuid/{uuid}",
-    "PUT host/path/access_rule/{user}/{uuid}",
-    "DELETE host/path/access_rule/{user}/{uuid}"
+    "GET /api/dynamic_config",
+    "POST /api/dynamic_config"
 }
     
 return _M

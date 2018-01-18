@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -13,7 +13,7 @@ _M.api = {}
 _M.help = {}
 _M.api.config = {}
 
--- get config, e.g: GET host/path/config/policy/module/key
+-- get config, e.g: GET /api/config/{policy}/{module}/{key}
 _M.api.config.get        = function(_twaf, log, u)
     
     local i =  2
@@ -74,7 +74,7 @@ _M.api.config.get        = function(_twaf, log, u)
     log.result = v
 end
 
--- post config, e.g: POST host/path/config/policy/module/key
+-- post config, e.g: POST /api/config/{policy}/{module}/{key}
 _M.api.config.post       = function(_twaf, log, u)
     local i =  2
     local v = _twaf.config
@@ -154,7 +154,7 @@ _M.api.config.post       = function(_twaf, log, u)
     until false
 end
 
--- update config, e.g: PUT host/path/config
+-- update config, e.g: PUT /api/config/{policy}/{module}/{key}
 _M.api.config.put        = function(_twaf, log, u)
     local i =  2
     local v = _twaf.config
@@ -228,7 +228,7 @@ _M.api.config.put        = function(_twaf, log, u)
     until false
 end
 
--- delete config, e.g: DELETE host/path/config/policy/module/key
+-- delete config, e.g: DELETE /api/config/{policy}/{module}/{key}
 _M.api.config.delete     = function(_twaf, log, u)
     local i =  2
     local v = _twaf.config
@@ -309,10 +309,10 @@ _M.api.config.delete     = function(_twaf, log, u)
 end
 
 _M.help.config = {
-    "GET host/path/config/policy/module/key",
-    "POST host/path/config/policy/module/key",
-    "PUT host/path/config",
-    "DELETE host/path/config/policy/module/key"
+    "GET /api/config/{policy}/{module}/{key}",
+    "POST /api/config/{policy}/{module}/{key}",
+    "PUT /api/config/{policy}/{module}/{key}",
+    "DELETE /api/config/{policy}/{module}/{key}"
 }
     
 return _M

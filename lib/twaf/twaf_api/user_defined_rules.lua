@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -13,7 +13,7 @@ _M.api = {}
 _M.help = {}
 _M.api.user_defined_rules = {}
 
--- get user defined rules, e.g: GET host/path/user_defined_rules/policy_uuid/rule_id
+-- get user defined rules, e.g: GET /api/user_defined_rules/{policy_uuid}/{rule_id}
 _M.api.user_defined_rules.get    = function(_twaf, log, u)
 
     if not u[2] then
@@ -56,7 +56,7 @@ _M.api.user_defined_rules.get    = function(_twaf, log, u)
     return
 end
 
--- post user_defined_rules, e.g: POST host/path/user_defined_rules/policy_uuid
+-- post user_defined_rules, e.g: POST /api/user_defined_rules/{policy_uuid}
 _M.api.user_defined_rules.post   = function(_twaf, log, u)
 
 -- check request body
@@ -128,7 +128,7 @@ _M.api.user_defined_rules.post   = function(_twaf, log, u)
     twaf_conf:rule_group_phase(conf.user_defined_rules, data.config)
 end
 
--- put user_defined_rules, e.g: PUT host/path/user_defined_rules/policy_uuid/rule_id
+-- put user_defined_rules, e.g: PUT /api/user_defined_rules/{policy_uuid}/{rule_id}
 _M.api.user_defined_rules.put    = function(_twaf, log, u)
 
 -- check request body
@@ -194,7 +194,7 @@ _M.api.user_defined_rules.put    = function(_twaf, log, u)
     return
 end
 
--- delete user_defined_rules, e.g: DELETE host/path/user_defined_rules/policy_uuid/rule_id
+-- delete user_defined_rules, e.g: DELETE /api/user_defined_rules/{policy_uuid}/{rule_id}
 _M.api.user_defined_rules.delete = function(_twaf, log, u)
     
     if not u[2] then
@@ -245,10 +245,10 @@ _M.api.user_defined_rules.delete = function(_twaf, log, u)
 end
 
 _M.help.user_defined_rules = {
-    "GET host/path/user_defined_rules/policy_uuid/rule_id",
-    "POST host/path/user_defined_rules/policy_uuid",
-    "PUT host/path/user_defined_rules/policy_uuid/rule_id",
-    "DELETE host/path/user_defined_rules/policy_uuid/rule_id"
+    "GET /api/user_defined_rules/{policy_uuid}/{rule_id}",
+    "POST /api/user_defined_rules/{policy_uuid}",
+    "PUT /api/user_defined_rules/{policy_uuid}/{rule_id}",
+    "DELETE /api/user_defined_rules/{policy_uuid}/{rule_id}"
 }
     
 return _M

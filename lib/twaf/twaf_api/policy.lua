@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -13,7 +13,7 @@ _M.api = {}
 _M.help = {}
 _M.api.policy = {}
 
--- get policy config e.g: GET host/path/policy/policy_uuid
+-- get policy config e.g: GET /api/policy/{policy_uuid}
 _M.api.policy.get    = function(_twaf, log, u)
     
     u[1] = "config"
@@ -89,7 +89,7 @@ _M.api.policy.get    = function(_twaf, log, u)
     
 end
 
--- post policy config e.g: POST host/path/policy/policy_uuid
+-- post policy config e.g: POST /api/policy/{policy_uuid}
 _M.api.policy.post   = function(_twaf, log, u)
 
 -- check request body
@@ -142,7 +142,7 @@ _M.api.policy.post   = function(_twaf, log, u)
     return
 end
 
--- put policy config e.g: PUT host/path/policy/policy_uuid
+-- put policy config e.g: PUT /api/policy/{policy_uuid}
 _M.api.policy.put    = function(_twaf, log, u)
 
 -- check request body
@@ -193,7 +193,7 @@ _M.api.policy.put    = function(_twaf, log, u)
     return
 end
 
--- delete policy config e.g: DELETE host/path/policy/policy_uuid
+-- delete policy config e.g: DELETE /api/policy/{policy_uuid}
 _M.api.policy.delete = function(_twaf, log, u)
 
     local conf = _twaf.config.twaf_policy
@@ -212,10 +212,10 @@ _M.api.policy.delete = function(_twaf, log, u)
 end
 
 _M.help.policy = {
-    "GET host/path/policy/policy_uuid",
-    "POST host/path/policy/policy_uuid",
-    "PUT host/path/policy/policy_uuid",
-    "DELETE host/path/policy/policy_uuid"
+    "GET host/path/policy/{policy_uuid}",
+    "POST host/path/policy/{policy_uuid}",
+    "PUT host/path/policy/{policy_uuid}",
+    "DELETE host/path/policy/{policy_uuid}"
 }
     
 return _M

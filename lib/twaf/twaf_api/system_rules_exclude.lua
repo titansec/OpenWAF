@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -12,6 +12,8 @@ _M.api = {}
 _M.help = {}
 _M.api.system_rules_exclude = {}
 
+-- get system_rules_exclude, e.g: GET /api/system_rules_exclude
+-- get system_rules_exclude, e.g: GET /api/system_rules_exclude/{rule_id}
 _M.api.system_rules_exclude.get    = function(_twaf, log, u)
 
     local exclude = _twaf.config.twaf_policy.system_rules_id
@@ -36,6 +38,7 @@ _M.api.system_rules_exclude.get    = function(_twaf, log, u)
     log.result = exclude[u[2]]
 end
 
+-- post system_rules_exclude, e.g: POST /api/system_rules_exclude
 _M.api.system_rules_exclude.post   = function(_twaf, log, u)
 
 -- check request body
@@ -54,6 +57,8 @@ _M.api.system_rules_exclude.post   = function(_twaf, log, u)
     _twaf.config.twaf_policy.system_rules_id = data.config
 end
 
+-- delete system_rules_exclude, e.g: DELETE /api/system_rules_exclude
+-- delete system_rules_exclude, e.g: DELETE /api/system_rules_exclude/{rule_id}
 _M.api.system_rules_exclude.delete = function(_twaf, log, u)
 
     local policy = _twaf.config.twaf_policy
@@ -79,6 +84,11 @@ _M.api.system_rules_exclude.delete = function(_twaf, log, u)
 end
 
 _M.help.system_rules_exclude = {
+    "GET /api/system_rules_exclude",
+    "GET /api/system_rules_exclude/{rule_id}",
+    "POST /api/system_rules_exclude",
+    "DELETE /api/system_rules_exclude",
+    "DELETE /api/system_rules_exclude/{rule_id}"
 }
     
 return _M

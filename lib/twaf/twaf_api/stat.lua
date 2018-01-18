@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.0.2"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -12,9 +12,9 @@ _M.api = {}
 _M.help = {}
 _M.api.stat = {}
 
--- get stat, e.g: GET host/path/stat
--- get stat, e.g: GET host/path/stat/{policy_uuid}
--- get stat, e.g: GET host/path/stat/policy_all
+-- get stat, e.g: GET /api/stat
+-- get stat, e.g: GET /api/stat/{policy_uuid}
+-- get stat, e.g: GET /api/stat/policy_all
 _M.api.stat.get       = function(_twaf, log, u)
     
     if not u[2] then
@@ -51,14 +51,14 @@ _M.api.stat.get       = function(_twaf, log, u)
     return
 end
 
--- delete stat, e.g: DELETE host/path/stat
+-- delete stat, e.g: DELETE /api/stat
 _M.api.stat.delete    = function(_twaf) twaf_reqstat:reqstat_clear() end
 
 _M.help.stat = {
-    "GET host/path/stat",
-    "GET host/path/stat/{policy_uuid}",
-    "GET host/path/stat/policy_all",
-    "DELETE host/path/stat"
+    "GET /api/stat",
+    "GET /api/stat/{policy_uuid}",
+    "GET /api/stat/policy_all",
+    "DELETE /api/stat"
 }
     
 return _M
