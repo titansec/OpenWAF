@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "0.0.3"
 }
 
 local twaf_conf = require "lib.twaf.twaf_conf"
@@ -12,8 +12,8 @@ _M.api = {}
 _M.help = {}
 _M.api.load_system_rules = {}
 
--- load_system_rules e.g: GET /api/load_system_rules
-_M.api.load_system_rules.get = function(_twaf, log, u)
+-- load_system_rules e.g: POST /api/load_system_rules
+_M.api.load_system_rules.post = function(_twaf, log, u)
     
     local delete_id = {}
     for phase, rules in pairs(_twaf.config.rules) do
@@ -29,7 +29,7 @@ _M.api.load_system_rules.get = function(_twaf, log, u)
 end
 
 _M.help.load_system_rules = {
-    "GET /api/load_system_rules"
+    "POST /api/load_system_rules"
 }
     
 return _M
