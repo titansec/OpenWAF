@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.4"
+    _VERSION = "0.0.5"
 }
 
 local cjson                = require "cjson.safe"
@@ -90,39 +90,42 @@ local function _do_operator(_twaf, sctx, rule, data, pattern, request, pf)
     if pf then
         local patterns = sctx.patterns
         local gcf      = sctx.gcf
+        local shm      = sctx.rules_shm
+        
+        if patterns == false then
+            return false
+        end
             
         if not patterns then
-            
-            patterns = {}
-            
-            local f = io.open(pf)
-            if not f then
-                ngx.log(ngx[gcf.debug_log_level], "open failed -- "..tostring(pf))
-                return false
+            local patterns = cjson.decode(shm:get(pf))
+            if not patterns then 
+                patterns = {}
+                
+                local f = io.open(pf)
+                if not f then
+                    ngx.log(ngx[gcf.debug_log_level], "open failed -- "..tostring(pf))
+                    return false
+                end
+                
+                repeat
+                
+                local n = f:read()
+                if not n then break end
+                table.insert(patterns, n)
+                
+                until false
+                
+                f:close()
+                shm:set(pf, twaf_func:table_to_string(patterns))
             end
             
-            repeat
-            
-            local n = f:read()
-            if not n then
-                break
-            end
-            
-            table.insert(patterns, n)
             sctx.patterns = patterns
-            
-            until false
-            
-            f:close()
             
             if not next(patterns) then
                 ngx.log(ngx[gcf.debug_log_level], "file empty -- "..tostring(pf))
                 sctx.patterns = false
                 return false
             end
-            
-        elseif patterns == false then
-            return false
         end
         
         pattern = patterns
@@ -233,12 +236,12 @@ local function _parse_vars(_twaf, rule, ctx, sctx)
                 request.TX["0"] = value
             end
             
-            request.MATCHED_VAR      = "\""..request.TX["0"].."\""
             request.MATCHED_VAR_NAME = v
+            table.insert(request.MATCHED_VAR_NAMES, v)
             
             if value then
+                request.MATCHED_VAR  = "\""..request.TX["0"].."\""
                 table.insert(request.MATCHED_VARS, request.TX["0"])
-                table.insert(request.MATCHED_VAR_NAMES, v)
             end
             
             return true
