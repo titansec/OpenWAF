@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "0.0.3"
 }
 
 local ffi                   =  require "ffi"
@@ -340,8 +340,23 @@ function _M.state(self, state)
     return false
 end
 
-function _M.get_variable(self, name)
-    return ngx_var[name] or "-"
+function _M.get_variable(self, key)
+    local str     = nil
+    local request = twaf:ctx().request
+    
+    if type(request[key]) == "function" then
+        str = _M:table_to_string(request[key]())
+    elseif key:sub(1,1) == "%" then
+        str = _M:parse_dynamic_value(key ,request)
+    else
+        str = _M:table_to_string(request[key])
+    end
+    
+    if str == nil then
+        return "-"
+    end
+    
+    return str
 end
 
 function _M.key(self, key_var)
@@ -464,24 +479,22 @@ end
 
 function _M.table_has_value(self, tb, value)
     if type(tb) ~= "table" or type(value) == "table" then
-        --logger
         return false
     end
     
-    for i, v in pairs(tb) do
+    for _, v in pairs(tb) do
         if type(v) == "table" then
             return _M:table_has_value(v, value)
         else
             if type(v) == type(value) and v == value then
-                return true, i
-            else
-                return false
+                return true
             end
         end
     end
     
     return false
 end
+
 
 function _M.table_keys(self, tb)
     if type(tb) ~= "table" then
@@ -794,9 +807,9 @@ function _M.rule_log(self, _twaf, info)
     ctx.events.stat[info.category] = (info.action or "PASS"):upper()
     
     -- attack response
-    if info.action ~= "PASS" and info.action ~= "ALLOW" and info.action ~= "CHAIN" then
-	    ngx_var.twaf_attack_info = ngx_var.twaf_attack_info .. info.rule_name .. ";"
-	end
+    if info.action == "DENY" then
+        ngx_var.twaf_attack_info = ngx_var.twaf_attack_info .. info.rule_name .. ";"
+    end
     
     -- log
     if info.log_state == true then
