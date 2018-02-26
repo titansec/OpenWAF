@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.5"
+    _VERSION = "0.1.2"
 }
 
 local cjson                = require "cjson.safe"
@@ -95,9 +95,9 @@ local function _do_operator(_twaf, sctx, rule, data, pattern, request, pf)
         if patterns == false then
             return false
         end
-            
+        
         if not patterns then
-            local patterns = cjson.decode(shm:get(pf))
+            patterns = cjson.decode(shm:get(pf))
             if not patterns then 
                 patterns = {}
                 
@@ -309,15 +309,16 @@ local function _process_rule(_twaf, rule, ctx, sctx)
             ngx.log(ngx[gcf.debug_log_level], "ID: "..rule.id.." layer: "..tostring(k))
             
             local res = _parse_vars(_twaf, r, ctx, sctx)
+            
+            -- delete patterns from pf
+            sctx.patterns = nil
+            
             if res == false then
                 rule_match                = false
                 request.MATCHED_VARS      = {}
                 request.MATCHED_VAR_NAMES = {}
                 break
             end
-            
-            -- delete patterns from pf
-            sctx.patterns = nil
         end
     end
     
