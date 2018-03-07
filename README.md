@@ -1152,8 +1152,7 @@ twaf_secrules
         "respbody_limit":524288,                                    -- 响应体检测阈值，大于阈值不检测
         "pre_path": "/opt/OpenWAF/",                                -- OpenWAF安装路径
         "path": "lib/twaf/inc/knowledge_db/twrules",                -- 特征规则库在OpenWAF中的路径
-        "user_defined_rules":[                                      -- 用户自定义规则，数组
-        ],
+        "user_defined_rules":[ ],                                   -- 用户自定义规则，数组
         "rules_id":{                                                -- 特征排除
             "111112": [{"REMOTE_HOST":"a.com", "URI":"^/ab"}],      -- 匹配中数组中信息则对应规则失效，数组中key为变量名称，值支持正则
             "111113": {},                                           -- 特征未被排除
@@ -1268,9 +1267,76 @@ user_defined_rules
 
 **context:** *twaf_secrules*
 
-用户自定义规则
+策略下的用户自定义特征规则
 
 先执行用户自定义规则，再执行系统规则
+
+系统特征规则适用于所有的策略，在引擎启动时通过加载特征库或通过 API 加载系统特征规则，系统特征规则一般不会动态更改
+
+用户自定义特征在策略下生效，一般用于变动较大的特征规则，如：时域控制，修改响应头等临时性规则
+
+```json
+"user_defined_rules":[
+    {
+        "id": "1000001",
+        "release_version": "858",
+        "charactor_version": "001",
+        "disable": false,
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": 403,
+        "severity": "high",
+        "rule_name": "relative time",
+        "desc": "周一至周五的8点至18点，禁止访问/test目录",
+        "match": [{
+            "vars": [{
+                "var": "URI"
+            }],
+            "operator": "begins_with",
+            "pattern": "/test"
+        },
+        {
+            "vars": [{
+                "var": "TIME_WDAY"
+            }],
+            "operator": "equal",
+            "pattern": ["1", "2", "3", "4", "5"]
+        },
+        {
+            "vars": [{
+                "var": "TIME"
+            }],
+            "operator": "str_range",
+            "pattern": ["08:00:00-18:00:00"]
+        }]
+    },
+    {
+        "id": "1000002",
+        "release_version": "858",
+        "charactor_version": "001",
+        "disable": false,
+        "opts": {
+            "nolog": false
+        },
+        "phase": "access",
+        "action": "deny",
+        "meta": 403,
+        "severity": "high",
+        "rule_name": "iputil",
+        "desc": "某ip段内不许访问",
+        "match": [{
+            "vars": [{
+               "var": "REMOTE_ADDR"
+            }],
+            "operator": "ip_utils",
+            "pattern": ["1.1.1.0/24","2.2.2.2-2.2.20.2"]
+        }]
+    }
+]
+```
         
 rules_id
 --------
