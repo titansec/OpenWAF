@@ -115,7 +115,7 @@ PS:
                 --with-http_sub_module  \  
                 --with-http_geoip_module \  
                 --with-openssl=/opt/openssl-1.0.2k \ 
-                --with-pcre=/opt/pcre-8.40 \ 
+                --with-pcre=/opt/pcre-8.40
     make && make install 
 ```
 
