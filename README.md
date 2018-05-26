@@ -1061,7 +1061,7 @@ security_log
 
 安全事件日志格式
 
-若content_type为JSON，则日志格式为
+若 content_type 为 JSON，则日志格式为
 ```
 [
     variable_key_1, 
