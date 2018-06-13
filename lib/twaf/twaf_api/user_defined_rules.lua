@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "0.0.3"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -42,12 +42,10 @@ _M.api.user_defined_rules.get    = function(_twaf, log, u)
         return
     end
     
-    for phase, rules in pairs(conf) do
-        for _, r in ipairs(rules) do
-            if r.id == u[3] then
-                log.result = r
-                return
-            end
+    for _, r in ipairs(conf) do
+        if r.id == u[3] then
+            log.result = r
+            return
         end
     end
     
@@ -56,7 +54,7 @@ _M.api.user_defined_rules.get    = function(_twaf, log, u)
     return
 end
 
--- post user_defined_rules, e.g: POST /api/user_defined_rules/{policy_uuid}
+-- post user_defined_rules, e.g: POST /api/user_defined_rules/{policy_uuid}/{index}
 _M.api.user_defined_rules.post   = function(_twaf, log, u)
 
 -- check request body
@@ -125,7 +123,25 @@ _M.api.user_defined_rules.post   = function(_twaf, log, u)
         conf.user_defined_rules = {}
     end
     
-    twaf_conf:rule_group_phase(conf.user_defined_rules, data.config)
+    if u[3] then
+        local index = tonumber(u[3])
+        
+        for _, r in pairs(data.config) do
+            table.insert(conf.user_defined_rules, index, r)
+            index = index + 1
+        end
+        
+        return
+    end
+    
+    -- not u[3]
+    for _, r in pairs(data.config) do
+        if string.lower(r.action or "-") == "deny" then
+            table.insert(conf.user_defined_rules, r)
+        else
+            table.insert(conf.user_defined_rules, 1, r)
+        end
+    end
 end
 
 -- put user_defined_rules, e.g: PUT /api/user_defined_rules/{policy_uuid}/{rule_id}
@@ -156,7 +172,7 @@ _M.api.user_defined_rules.put    = function(_twaf, log, u)
         return
     end
     
-    local conf = policy.twaf_secrules.user_defined_rules
+    local conf = policy.twaf_secrules.user_defined_rules or {}
     
     if not u[3] then
         log.success = 0
@@ -164,25 +180,17 @@ _M.api.user_defined_rules.put    = function(_twaf, log, u)
         return
     end
     
-    if not _twaf.config.rules_id[u[3]] then
-        log.success = 0
-        log.reason  = "No such rule id: "..u[2]
-        return
-    end
+  --if not _twaf.config.rules_id[u[3]] then
+  --    log.success = 0
+  --    log.reason  = "No such rule id: "..u[2]
+  --    return
+  --end
     
-    if type(conf) ~= "table" then
-        log.success = 0
-        log.reason = "No rule id '"..u[3].."' in policy uuid '"..u[2].."'"
-        return
-    end
-    
-    for phase, rules in pairs(conf) do
-        for i, r in ipairs(rules) do
-            if r.id == u[3] then
-                rules[i] = data.config
-                log.result = data.config
-                break
-            end
+    for i, r in ipairs(conf) do
+        if r.id == u[3] then
+            conf[i] = data.config
+            log.result = data.config
+            break
         end
     end
     
@@ -228,14 +236,12 @@ _M.api.user_defined_rules.delete = function(_twaf, log, u)
         return
     end
     
-    for phase, rules in pairs(conf) do
-        for i, r in ipairs(rules) do
-            if r.id == u[3] then
-                log.result = r
-                table.remove(rules, i)
-                _twaf.config.rules_id[u[3]] = nil
-                break
-            end
+    for i, r in ipairs(conf) do
+        if r.id == u[3] then
+            log.result = r
+            table.remove(conf, i)
+            _twaf.config.rules_id[u[3]] = nil
+            break
         end
     end
     
@@ -246,7 +252,7 @@ end
 
 _M.help.user_defined_rules = {
     "GET /api/user_defined_rules/{policy_uuid}/{rule_id}",
-    "POST /api/user_defined_rules/{policy_uuid}",
+    "POST /api/user_defined_rules/{policy_uuid}/{index}",
     "PUT /api/user_defined_rules/{policy_uuid}/{rule_id}",
     "DELETE /api/user_defined_rules/{policy_uuid}/{rule_id}"
 }
