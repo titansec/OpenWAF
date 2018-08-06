@@ -182,9 +182,9 @@ _M.api.access_rule.post       = function(_twaf, log, u)
     end
     
     local index = first + pos - 1
-    log.result  = rules[index]
-    
     table.insert(rules, index, data.config)
+
+    log.result  = rules[index] 
 end
 
 -- put access_rule, e.g: PUT /api/access_rule/{user}/{uuid}
