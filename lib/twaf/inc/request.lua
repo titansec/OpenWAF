@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "0.0.3"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -268,7 +268,6 @@ _M.request = {
     
         if ctx.nodup then return end
         
-        local cf                             = _twaf:get_config_param("twaf_global")
         local request_headers                =  ngx.req.get_headers(0)
         local request_uri_args               =  ngx.req.get_uri_args(0)
         local request_post_args              = _vars_op("get_post_args", request_headers)
@@ -277,7 +276,6 @@ _M.request = {
         local request_body                   = _parse_request_body(_twaf, request, ctx, request_headers)
         local request_basename               = _basename(ngx.var.uri)
         local request_cookies                =  twaf_func:get_cookie_table()
-        local unique_id                      =  twaf_func:random_id(cf.unique_id_len)
         
         ctx.TX      = {}
         ctx.storage = {}
@@ -320,7 +318,7 @@ _M.request = {
         request.REQUEST_LINE                 =  ngx.var.request
         request.REQUEST_LINE_ARGS            =  ngx.var.args
         request.REQUEST_PROTOCOL             =  ngx.var.server_protocol
-        request.UNIQUE_ID                    =  unique_id
+        request.UNIQUE_ID                    =  ngx.var.request_id
         request.TX                           =  ctx.TX
         request.TIME_EPOCH                   =  ngx.time()                         -- seconds since 1970, integer
         request.TIME                         =  os.date("%X", request.TIME_EPOCH)  -- hour:minute:second  --PS:the system time zone
@@ -344,7 +342,7 @@ _M.request = {
         request.ORIGINAL_DST_ADDR            =  ngx.var.original_dst_addr
         request.ORIGINAL_DST_PORT            =  tonumber(ngx.var.original_dst_port) or 0
       --request.USERID
-      --request.POLICYID
+        request.POLICYID                     = _twaf.config.global_conf_uuid
         request.HTTP_REFERER                 =  ngx.var.http_referer or "-"
         request.GZIP_RATIO                   =  ngx.var.gzip_ratio or "-"
         request.MSEC                         =  tonumber(ngx.var.msec) or 0.00
@@ -370,7 +368,6 @@ _M.request = {
     end,
     body_filter = function(_twaf, request, ctx)
     
-        request.RESPONSE_STATUS = ngx.status
         request.RESPONSE_BODY   = ngx.arg[1]
     
     --[[
