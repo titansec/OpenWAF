@@ -26,15 +26,19 @@ Table of Contents
 ```txt
     cd /opt
     apt-get install gcc wget git swig make perl build-essential zlib1g-dev libgeoip-dev libncurses5-dev libreadline-dev -y
+    wget http://www.over-yonder.net/~fullermd/projects/libcidr/libcidr-1.2.3.tar.xz
     wget https://ftp.pcre.org/pub/pcre/pcre-8.42.tar.gz
     wget https://www.openssl.org/source/openssl-1.1.0h.tar.gz
     wget https://openresty.org/download/openresty-1.13.6.2.tar.gz
+    tar -xvf libcidr-1.2.3.tar.xz
     tar -zxvf pcre-8.42.tar.gz
     tar -zxvf openssl-1.1.0h.tar.gz
     tar -zxvf openresty-1.13.6.2.tar.gz
     rm -rf pcre-8.42.tar.gz \
            openssl-1.1.0h.tar.gz \
            openresty-1.13.6.2.tar.gz
+    cd /opt/libcidr-1.2.3
+    make && make install
 ```
 
 ```txt
@@ -91,7 +95,9 @@ PS:
     mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.13.6.2
     cp -RP /opt/OpenWAF/lib/openresty/* /opt/openresty-1.13.6.2/bundle/
     cd /opt/OpenWAF
+    make clean
     make install
+    ln -s /usr/local/lib/libcidr.so /opt/OpenWAF/lib/resty/libcidr.so
 ```
 
 ```txt
