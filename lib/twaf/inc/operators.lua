@@ -3,11 +3,22 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "1.0.0"
 }
 
+local cidr         = require "lib.twaf.inc.cidr"
 local iputils      = require "resty.iputils"
 local libinjection = require "resty.libinjection"
+
+local ngx_re_find  = ngx.re.find
+local ngx_re_match = ngx.re.match
+local ngx_log      = ngx.log
+local ngx_WARN     = ngx.WARN
+local _type        = type
+local _tostring    = tostring
+local _tonumber    = tonumber
+local string_sub   = string.sub
+local string_find  = string.find
 
 function _M.operators(self, operator, subject, pattern, ctx)
 
@@ -15,106 +26,88 @@ function _M.operators(self, operator, subject, pattern, ctx)
     
     local func = {
         equal = function(a, b)
-            a = tostring(a)
-            b = tostring(b)
+            a = _tostring(a)
+            b = _tostring(b)
                         
             if a == b then
-                ctx.mp = "Operator equal matched "..a
                 return true, a
             else
-                ctx.mp = "Operator equal matched "..a.." (negated)"
                 return false, a
             end
             
         end,
         greater = function(a, b)
-            a = tonumber(a)
-            b = tonumber(b)
+            a = _tonumber(a)
+            b = _tonumber(b)
             if not a or not b then
-                ctx.mp = "expected number, but got data: '"..a.."'".." ,pattern: '"..b.."'"
                 return false, a
             end
             
             if a > b then
-                ctx.mp = "Operator greater matched "..a
                 return true, a
             else
-                ctx.mp = "Operator greater matched "..a.." (negated)"
                 return false, a
             end
             
         end,
         less = function(a, b)
-            a = tonumber(a)
-            b = tonumber(b)
+            a = _tonumber(a)
+            b = _tonumber(b)
             if not a or not b then
-                ctx.mp = "expected number, but got data: '"..a.."'".." ,pattern: '"..b.."'"
                 return false, a
             end
             
             if a < b then
-                ctx.mp = "Operator less matched "..a
                 return true, a
             else
-                ctx.mp = "Operator less matched "..a.." (negated)"
                 return false, a
             end
             
         end,
         greater_eq = function(a, b)
-            a = tonumber(a)
-            b = tonumber(b)
+            a = _tonumber(a)
+            b = _tonumber(b)
             if not a or not b then
-                ctx.mp = "expected number, but got data: '"..a.."'".." ,pattern: '"..b.."'"
                 return false, a
             end
             
             if a >= b then
-                ctx.mp = "Operator greater_eq matched "..a
                 return true, a
             else
-                ctx.mp = "Operator greater_eq matched "..a.." (negated)"
                 return false, a
             end
             
         end,
         less_eq = function(a, b)
-            a = tonumber(a)
-            b = tonumber(b)
+            a = _tonumber(a)
+            b = _tonumber(b)
             if not a or not b then
-                ctx.mp = "expected number, but got data: '"..a.."'".." ,pattern: '"..b.."'"
                 return false, a
             end
             
             if a <= b then
-                ctx.mp = "Operator less_eq matched "..a
                 return true, a
             else
-                ctx.mp = "Operator less_eq matched "..a.." (negated)"
                 return false, a
             end
             
         end,
         begins_with = function(subject, pattern)
             
-            local from, to = ngx.re.find(tostring(subject), pattern)
+            local from, to = ngx_re_find(_tostring(subject), pattern)
             if from == 1 then
-                ctx.mp = "String match "..pattern
                 return true, subject
             else
-                ctx.mp = "String match "..pattern.." (negated)"
                 return false, subject
             end
             
         end,
         contains = function(subject, pattern)
             
-            local from, to = ngx.re.find(tostring(subject), pattern)
+            local from, to = ngx_re_find(_tostring(subject), pattern)
             if from then
-                ctx.mp = "String match "..pattern
                 return true, subject
             else
-                ctx.mp = "String match "..pattern.." (negated)"
                 return false, subject
             end
             
@@ -122,200 +115,198 @@ function _M.operators(self, operator, subject, pattern, ctx)
         contains_word = function(subject, pattern)
             
             local pa = "\b"..pattern.."\b"
-            local from, to = ngx.re.find(tostring(subject), pa)
+            local from, to = ngx_re_find(_tostring(subject), pa)
             if from then
-                ctx.mp = "String match "..pattern
                 return true, subject
             else
-                ctx.mp = "String match "..pattern.." (negated)"
                 return false, subject
             end
             
         end,
         ends_with = function(subject, pattern)
             
-            local from, to = ngx.re.find(tostring(subject), pattern)
+            local from, to = ngx_re_find(_tostring(subject), pattern)
             if to == #subject then
-                ctx.mp = "String match "..pattern
                 return true, subject
             else
-                ctx.mp = "String match "..pattern.." (negated)"
                 return false, subject
             end
             
         end,
         str_match = function(subject, pattern)
             
-            local from, to = ngx.re.find(tostring(subject), pattern)
+            local from, to = ngx_re_find(_tostring(subject), pattern)
             if from then
-                ctx.mp = "Pattern match "..pattern
                 return true, subject
             else
-                ctx.mp = "Pattern match "..pattern.. " (negated)"
                 return false, subject
             end
             
         end,
         detect_sqli = function(data)
         
-            if type(data) ~= "string" then
-                ctx.mp = "detected SQLi using libinjection, but not sqli (negated)"
+            if _type(data) ~= "string" then
                 return false, data
             end
             
             local  issqli, fingerprint = libinjection.sqli(data)
             if issqli then
-                ctx.mp = "detected SQLi using libinjection with fingerprint "..fingerprint
                 return true, data
             else
-                ctx.mp = "detected SQLi using libinjection, but not sqli (negated)"
                 return false, data
             end
             
         end,
         detect_xss = function(data)
-            if type(data) ~= "string" then
-                ctx.mp = "detected XSS using libinjection (negated)"
+            if _type(data) ~= "string" then
                 return false, data
             end
             
             local isxss = libinjection.xss(data)
             if isxss then
-                ctx.mp = "detected XSS using libinjection"
                 return true, data
             else
-                ctx.mp = "detected XSS using libinjection (negated)"
                 return false, data
             end
             
         end,
         regex = function(subject, pattern)
         
-            local captures, err = ngx.re.match(tostring(subject), tostring(pattern), "oij")
+            local captures, err = ngx_re_match(_tostring(subject), _tostring(pattern), "oij")
             if not captures then
-                ctx.mp = "Pattern match "..pattern.." (negated)"
                 return false, subject
             end
             
             if #pattern > 252 then
-                pattern = pattern:sub(1, 252)
+                pattern = string_sub(pattern, 1, 252)
             end
-                
-            ctx.mp = "Pattern match "..pattern
+            
             return true, captures
             
         end,
         ip_utils = function(subject, pattern)
         
-            local lower, upper, err
+            -- subject: real ip
+            -- pattern: configuration
             
-            local from = pattern:find("-")
-            if from then
-                lower = iputils.ip2bin(pattern:sub(1, from - 1))
-                upper = iputils.ip2bin(pattern:sub(from + 1))
+            local ip_v6 = false
+            local cf_v6 = false
+            if string_find(subject, ":") then ip_v6 = true end
+            if string_find(pattern, ":") then cf_v6 = true end
+            
+            if ip_v6 ~= cf_v6 then
+                return false, subject
+            end
+            
+            local from = string_find(pattern, "-")
+            if not from then
+            
+                local bool = cidr.contains(cidr.from_str(pattern), cidr.from_str(subject))
+                if bool == true then
+                    return true, subject
+                end
                 
-                if not lower or not upper then
-                    ctx.mp = "Iputils ip2bin failed, pattern: "..pattern
+                return false, subject
+            end
+            
+            if ip_v6 == true then
+            
+                local bool = cidr.ipv6_compare(string_sub(pattern, 1, from - 1), subject)
+                if bool > 0 then
                     return false, subject
                 end
                 
-            elseif pattern:find("/") then
-                lower, upper = iputils.parse_cidr(pattern)
-                if not lower then
-                    ctx.mp = "Iputils parse cidr failed: "..pattern
+                bool = cidr.ipv6_compare(string_sub(pattern, from + 1), subject)
+                if bool < 0 then
                     return false, subject
                 end
                 
-            else
-                lower = iputils.ip2bin(pattern)
-                upper = lower
-                
-                if not lower then
-                    ctx.mp = "Iputils ip2bin failed, pattern: "..pattern
-                    return false, subject
-                end
+                return true, subject
+            end
+            
+            -- ipv4
+            local low, up
+            
+            low = iputils.ip2bin(string_sub(pattern, 1, from - 1))
+            up  = iputils.ip2bin(string_sub(pattern, from + 1))
+            
+            if not low or not up then
+                return false, subject
             end
             
             local bin_ip = iputils.ip2bin(subject)
             
-            if bin_ip >= lower and bin_ip <= upper then
-                ctx.mp = "Iputils match "..pattern
+            if bin_ip >= low and bin_ip <= up then
                 return true, subject
             end
             
-            ctx.mp = "Iputils match "..pattern.." (negated)"
             return false, subject
         end,
         num_range = function(subject, pattern)
         
-            subject = tonumber(subject)
+            subject = _tonumber(subject)
             if not subject then
-                ctx.mp = "expected number, but got data: '"..pattern.."'"
                 return false, subject
             end
             
             --  before '-' need '%'
-            local from =  pattern:find("-")
+            local from =  string_find(pattern, "-")
             if not from then
-                pattern = tonumber(pattern)
+                pattern = _tonumber(pattern)
                 if not pattern then
                     -- TODO: if check rule, then such 'if' don't need
-                    ngx.log(ngx.WARN, "pattern format wrong: ", pattern)
+                    ngx_log(ngx_WARN, "pattern format wrong: ", pattern)
                     return false, "pattern format wrong"
                 end
                 
                 return subject == pattern, subject
             end
             
-            local left  = tonumber(pattern:sub(1, from - 1))
-            local right = tonumber(pattern:sub(from + 1))
+            local left  = _tonumber(string_sub(pattern, 1, from - 1))
+            local right = _tonumber(string_sub(pattern, from + 1))
             
             if not left or not right then
-                ngx.log(ngx.WARN, "pattern format wrong: ", pattern)
+                ngx_log(ngx_WARN, "pattern format wrong: ", pattern)
                 return false, "pattern format wrong"
             end
             
             if subject >= left and subject <= right then
-                ctx.mp = "Operator num_range matched: "..subject
                 return true, subject
             end
             
-            ctx.mp = "Operator num_range matched: "..subject.." (negated)"
             return false, subject
         end,
         str_range = function(subject, pattern)
         
-            subject = tostring(subject)
+            subject = _tostring(subject)
             if not subject then
                 return false, "subject is nil"
             end
             
             --  before '-' need '%'
-            local from =  pattern:find("-")
+            local from =  string_find(pattern, "-")
             if not from then
                 pattern = pattern
                 if not pattern then
-                    ngx.log(ngx.WARN, "pattern format wrong: ", pattern)
+                    ngx_log(ngx_WARN, "pattern format wrong: ", pattern)
                     return false, "pattern format wrong"
                 end
                 
                 return subject == pattern, subject
             end
             
-            local left  = pattern:sub(1, from - 1)
-            local right = pattern:sub(from + 1)
+            local left  = string_sub(pattern, 1, from - 1)
+            local right = string_sub(pattern, from + 1)
             
             if not left or not right then
-                ngx.log(ngx.WARN, "pattern format wrong: ", pattern)
+                ngx_log(ngx_WARN, "pattern format wrong: ", pattern)
                 return false, "pattern format wrong"
             end
             
             if subject >= left and subject <= right then
-                ctx.mp = "Operator str_range matched: "..subject
                 return true, subject
             end
             
-            ctx.mp = "Operator str_range matched: "..subject.." (negated)"
             return false, subject
         end,
         validate_url_encoding = function(data)
@@ -333,15 +324,14 @@ function _M.operators(self, operator, subject, pattern, ctx)
                     break
                 end
                 
-                local c = data:sub(i,i)
+                local c = string_sub(data, i, i)
                 if c == "%" then
                     if (i + 2) > len then
                         -- Not enough bytes.
-                        ctx.mp = "Invalid URL Encoding: Not enough characters at the end of '"..data.."'"
                         return true, data
                     else
-                        local c1 = data:sub(i+1, i+1)
-                        local c2 = data:sub(i+2, i+2)
+                        local c1 = string_sub(data, i+1, i+1)
+                        local c2 = string_sub(data, i+2, i+2)
                         
                         if ((c1 >= '0' and c1 <= '9')  or 
                             (c1 >= 'a' and c1 <= 'f')  or 
@@ -352,7 +342,6 @@ function _M.operators(self, operator, subject, pattern, ctx)
                         then
                             i = i + 3
                         else
-                            ctx.mp = "Invalid URL Encoding: Non-hexadecimal digits of '"..data.."'"
                             return true, data
                         end
                     end
@@ -363,11 +352,22 @@ function _M.operators(self, operator, subject, pattern, ctx)
             until false
             
             return false
+        end,
+        sso = function(num)
+        
+            num = _tonumber(num) or 0
+            
+            if num == 0 then
+                ngx.ctx.sso_opts = false
+            elseif num > 0 then
+                ngx.ctx.sso_opts = true
+            end
+            
         end
     }
     
     if not func[operator] then
-        ngx.log(ngx.WARN, "Not support operator: ", operator)
+        ngx_log(ngx_WARN, "Not support operator: ", operator)
         return false
     end
     

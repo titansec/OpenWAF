@@ -3,26 +3,34 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "1.1.1"
 }
 
 local cjson         = require "cjson"
 local twaf_func     = require "lib.twaf.inc.twaf_func"
 local geoip_country = require "geoip.country"
 
-local mt       = { __index = _M, }
-local ngx_log  = ngx.log
-local ngx_WARN = ngx.WARN
+local mt            = { __index = _M, }
+local ngx_log       = ngx.log
+local ngx_WARN      = ngx.WARN
+local io_open       = io.open
+local io_popen      = io.popen
+local table_insert  = table.insert
+local string_char   = string.char
+local string_format = string.format
+local _type         = type
 
 function _M.new(self)
 
     return setmetatable ({
         rules             = {},
         rules_id          = {},
+        rule_sets         = {},
         disable_rules_id  = {},
         global_conf_uuid  = "twaf_default_conf",
         twaf_default_conf = {},
-        twaf_policy       = {}
+        twaf_policy       = {},
+        pset              = {}
     }, mt)
     
 end
@@ -37,7 +45,7 @@ function _M.load_default_config(self, path)
         return
     end
     
-    local d_file = io.open(path)
+    local d_file = io_open(path)
     if not d_file then return false end
     
     local default_conf_json = d_file:read("*a")
@@ -51,7 +59,7 @@ function _M.load_default_config(self, path)
     
     -- rules or modules category
     local twaf_global = self.twaf_default_conf.twaf_global
-    local f = io.open(twaf_global.category_path)
+    local f = io_open(twaf_global.category_path)
     local category = f:read("*a")
     f:close()
     category = cjson.decode(category)
@@ -60,12 +68,12 @@ end
 
 local function _merge_table(self, path, modules_name)
 
-    local f = io.open(path)
+    local f = io_open(path)
     local conf_json = f:read("*a")
     f:close()
     local conf = cjson.decode(conf_json)
     
-    if type(conf[modules_name]) ~= "table" then
+    if _type(conf[modules_name]) ~= "table" then
         return
     end
     
@@ -89,13 +97,13 @@ local function _load_policy_config(self, path, policy)
       
     self.twaf_policy[policy] = twaf_func:copy_table(self.twaf_default_conf)
     
-    local p_file = io.open(path.."/"..policy..".json")
+    local p_file = io_open(string_format("%s/%s.json", path, policy))
     local policy_conf_json = p_file:read("*a")
     p_file:close()
     local policy_conf = cjson.decode(policy_conf_json) or {}
     
     for modules, v in pairs(policy_conf) do
-        if type(v) == "table" and #v == 0 then
+        if _type(v) == "table" and #v == 0 then
             for key, value in pairs(v) do
                 if self.twaf_policy[policy][modules] == nil then
                     self.twaf_policy[policy][modules] = {}
@@ -120,25 +128,25 @@ end
 -- merge lua rule file (only one rule in a file)
 local function _rule_combine(tb1, tb2, f)
 
-    if type(tb2) == "table" then
+    if _type(tb2) == "table" then
         for _, v in ipairs(tb2) do
-            table.insert(tb1, v)
+            table_insert(tb1, v)
         end
         
         return
     end
     
-    table.insert(tb1, f.DetectorInfo)
+    table_insert(tb1, f.DetectorInfo)
     
 end
 
-function _M.rule_group_phase(self, tb, rules)
+function _M.rule_group_phase_by_list(self, tb, rules)
 
     if not tb then
         tb = {}
     end
 
-    if type(tb) ~= "table" then
+    if _type(tb) ~= "table" then
         return
     end
     
@@ -148,31 +156,40 @@ function _M.rule_group_phase(self, tb, rules)
     
     -- i: index, r: rule
     for i, r in ipairs(rules) do
-        if type(r.phase) ~= "table" then
-            table.insert(tb[r.phase], r)
-        else
-            for _, phase in pairs(r.phase) do
-                table.insert(tb[phase], r)
-            end
-        end
+        table_insert(tb[r.phase], r)
+    end
+    
+    return tb
+end
+
+function _M.rule_group_phase(self, rules, rules_order)
+
+    local tb = {}
+    
+    tb.access        = {}
+    tb.header_filter = {}
+    tb.body_filter   = {}
+    
+    for _, rid in ipairs(rules_order) do
+        table_insert(tb[rules[rid].phase], rid)
     end
     
     return tb
 end
 
 local function _load_rules_lua(secrules, pre_path, path)
-    local file = io.popen("ls "..pre_path..path.."/*.lua 2>/dev/null")
+    local file = io_popen(string_format("ls %s%s/*.lua 2>/dev/null", pre_path, path))
     if not file then return end
     
     local paths = file:read("*a")
     file:close()
     
-    if type(paths) == "string" and #paths == 0 then
+    if _type(paths) == "string" and #paths == 0 then
         return
     end
     
     paths = twaf_func:string_trim(paths)
-    paths = twaf_func:string_ssplit(paths,string.char(10))
+    paths = twaf_func:string_ssplit(paths,string_char(10))
     
     for _, p in pairs(paths) do
         p = p:sub(#pre_path + 1, -5)
@@ -182,21 +199,21 @@ local function _load_rules_lua(secrules, pre_path, path)
 end
 
 local function _load_rules_json(secrules, pre_path, path)
-    local file = io.popen("ls "..pre_path..path.."/*.json 2>/dev/null")
+    local file = io_popen(string_format("ls %s%s/*.json 2>/dev/null", pre_path, path))
     if not file then return end
     
     local paths = file:read("*a")
     file:close()
     
-    if type(paths) == "string" and #paths == 0 then
+    if _type(paths) == "string" and #paths == 0 then
         return
     end
     
     paths = twaf_func:string_trim(paths)
-    paths = twaf_func:string_ssplit(paths,string.char(10))
+    paths = twaf_func:string_ssplit(paths,string_char(10))
     
     for _, path in pairs(paths) do
-        local d_file = io.open(path)
+        local d_file = io_open(path)
         local rules = d_file:read("*a")
         d_file:close()
         
@@ -205,17 +222,19 @@ local function _load_rules_json(secrules, pre_path, path)
     end
 end
 
-function _M.load_rules(self)
+function _M.load_rules(self, flag)
 
     local pre_path = self.twaf_default_conf.twaf_secrules.pre_path
     local path     = self.twaf_default_conf.twaf_secrules.path
     
     if not pre_path or not path then
         ngx_log(ngx_WARN, "the path of twaf rules is nil")
-        return
+        return false, "the path of twaf rules is nil"
     end
     
     local secrules = {}
+    local rules = {}
+    local rules_order = {}
     
     --TODO: Support multi-level directory parsing
     --load rules to self.rules
@@ -223,24 +242,36 @@ function _M.load_rules(self)
     _load_rules_lua(secrules, pre_path, path)
     
     --check rules 
-    --TODO: if check failed, drop process
+    --if check failed, drop process
+    local reason = {}
     for _, r in ipairs(secrules) do
-        local res = twaf_func:check_rules(self, r)
+        local res, err = twaf_func:check_rules(self.rules_id, r)
         if res == true then
-            self.rules_id[r.id] = 1
+            self.rules_id[r.id] = r.phase
+            rules[r.id] = r
+            table_insert(rules_order, r.id)
         else
-            r.disable = 1
-            self.disable_rules_id[r.id] = 1
+            table_insert(reason, err)
         end
     end
     
-    _M:rule_group_phase(self.rules, secrules)
+    if #reason > 0 then
+        if not flag then
+            error(twaf_func:table_to_string(reason))
+        end
+        return false, reason
+    end
+    
+    self.rules = rules
+    self.rule_sets.twaf_default_rule_set = _M:rule_group_phase(rules, rules_order)
+    
+    return true
 end
 
 function _M.load_geoip_country_ipv4(self, path)
     local geodb_country_ipv4, err = geoip_country.open(path)
     if not geodb_country_ipv4 then
-        ngx.log(ngx.WARN, err)
+        ngx_log(ngx_WARN, err)
         self.geodb_country_ipv4 = nil
         return false
     end
@@ -252,7 +283,7 @@ end
 function _M.load_geoip_country_ipv6(self, path)
     local geodb_country_ipv6, err = geoip_country.open(path)
     if not geodb_country_ipv6 then
-        ngx.log(ngx.WARN, err)
+        ngx_log(ngx_WARN, err)
         self.geodb_country_ipv6 = nil
         return false
     end

@@ -3,11 +3,22 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "1.0.2"
 }
 
 local ffi        = require "ffi"
 local twaf_func  = require "lib.twaf.inc.twaf_func"
+
+local ngx_decode_base64 = ngx.decode_base64
+local ngx_encode_base64 = ngx.encode_base64
+local ngx_md5_bin = ngx.md5_bin
+local ngx_sha1_bin = ngx.sha1_bin
+local ngx_unescape_uri = ngx.unescape_uri
+local ngx_escape_uri = ngx.escape_uri
+local ngx_log = ngx.log
+local ngx_WARN = ngx.WARN
+local _tostring = tostring
+local _type     = type
 
 ffi.cdef[[
 int js_decode(unsigned char *input, long int input_len);
@@ -40,7 +51,7 @@ function _M.transforms(self, options, values)
         base64_decode = function(value)
             if not value then return nil end
             
-            local t_val = ngx.decode_base64(tostring(value))
+            local t_val = ngx_decode_base64(_tostring(value))
             if (t_val) then
                 return t_val
             else
@@ -48,10 +59,10 @@ function _M.transforms(self, options, values)
             end
         end,
         base64_decode_ext = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
-            local val = tostring(value)
+            local val = _tostring(value)
             local len = #val
             local buf = ffi.new(ffi.typeof("char[?]"), len)
             local n = _M.transforms_lib.decode_base64_ext(buf, val, len)
@@ -61,11 +72,11 @@ function _M.transforms(self, options, values)
         base64_encode = function(value)
             if not value then return nil end
             
-            return ngx.encode_base64(value)
+            return ngx_encode_base64(value)
         end,
         css_decode = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -75,8 +86,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         cmd_line = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -86,8 +97,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         compress_whitespace = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -99,15 +110,22 @@ function _M.transforms(self, options, values)
         counter = function(value)
             if not value then return 0 end
             
-            if type(value) == "table" then
-                return #value
+            if _type(value) == "table" then
+            
+                local count = 0
+                
+                for _, v in pairs(value) do
+                    count = count + 1
+                end
+                
+                return count
             end
             
             return 1
         end,
         escape_seq_decode = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -117,8 +135,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         hex_decode = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -128,7 +146,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         hex_encode = function(value)
-            if type(value) ~= "string" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -139,8 +158,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(outp, n)
         end,
         html_decode = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -150,8 +169,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         js_decode = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -165,33 +184,33 @@ function _M.transforms(self, options, values)
                 return 0
             end
             
-            if type(value) == "table" then
+            if _type(value) == "table" then
                 local length = 0
                 for k, v in pairs(value) do
-                    length = length + #tostring(k) + #tostring(v)
+                    length = length + #_tostring(k) + #_tostring(v)
                 end
                 
                 return length
             end
             
-            return #tostring(value)
+            return #_tostring(value)
         end,
         lowercase = function(value)
-            if type(value) ~= "string" then return value end
+            if _type(value) ~= "string" then return value end
             
             return string.lower(value)
         end,
         md5 = function(value)
             if not value then return nil end
             
-            return ngx.md5_bin(value)
+            return ngx_md5_bin(value)
         end,
         none = function(value)
             return value
         end,
         normalise_path = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -206,8 +225,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         normalise_path_win = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -222,8 +241,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         remove_comments = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -238,8 +257,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         remove_comments_char = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -254,8 +273,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         remove_nulls = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -270,8 +289,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         remove_whitespace = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -286,8 +305,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         replace_comments = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -302,8 +321,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         replace_nulls = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -317,11 +336,11 @@ function _M.transforms(self, options, values)
         sha1 = function(value)
             if not value then return nil end
             
-            return ngx.sha1_bin(value)
+            return ngx_sha1_bin(value)
         end,
         sql_hex_decode = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -331,8 +350,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         trim = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -347,8 +366,8 @@ function _M.transforms(self, options, values)
           --return _M:transforms("trim_right", str)
         end,
         trim_left = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -361,8 +380,8 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf + n, len - n)
         end,
         trim_right = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local len = #value
             local buf = twaf_func.ffi_copy(value, len)
@@ -375,29 +394,29 @@ function _M.transforms(self, options, values)
             return twaf_func.ffi_str(buf, n)
         end,
         uri_decode = function(value)
-            if type(value) ~= "string" then return value end
+            if _type(value) ~= "string" then return value end
             
             --modsec: Decodes a URL-encoded input string.
             --twaf:   Unescape str as an escaped URI component.
-            return ngx.unescape_uri(value)
+            return ngx_unescape_uri(value)
         end,
         uri_decode_uni = function(value)
-            if type(value) ~= "string" then return value end
+            if _type(value) ~= "string" then return value end
             
             --modsec: Decodes a URL-encoded input string.
             --twaf:   Unescape str as an escaped URI component.
-            return ngx.unescape_uri(value)
+            return ngx_unescape_uri(value)
         end,
         uri_encode = function(value)
-            if type(value) ~= "string" then return value end
+            if _type(value) ~= "string" then return value end
             
             --modsec: Encodes input string using URL encoding.
             --twaf:   Escape str as a URI component
-            return ngx.escape_uri(value)
+            return ngx_escape_uri(value)
         end,
         utf8_to_unicode = function(value)
-            if type(value) ~= "string" then return value end
-            if type(_M.transforms_lib) ~= "userdata" then return value end
+            if _type(value) ~= "string" then return value end
+            if _type(_M.transforms_lib) ~= "userdata" then return value end
             
             local inp_len = #value
             local inp     = twaf_func.ffi_copy(value, inp_len)
@@ -415,7 +434,7 @@ function _M.transforms(self, options, values)
     }
     
     if not func[options] then
-        ngx.log(ngx.WARN, "Not support transform: ", options)
+        ngx_log(ngx_WARN, "Not support transform: ", options)
         return nil
     end
     

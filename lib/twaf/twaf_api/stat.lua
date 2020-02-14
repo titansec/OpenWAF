@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "1.0.0"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"

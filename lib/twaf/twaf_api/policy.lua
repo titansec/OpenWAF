@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "1.1.0"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -92,7 +92,7 @@ end
 -- post policy config e.g: POST /api/policy/{policy_uuid}
 _M.api.policy.post   = function(_twaf, log, u)
 
--- check request body
+    -- check request body
     local data = twaf_func.api_check_json_body(log)
     if not data then
         return
@@ -134,6 +134,25 @@ _M.api.policy.post   = function(_twaf, log, u)
         end
     end
     
+    local reason = {}
+    local res, err
+    local str =  string.format("policy:%s,module:", u[2])
+    local mod = _twaf.modfactory
+    for pn, pv in pairs(tb) do
+        if mod[pn] and mod[pn]["init"] then
+            res, err = mod[pn]["init"](_twaf, pv, tb)
+            if not res then
+                reason[str..pn] = err
+            end
+        end
+    end
+    
+    if next(reason) then 
+        log.success = 0
+        log.reason  = reason
+        return
+    end
+    
     log.result = tb
     conf[u[2]] = tb
     conf.policy_uuids = conf.policy_uuids or {}
@@ -145,7 +164,7 @@ end
 -- put policy config e.g: PUT /api/policy/{policy_uuid}
 _M.api.policy.put    = function(_twaf, log, u)
 
--- check request body
+    -- check request body
     local data = twaf_func.api_check_json_body(log)
     if not data then
         return
@@ -153,21 +172,22 @@ _M.api.policy.put    = function(_twaf, log, u)
     
     if type(data.config) ~= "table" then
         log.success = 0
-        log.reason  = "rules: table expected, got "..type(data.config)
+        log.reason  = "Table expected, got '"..type(data.config).."'"
         return
     end
     
-    local conf = _twaf.config.twaf_policy
+    local uuid = u[2]
+    local policies = _twaf.config.twaf_policy
     
-    if not u[2] then
+    if not uuid then
         log.success = 0
         log.reason  = "Not specified policy uuid"
         return
     end
     
-    if not conf[u[2]] then
+    if not policies[uuid] then
         log.success = 0
-        log.reason  = "No policy '"..u[2].."'"
+        log.reason  = "Not found policy '"..uuid.."'"
         return
     end
     
@@ -187,10 +207,99 @@ _M.api.policy.put    = function(_twaf, log, u)
         end
     end
     
-    log.result = tb
-    conf[u[2]] = tb
+    local reason = {}
+    local res, err
+    local str = string.format("policy:%s,module:", uuid)
+    local mod = _twaf.modfactory
+    for pn, pv in pairs(tb) do
+        if mod[pn] and mod[pn]["init"] then
+            res, err = mod[pn]["init"](_twaf, pv, tb)
+            if not res then
+                reason[str..pn] = err
+            end
+        end
+    end
     
-    return
+    if next(reason) then 
+        log.success = 0
+        log.reason  = reason
+        return
+    end
+    
+    log.result     = tb
+    policies[uuid] = tb
+end
+
+-- patch policy config e.g: PATCH /api/policy/{policy_uuid}
+_M.api.policy.patch    = function(_twaf, log, u)
+
+    -- check request body
+    local data = twaf_func.api_check_json_body(log)
+    if not data then
+        return
+    end
+    
+    if type(data.config) ~= "table" then
+        log.success = 0
+        log.reason  = "Table expected, got '"..type(data.config).."'"
+        return
+    end
+    
+    local uuid = u[2]
+    local policies = _twaf.config.twaf_policy
+    
+    if not uuid then
+        log.success = 0
+        log.reason  = "Not specified policy uuid"
+        return
+    end
+    
+    if not policies[uuid] then
+        log.success = 0
+        log.reason  = "Not found policy '"..uuid.."'"
+        return
+    end
+    
+    local tb = twaf_func:copy_table(policies[uuid])
+    
+    for modules, v in pairs(data.config) do
+        if type(v) == "table" and #v == 0 then
+            -- table and not a list
+            for key, value in pairs(v) do
+                if tb[modules] == nil then
+                    tb[modules] = {}
+                end
+                
+                tb[modules][key] = value
+            end
+        else
+            -- not table or a list
+            tb[modules] = v
+        end
+    end
+    
+    local reason = {}
+    local res, err
+    local str = string.format("policy:%s,module:", uuid)
+    local mod = _twaf.modfactory
+    
+    for pn, pv in pairs(tb) do
+        if mod[pn] and mod[pn]["init"] then
+            res, err = mod[pn]["init"](_twaf, pv, tb)
+            if not res then
+                reason[str..pn] = err
+            end
+        end
+    end
+    
+    if next(reason) then 
+        log.success = 0
+        log.reason  = reason
+        return
+    end
+    
+    log.result = policies[uuid]
+    policies[uuid] = tb
 end
 
 -- delete policy config e.g: DELETE /api/policy/{policy_uuid}
@@ -212,10 +321,11 @@ _M.api.policy.delete = function(_twaf, log, u)
 end
 
 _M.help.policy = {
-    "GET host/path/policy/{policy_uuid}",
-    "POST host/path/policy/{policy_uuid}",
-    "PUT host/path/policy/{policy_uuid}",
-    "DELETE host/path/policy/{policy_uuid}"
+    "GET /api/policy/{policy_uuid}",
+    "POST /api/policy/{policy_uuid}",
+    "PUT /api/policy/{policy_uuid}",
+    "PATCH /api/policy/{policy_uuid}",
+    "DELETE /api/policy/{policy_uuid}"
 }
     
 return _M

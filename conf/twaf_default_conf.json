@@ -2,8 +2,8 @@
     "modules_order": {
         "access": [
             "twaf_attack_response",
-            "twaf_secrules",
             "twaf_anti_mal_crawler",
+            "twaf_secrules",
             "twaf_limit_conn"
         ]
     },
@@ -12,7 +12,6 @@
         "twaf_secrules":          "lib.twaf.twaf_secrules",
         "twaf_anti_mal_crawler":  "lib.twaf.twaf_anti_mal_crawler",
         "twaf_limit_conn":        "lib.twaf.twaf_anti_cc.twaf_anti_cc",
-        
         "libinjection":           "resty.libinjection",
         "twaf_access_rule":       "lib.twaf.twaf_access_rule",
         "twaf_ssl_cert":          "lib.twaf.twaf_ssl_cert",
@@ -30,6 +29,7 @@
             "text/xml": true
         },
         "simulation":false,
+        "twaf_x_real_ip": "remote_addr",
         "category_path": "/opt/OpenWAF/conf/category.json"
     },
     "twaf_secrules":{
@@ -48,6 +48,8 @@
     },
     "twaf_access_rule" : {
         "log_state":true,
+        "dict_state": true,
+        "shm": "twaf_access_rule",
         "action":"DENY",
         "action_meta":403,
         "rules":{}
@@ -57,7 +59,7 @@
         "detail_state":true
     },
     "twaf_anti_mal_crawler": {
-        "state":true,
+        "state":false,
         "dict_state": false,
         "cookie_state":true,
         "log_state":true,
@@ -67,13 +69,13 @@
         "timeout":300,
         "crawler_cookie_name":"TWAF_CRAWLER",
         "mal_cookie_name":"TWAF_MCRAWLER",
-        "trap_uri":"/abc/abc.html",
-        "trap_args":"id=1",
+        "trap_uri":"/twaf_abc/twaf_abc.html",
+        "trap_args":"twaf_id=1",
         "action":"DENY",
         "action_meta":403
     },
     "twaf_limit_conn": {
-        "state":true,
+        "state":false,
         "log_state":true,
         "trigger_state":true,
         "clean_state":true,
@@ -101,17 +103,19 @@
         "safe_state":true,
         "access_state":true,
         "upstream_state":true,
-        "shared_dict_name":"twaf_reqstat"
+        "shared_dict_name":"twaf_reqstat",
+        "shared_dict_key": "policy_id"
     },
     "twaf_log": {
-        "access_log_state":false,
+        "access_log_state":true,
         "security_log_state":true,
         "sock_type":"udp",
         "content_type":"JSON",
         "host":"127.0.0.1",
         "port":60099,
-        "flush_limit":0,
+        "flush_limit":32768,
         "drop_limit":65507,
+        "periodic_flush": 2,
         "max_retry_times":5,
         "size_limit": 200,
         "ssl":false,
@@ -136,7 +140,6 @@
             "remote_addr",
             "remote_port",
             "userid",
-            "dev_uuid",
             "server_addr",
             "server_port",
             "remote_user",
@@ -151,14 +154,15 @@
             "http_user_agent",
             "gzip_ratio",
             "http_host",
-            "policyid"
+            "policyid",
+            "api_id",
+            "request_time"
         ],
         "security_log": [
             "unique_id",
             "remote_addr",
             "remote_port",
             "userid",
-            "dev_uuid",
             "server_addr",
             "server_port",
             "remote_user",
@@ -174,7 +178,19 @@
             "gzip_ratio",
             "http_host",
             "raw_header",
-            "policyid"
-        ]
+            "policyid",
+            "api_id",
+            "request_time"
+        ],
+        "socket_access_log_state": true,
+        "socket_security_log_state": true,
+        "file_access_log_state": true,
+        "file_security_log_state": true,
+        "file_flush": false,
+        "file_content_type": "W3C",
+        "file_access_log_path": "/var/log/openwaf_access.log",
+        "file_security_log_path": "/var/log/openwaf_security.log",
+        "access_log_w3c": "%{remote_addr} - %{remote_user} [%{time_local}] \"%{request_method} %{request_uri} %{request_protocol}\" %{response_status} %{bytes_sent} \"%{http_referer}\" \"%{http_user_agent}\" %{userid} %{server_addr}:%{server_port} \"%{http_host}\" %{request_time} %{policyid} %{unique_id} %{api_id}",
+        "security_log_w3c": "%{remote_addr} - %{remote_user} [%{time_local}] \"%{request_method} %{request_uri} %{request_protocol}\" %{response_status} %{bytes_sent} \"%{http_referer}\" \"%{http_user_agent}\" %{userid} %{server_addr}:%{server_port} \"%{http_host}\" %{request_time} %{policyid} %{category} %{severity} %{action} %{id} %{rule_name} %{unique_id} %{api_id}"
     }
 }

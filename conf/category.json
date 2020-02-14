@@ -10,7 +10,8 @@
     "hotfix"                  : { "chinese_name": "热补丁",   "rule_name": "fix\\..*"},
     "exception_request"       : { "chinese_name": "异常请求", "rule_name": "exception\\..*"},
     "abnormal_score"          : { "chinese_name": "异常评分", "rule_name": "behavior\\.anomaly_score"},
-    "CC_attack"               : { "chinese_name": "CC攻击",   "rule_name": "ddos\\.cc"},
+    "CC_attack"               : { "chinese_name": "CC攻击",   "rule_name": "ddos\\.cc.*"},
     "audit_log"               : { "chinese_name": "审计日志", "rule_name": "audit\\..*"},
-    "time_geo"                : { "chinese_name": "时域控制", "rule_name": "time_geo.*"}
+    "time_geo"                : { "chinese_name": "时域控制", "rule_name": "time_geo.*"},
+    "ip_acl"                  : { "chinese_name": "IP访问控制", "rule_name": "ip_acl.*"}
 }

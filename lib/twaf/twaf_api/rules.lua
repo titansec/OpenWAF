@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "1.1.1"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -16,33 +16,23 @@ _M.api.rules = {}
 -- get rules, e.g: GET /api/rules/{rule_id}
 _M.api.rules.get         = function(_twaf, log, u)
 
+    local rid   =  u[2]
     local conf  = _twaf.config
     
-    if not u[2] then
+    if not rid then
         log.result = conf.rules
         return
     end
     
-    if not conf.rules_id[u[2]] then
+    local rule = conf.rules[rid]
+    
+    if not rule then
         log.success = 0
-        log.reason  = "no rule id: "..u[2]
+        log.reason  = "no rule id: "..rid
         return
     end
     
-    for phase, rules in pairs(conf.rules) do
-        for _, r in pairs(rules) do
-            if r.id == u[2] then
-                log.result = r
-                return
-            end
-        end
-    end
-    
-    if not log.result then
-        log.success = 0
-        log.reason  = "no rule id: "..u[2]
-        return
-    end
+    log.result = rule
 end
 
 -- post rules, e.g: POST /api/rules
@@ -66,50 +56,39 @@ _M.api.rules.post        = function(_twaf, log, u)
     end
     
 -- check rules
-    local back = {}
+    local reason = {}
+    local tb = {}
     local conf = _twaf.config
     
     for _, r in ipairs(data.config) do
-        local res, err = twaf_func:check_rules(conf, r)
+        local res, err = twaf_func:check_rules(conf.rules_id, r)
         if res == true then
-            table.insert(back, r.id)
-            conf.rules_id[r.id] = 1
+            tb[r.id] = r.phase
         else
-            if log.reason then
-                table.insert(log.reason, err)
-            else
-                log.success = 0
-                log.reason  = {}
-                table.insert(log.reason, err)
-            end
+            table.insert(reason, err)
         end
     end
     
-    if log.success == 0 then
-        for _, v in ipairs(back) do
-            conf.rules_id[v] = nil
-        end
-        
-        return
+    if #reason > 0 then
+        log.success = 0
+        log.reason  = reason
+        return false, err
     end
+    
+    if u[2] and u[2]:lower() == "checking" then return end
+    
+    twaf_func.table_merge(conf.rules_id, tb)
     
     log.result = data.config
     
-    if u[2] and u[2]:lower() == "checking" then
-        for _, v in ipairs(back) do
-            conf.rules_id[v] = nil
-        end
-        
-        return
-    end
-    
 -- add to conf.rules
     
-    if not conf.rules then
-        conf.rules = {}
+    conf.rules  = conf.rules or {}
+    local drset = conf.rule_sets.twaf_default_rule_set
+    for _, r in ipairs(data.config) do
+        conf.rules[r.id] = r
+        table.insert(drset[r.phase], r.id)
     end
-    
-    twaf_conf:rule_group_phase(conf.rules, data.config)
 end
 
 -- update rules, e.g: PUT /api/rules
@@ -155,81 +134,35 @@ _M.api.rules.put         = function(_twaf, log, u)
     
 -- check rules
     
-    local back = {}
+    local tb = {}
+    local reason = {}
+    local phase
     
     for _, r in ipairs(data.config) do
-        local res, err = twaf_func:check_rules(conf, r)
-        
-        if type(err) == "table" then
-            for k, v in pairs(err) do
-                if ngx.re.find(v, "^ID.*duplicate$") then
-                    table.remove(err, k)
-                end
-            end
-            
-            if #err == 0 then
-                res = true
-            end
-        end
-        
-        if res == true then
-            table.insert(back, r.id)
-            conf.rules_id[r.id] = 1
+        phase = conf.rules_id[r.id]
+        conf.rules_id[r.id] = nil
+        local res, err = twaf_func:check_rules(conf.rules_id, r)
+        if res then
+            tb[r.id] = r.phase
         else
-            if log.reason then
-                table.insert(log.reason, err)
-            else
-                log.success = 0
-                log.reason  = {}
-                table.insert(log.reason, err)
-            end
+            table.insert(reason, err)
         end
+        conf.rules_id[r.id] = phase
     end
     
-    if log.success == 0 then
-        for _, v in ipairs(back) do
-            conf.rules_id[v] = nil
-        end
-        
-        return
+    if #reason > 0 then
+        log.success = 0
+        log.reason  = reason
+        return false, err
     end
     
     log.result = data.config
     
 -- add to conf.rules
-    
+
     for _, r in ipairs(data.config) do
-        local phase = r.phase
-        
-        if type(phase) ~= "table" then
-            phase = {phase}
-        end
-        
-        for _, p in pairs(phase) do
-            repeat
-            
-            if not conf.rules[p] then
-                conf.rules[p] = {}
-                table.insert(conf.rules[p], r)
-                break
-            end
-            
-            for i, rule in ipairs(conf.rules[p]) do
-                if r.id == rule.id then
-                    conf.rules[p][i] = r
-                    break
-                end
-            end
-            
-            table.insert(conf.rules[p], r)
-            
-            until true
-        end
-    end
-    
-    if not log.result then
-        log.success = 0
-        log.reason = "No rule id '"..u[3].."' in policy uuid '"..u[2].."'"
+        conf.rules[r.id] = r
+        conf.rules_id[r.id] = r.phase
     end
     
     return

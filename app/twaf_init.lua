@@ -1,6 +1,8 @@
 --init
 
 require "resty.core"
+local errlog = require "ngx.errlog"
+errlog.set_filter_level(ngx.WARN)
 
 -- construct a new object - twaf_config
 local twaf_config_m = require "lib.twaf.twaf_conf"
@@ -21,5 +23,4 @@ twaf_reqstat = twaf_reqstat_m:new(twaf_config.twaf_default_conf.twaf_reqstat, tw
 local twaf_lib = require "lib.twaf.twaf_core"
 twaf = twaf_lib:new(twaf_config)
 
-local default_init_register = twaf:get_default_config_param("init_register")
-twaf:register_modules(default_init_register)
+twaf:init()

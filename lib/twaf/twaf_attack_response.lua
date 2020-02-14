@@ -3,13 +3,18 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "1.0.0"
 }
 
 local cjson                = require "cjson"
 local twaf_func            = require "lib.twaf.inc.twaf_func"
 
 local modules_name         = "twaf_attack_response"
+local _type                = type
+local io_open              = io.open
+local string_format        = string.format
+local ngx_log              = ngx.log
+local ngx_ERR              = ngx.ERR
 local ngx_var              = ngx.var
 local ngx_re_find          = ngx.re.find
 local ngx_header           = ngx.header
@@ -75,103 +80,56 @@ local response2 =
         <div style="width:1000px;margin:0 auto;"> \
       </body> \
 	</html>'
-    
-function _M.header_filter(self, _twaf)
 
-    local tctx = _twaf:ctx()
-    if not tctx then
-        return true
-    end
-    
-    local cf  = _twaf:get_config_param(modules_name)
-    local gcf = _twaf:get_config_param("twaf_global")
-    if not cf or not gcf then
-        return true
-    end
-    
-    if twaf_func:state(cf.state)       == false or
-       twaf_func:state(gcf.simulation) == true  then
-        return true
-    end
-    
-	local modsec_notes = ngx_var.modsec_notes
-	local attack_info  = ngx_var.twaf_attack_info
-    
-	if not modsec_notes and (not attack_info or #attack_info == 0) then
-		return true
-	end
-    
-    if not tctx[modules_name] then
-        tctx[modules_name] = {}
-    end
-    
-    tctx[modules_name]["state"] = true
-    tctx[modules_name]["gcf"]   = gcf
-    tctx[modules_name]["cf"]    = cf
-    
-    local content_length = ngx_header['Content-Length']
-    if content_length then
-        ngx_header['Content-Length'] = nil
-    end
-    
-    return true
-end
-
-function _M.body_filter(self, _twaf)
-
-    local tctx = _twaf:ctx() or {}
-    local ctx  =  tctx[modules_name]
-    if not ctx or not ctx.state then
-        return true
-    end
-    
-	local attack_info  = ngx_var.twaf_attack_info
-	if ngx.arg[2] ~= true then
-        ngx.arg[1] = nil
-        return
-    end
-    
-    local cf  = ctx.cf
-	local buf = cf.format
-	
-	if buf ~= nil then
-	    local file = io.open(buf)
-        buf = file:read("*a")
-	    file:close()
-	end
-    
-    local format_args      = {}
-    local request          = tctx.request
-    
-    local func = function(m)
-        return request[m] or format_args[m] or "-"
-    end
-    
-    if twaf_func:state(cf.detail_state) == false then
-		if buf == nil then
-		    buf = response1
-		end
-        
-        buf = buf:gsub("{{(.-)}}", func)
-		ngx.arg[1] = buf
-        return
-    end
-    
-	format_args["category"]  = ""
+local function _attack_category()
+    local category     = ""
+    local attack_info  = ngx_var.twaf_attack_info or ""
     
 	if #attack_info ~= 0 then
-        local a = twaf_func:string_split(attack_info, ";")
-        for _, v in pairs(a) do
-            if not format_args["category"]:find(v) then
-                format_args["category"] = format_args["category"] .. v .. ";"
+        local tb = twaf_func:string_split(attack_info, ";")
+        for _, v in pairs(tb) do
+            if not category:find(v) then
+                category = string_format("%s%s;", category, v)
             end
+        end
+        
+        category = category:sub(1, -2)
+	end
+    
+    return category
+end
+
+local function _pre_resp_body(tctx, cf)
+
+	local buf         = cf.format
+    local format_args = {}
+    local req         = tctx.req
+    
+    local args = function(m)
+        return twaf:get_vars(m, req) or format_args[m] or "-"
+    end
+	
+	if buf ~= nil then
+	    local f = io_open(buf)
+        if f then
+            buf = f:read("*a")
+            f:close()
+        else
+            ngx_log(ngx_ERR, string_format("open '%s' failed in attack response module", buf))
+            buf = nil
         end
 	end
     
-	format_args["category"] = format_args["category"]:sub(1, -2)
+    if twaf_func:state(cf.detail_state) == false then
+		if buf == nil then buf = response1 end
+        buf = buf:gsub("{{(.-)}}", args)
+        return buf
+    end
+    
+	format_args["category"]  = _attack_category()
     
 	if buf ~= nil then
-	    if type(cf.format_args_add) == "table" then
+	    if _type(cf.format_args_add) == "table" then
 	        for k, v in pairs(cf.format_args_add) do
 		        format_args[k] = v
             end
@@ -180,9 +138,56 @@ function _M.body_filter(self, _twaf)
 	    buf = response2
 	end
     
-    buf = buf:gsub("{{(.-)}}", func)
+    buf = buf:gsub("{{(.-)}}", args)
     
-    ngx.arg[1] = buf
+    return buf
+end
+    
+function _M.header_filter(self, _twaf)
+
+    local tctx = _twaf:ctx()
+    if not tctx then return true end
+    
+    local cf  = _twaf:get_config_param(modules_name)
+    local gcf = _twaf:get_config_param("twaf_global")
+    if not cf or not gcf then return true end
+    
+    if twaf_func:state(cf.state)       == false or
+       twaf_func:state(gcf.simulation) == true  then
+        return true
+    end
+    
+    local attack_info  = ngx_var.twaf_attack_info
+    if not attack_info or #attack_info == 0 then
+        return true
+    end
+    
+    if not tctx[modules_name] then tctx[modules_name] = {} end
+    local buf = _pre_resp_body(tctx, cf)
+    
+    ngx_header['Content-Type']   = "text/html"
+    ngx_header['Content-Length'] = #buf
+    tctx[modules_name]["buf"]    = buf
+    tctx[modules_name]["cf"]     = cf
+    
+    return true
+end
+
+function _M.body_filter(self, _twaf)
+
+    local tctx = _twaf:ctx() or {}
+    
+    if not tctx[modules_name] and ngx_var.header_filter_postpone == '1' then
+        _M:header_filter(_twaf)
+    end
+    
+    ctx = tctx[modules_name]
+    
+    if not ctx then return true end
+    
+    ngx.arg[1] = ctx.buf
+    ngx.arg[2] = true
+    return
 end
 
 return _M

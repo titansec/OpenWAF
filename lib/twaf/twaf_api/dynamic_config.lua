@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.3"
+    _VERSION = "1.0.1"
 }
 
 local twaf_func = require "lib.twaf.inc.twaf_func"
@@ -20,8 +20,13 @@ _M.api.dynamic_config.get  = function(_twaf, log, u)
     local result = {}
     local config = _twaf.config
     
-    result.twaf_policy      = config.twaf_policy
-    result.twaf_access_rule = config.twaf_access_rule
+    result.twaf_policy       = config.twaf_policy
+    result.twaf_access_rule  = config.twaf_access_rule
+  --result.rules             = config.rules
+  --result.rules_id          = config.rules_id
+    result.rule_sets         = config.rule_sets
+  --result.twaf_default_conf = config.twaf_default_conf
+    result.pset              = config.pset
     
     local f, err = io.open(back_path, "w+")
     if not f then 
@@ -63,8 +68,9 @@ _M.api.dynamic_config.post = function(_twaf, log, u)
     local config = _twaf.config
     local p_conf = twaf_func:syn_config_process(_twaf, data.config)
     
-    config.twaf_access_rule = p_conf.twaf_access_rule
-    config.twaf_policy      = p_conf.twaf_policy
+    for k, v in pairs(p_conf) do
+        config[k] = v
+    end
     
     log.result = p_conf
     return
@@ -106,8 +112,9 @@ _M.api.dynamic_config_back.post = function(_twaf, log, u)
     
     local p_conf = twaf_func:syn_config_process(_twaf, config)
     
-    _twaf.config.twaf_access_rule = p_conf.twaf_access_rule
-    _twaf.config.twaf_policy      = p_conf.twaf_policy
+    for k, v in pairs(p_conf) do
+        _twaf.config[k] = v
+    end
     
     log.result = p_conf
     return

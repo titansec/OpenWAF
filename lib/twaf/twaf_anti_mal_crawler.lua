@@ -3,7 +3,7 @@
 --Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.2"
+    _VERSION = "1.0.0"
 }
 
 local twaf_func             = require "lib.twaf.inc.twaf_func"
@@ -21,6 +21,9 @@ local ngx_shared            = ngx.shared
 local ngx_header            = ngx.header
 local ngx_timer_at          = ngx.timer.at
 local ngx_resp_get_headers  = ngx.resp.get_headers
+local _tonumber             = tonumber
+local table_insert          = table.insert
+local string_format         = string.format
 
 local entry_no_robots_response = 
      '<a href="{{trap_uri}}" style="display:none">robots</a>'
@@ -61,8 +64,8 @@ function _M.handler(self, _twaf)
     end
     
     local ctx      = tctx[modules_name]
-    local request  = tctx.request
-    local uri      = (request.URI or "-"):lower()
+    local req      = tctx.req
+    local uri      = (_twaf:get_vars("URI", req) or "-"):lower()
     local uri_len  = #uri
     
     if uri_len == 12 and uri == "/favicon.ico" then
@@ -74,33 +77,35 @@ function _M.handler(self, _twaf)
     local mal_flag        =  false
     local timeout         =  cf.timeout
     local delay           =  cf.timer_flush_expired or gcf.timer_flush_expired
-  --local ip_bl_path      =  cf.ip_blacklist_path or gcf.ip_blacklist_path
-    local request_cookies =  request.REQUEST_COOKIES
+    local request_cookies = _twaf:get_vars("REQUEST_COOKIES", req)
     local mal_cookie      =  request_cookies[cf.mal_cookie_name]
     local crawler_cookie  =  request_cookies[cf.crawler_cookie_name]
     local cookie_state    =  twaf_func:state(cf.cookie_state)
     local dict_state      =  twaf_func:state(cf.dict_state)
     local dict_name       =  cf.shared_dict_name or gcf.dict_name
     local dict            =  ngx_shared[dict_name]
-    local policy          =  request.POLICYID
+    local policy          = _twaf:get_vars("POLICYID", req)
     local key             =  twaf_func:key(cf.shared_dict_key)
     
     if type(key) ~= "string" then
-        ngx_log(ngx_WARN, modules_name .. "module shared_dict_key can't be table")
+        ngx_log(ngx_WARN, string_format("%s module : shared_dict_key can't be table", modules_name))
         tctx[modules_name] = nil
         return false
     end
     
-    key      = modules_name.."_"..policy.."_"..key
-    ctx.key  = key
+    key      = string_format("%s%s%s", modules_name, policy, key)
     ctx.dict = dict
     ctx.cf   = cf
+    ctx.force_scan_key = string_format("%s_force_scan", key)
     
     twaf_func:dict_flush_expired(_twaf, dict, delay)
     
+    local mal_key     = string_format("%s_mal", key)
+    local crawler_key = string_format("%s_crawler", key)
+    
     repeat
     
-    if dict_state and dict:get(key.."_mal") then
+    if dict_state and dict:get(mal_key) then
         value    = 1
         mal_flag = "mal crawler dict"
         break
@@ -114,15 +119,15 @@ function _M.handler(self, _twaf)
     end
     
     --check mal trap uri
-    if cf.trap_uri == uri and cf.trap_args ~= request.QUERY_STRING then
+    if cf.trap_uri == uri and cf.trap_args ~= _twaf:get_vars("QUERY_STRING", req) then
         value    = uri
         mal_flag = "trap uri"
         break
     end
     
     --check if there is crawler cookie
-    if (cookie_state and crawler_cookie) or (dict_state and dict:get(key.."_crawler")) then
-        local method = request.REQUEST_METHOD
+    if (cookie_state and crawler_cookie) or (dict_state and dict:get(crawler_key)) then
+        local method = _twaf:get_vars("REQUEST_METHOD", req)
         if method ~= "GET" and method ~= "HEAD" then
             value    = method
             mal_flag = "crawler only GET or HEAD method"
@@ -135,24 +140,15 @@ function _M.handler(self, _twaf)
     if mal_flag ~= false then
         if cookie_state == true and not mal_cookie then
             --crc32(time ip agent mal_cookie_name time)
-            local mal_cookie_value = twaf_func:set_cookie_value(request, cf.mal_cookie_name)
-            local cookie = cf.mal_cookie_name.."="..mal_cookie_value
+            local mal_cookie_value = twaf_func:set_cookie_value(req, cf.mal_cookie_name)
+            local cookie = string_format("%s=%s", cf.mal_cookie_name, mal_cookie_value)
             twaf_func:set_cookie(cookie)
         end
         
-        --[[local ip_bl = _twaf.config.ip_blacklist
-        if ip_bl and not ip_bl[request.REMOTE_ADDR] then
-            ip_bl[request.REMOTE_ADDR] = 1
-            twaf_func:record(ip_bl_path, 1, request.REMOTE_ADDR)
-        end]]
-        
-        request.MATCHED_VAR      = value
-        request.MATCHED_VAR_NAME = mal_flag
-        table.insert(request.MATCHED_VARS, value)
-        table.insert(request.MATCHED_VAR_NAMES, mal_flag)
+        twaf_func.matched_var(req, mal_flag, value)
         
         tctx[modules_name] = nil
-        if dict_state then dict:set(key.."_mal", 1, timeout) end
+        if dict_state then dict:set(mal_key, 1, timeout) end
         
         return _log_action(_twaf, cf)
     end
@@ -160,12 +156,12 @@ function _M.handler(self, _twaf)
     if uri_len == 11 and uri == "/robots.txt"  then
         if cookie_state == true and not crawler_cookie then
             --crc32(time ip agent crawler_cookie_name time)
-            local crawler_cookie_value = twaf_func:set_cookie_value(request, cf.crawler_cookie_name)
-            local crawler_cookie       = cf.crawler_cookie_name.."="..crawler_cookie_value
+            local crawler_cookie_value = twaf_func:set_cookie_value(req, cf.crawler_cookie_name)
+            local crawler_cookie       = string_format("%s=%s", cf.crawler_cookie_name, crawler_cookie_value)
             twaf_func:set_cookie(crawler_cookie)
         end
         
-        if dict_state then dict:set(key.."_crawler", 1, timeout) end
+        if dict_state then dict:set(crawler_key, 1, timeout) end
         return false
     end
     
@@ -182,19 +178,20 @@ function _M.header_filter(self, _twaf)
     end
     
     local cf       = ctx.cf
-    local request  = tctx.request
-    local uri      = (request.URI or "-"):lower()
-    local _status  = request.RESPONSE_STATUS
-    local headers  = request.RESPONSE_HEADERS
+    local req      = tctx.req
+    local uri      = (_twaf:get_vars("URI", req) or "-"):lower()
+    local status   = _twaf:get_vars("RESPONSE_STATUS", req)
+    local headers  = _twaf:get_vars("RESPONSE_HEADERS", req)
     local uri_len  = #uri
     
-    if _status() == 404 and uri_len == 11 and uri == "/robots.txt" then
+    if status == 404 and uri_len == 11 and uri == "/robots.txt" then
         ngx_header.content_type = "text/plain"
         ngx.status              = ngx_HTTP_OK
+        status                  = ngx_HTTP_OK
         ctx.no_robots_txt       = true
     end
     
-    if _status() ~= ngx_HTTP_OK then
+    if status ~= ngx_HTTP_OK then
         return true
     end
     
@@ -202,12 +199,12 @@ function _M.header_filter(self, _twaf)
     
         if twaf_func:state(cf.force_scan_robots_state) == true then
         
-            local count = ctx.dict:get(ctx.key.."_force_scan") or 0
+            local count = ctx.dict:get(ctx.force_scan_key) or 0
             if count >= cf.force_scan_times then
                 return
             end
             
-            local content_length = tonumber(headers['Content-Length'])
+            local content_length = _tonumber(headers['Content-Length'])
             if not content_length or content_length < 28 then
                 return
             end
@@ -235,25 +232,32 @@ function _M.header_filter(self, _twaf)
             local append_response = entry_no_robots_response:gsub("{{trap_uri}}", cf.trap_uri)
             ctx.force_scan_state  = true
             ctx.append_response   = append_response
-            twaf_func:content_length_operation(#append_response, "add")
+            ngx_header['Content-Length'] = nil
             return
         end
         
         return true
     end
     
-    local robots_footer = "\nDisallow: "..cf.trap_uri.."\n"
+    if not ctx.no_robots_txt then
+        local content_type = headers['Content-Type'] or ""
+        local from = content_type:find("text/")
+        if from == nil then
+            return true
+        end
+    end
+    
+    local robots_footer = string_format("\nDisallow: %s\n", cf.trap_uri)
     ctx.mal_crawler_robots_footer = robots_footer
     
     if ctx.no_robots_txt == true then
         ngx_header['Content-Length'] = #no_robots_txt + #robots_footer
-        headers['Content-Length'] = ngx_header['Content-Length']
-    else
-        local content_length = ngx_header['Content-Length']
-        if content_length then
-            ngx_header['Content-Length'] = content_length + #robots_footer
-            headers['Content-Length'] = ngx_header['Content-Length']
-        end
+        return ngx.DONE
+    end
+    
+    local content_length = headers['Content-Length']
+    if content_length then
+        ngx_header['Content-Length'] = content_length + #robots_footer
     end
     
     return ngx.DONE
@@ -263,38 +267,24 @@ function _M.body_filter(self, _twaf)
 
     local tctx     = _twaf:ctx()
     local ctx      =  tctx[modules_name]
-    local request  =  tctx.request
-    local uri      =  (request.URI or "-"):lower()
-    local headers  =  request.RESPONSE_HEADERS
+    local req      =  tctx.req
+    local uri      =  (_twaf:get_vars("URI", req) or "-"):lower()
     local uri_len  =  #uri
     
-    if not ctx then
-        return true
-    end
+    if not ctx then return true end
     
-    if ctx.force_scan_state == true and not ctx.append_response_state then
+    if ctx.force_scan_state == true then
     
-        local new_response
-        local from, to = ngx.arg[1]:find("<body.->")
-        
-        if to ~= nil then
-        
-            local tmp1                = ngx.arg[1]:sub(1, to)
-            local tmp2                = ngx.arg[1]:sub(to + 1)
-            new_response              = tmp1..ctx.append_response
-            ngx.arg[1]                = new_response..tmp2
-            ctx.append_response_state = true
-            
-        elseif ngx.arg[2] == true then
-            
-            ctx.append_response_state = true
-            ngx.arg[1]                = ngx.arg[1]..ctx.append_response
+        if not ctx.append_response_state then
+            if ngx.arg[1]:find("</html>") then ctx.append_response_state = true end
         end
         
-        if ctx.append_response_state then
-            local count = ctx.dict:get(ctx.key.."_force_scan") or 0
-            ctx.dict:set(ctx.key.."_force_scan", count + 1, ctx.cf.timeout)
-        end
+        if not ngx.arg[2] or not ctx.append_response_state then return true end
+        
+        ngx.arg[1] = ngx.arg[1] .. ctx.append_response
+        
+        local count = ctx.dict:get(ctx.force_scan_key) or 0
+        ctx.dict:set(ctx.force_scan_key, count + 1, ctx.cf.timeout)
         
         return true
     end
@@ -308,12 +298,6 @@ function _M.body_filter(self, _twaf)
         return true
     end
     
-    local content_type = request.RESPONSE_HEADERS['Content-Type']
-    local from = content_type:find("text/")
-    if from == nil then
-        return true
-    end
-    
     if ngx.arg[2] ~= true then
         if ctx.no_robots_txt == true then
             ngx.arg[1] = nil
@@ -323,10 +307,10 @@ function _M.body_filter(self, _twaf)
     end
     
     if ctx.no_robots_txt == true then
-        ngx.arg[1] = no_robots_txt .. robots_footer
-    else 
-        ngx.arg[1] = ngx.arg[1] .. robots_footer
+        ngx.arg[1] = no_robots_txt
     end
+    
+    ngx.arg[1] = ngx.arg[1] .. robots_footer
     
     return ngx.DONE
 end

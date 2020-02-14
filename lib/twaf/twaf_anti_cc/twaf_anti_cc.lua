@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "1.0.0"
 }
 
 local tctc             = require "lib.twaf.twaf_anti_cc.twaf_cc_trigger_cond"
@@ -33,8 +33,8 @@ function _M.handler(self, _twaf)
     local conn_dict     =  ngx_shared[cf.shared_dict_name]
     local timeout       =  cf.timeout
     local interval      =  cf.interval
-    local request       =  tctx.request
-    local uuid          =  request.POLICYID
+    local req           =  tctx.req
+    local uuid          =  req.POLICYID
     
     ctx.uuid     = uuid
     ctx.dict     = conn_dict
@@ -42,7 +42,7 @@ function _M.handler(self, _twaf)
     ctx.interval = interval
     ctx.cf       = cf
     ctx.func     = twaf_func
-    ctx.request  = request
+    ctx.req      = req
     
     --flush expired
     twaf_func:dict_flush_expired(_twaf, conn_dict, cf.timer_flush_expired)

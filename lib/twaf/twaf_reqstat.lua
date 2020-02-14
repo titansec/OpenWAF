@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "1.0.0"
 }
 
 local cjson                = require "cjson.safe"
@@ -19,10 +19,12 @@ local ngx_ERR              = ngx.ERR
 local ngx_send_headers     = ngx.send_headers
 local ngx_req_get_uri_args = ngx.req.get_uri_args
 local ngx_time             = ngx.time
+local ngx_timer_at         = ngx.timer.at
+
+local _tonumber            = tonumber
 
 local modules_name         = "twaf_reqstat"
 local global_uuid          = "GLOBAL"
-local stat_uuids           = {}
 local start_sec
 local state
 local safe_state
@@ -39,6 +41,8 @@ local stat_upstream = {"req_total", "bytes_in", "bytes_out", "1xx", "2xx", "3xx"
                        "4xx", "400", "401", "403", "404", "405", "406", "407", "408", 
                        "409", "410", "411", "412", "413", "414", "415", "416", "417",
                        "5xx", "500", "501", "502", "503", "504", "505", "507"}
+
+local stat_action   = {"DENY", "WARN", "RESET_CONNECTION", "OPAGE"}
 
 local function _get_dict_info(key)
     return reqstat_dict:get(key) or 0
@@ -64,8 +68,8 @@ end
 
 local function _get_reqstat_safe_info(info, key)
 
-    local safe_keys = reqstat_dict:get(modules_name.."_safe_keys")
-    stat_safe       = cjson.decode(safe_keys) or stat_safe
+    local d_key     = modules_name.."_safe_keys"
+    local stat_safe = cjson.decode(reqstat_dict:get(d_key)) or {}
     
     for k, _ in pairs(stat_safe) do
         info[k] = _get_dict_info(key.."_"..k)
@@ -94,29 +98,19 @@ end
 
 function _M.get_reqstat_main_info(self)
 
-    local nginx_version =  twaf_func:get_variable("nginx_version")
-    local active        =  twaf_func:get_variable("connections_active")
-    local reading       =  twaf_func:get_variable("connections_reading")
-    local writing       =  twaf_func:get_variable("connections_writing")
-    local waiting       =  twaf_func:get_variable("connections_waiting")
-    local accepted      =  twaf_func:get_variable("stat_accepted")
-    local handled       =  twaf_func:get_variable("stat_handled")
-    local requests      =  twaf_func:get_variable("stat_requests")
-    local reset_sec     = _get_dict_info("reset_sec")
-    
-    local info                    = {}
-    info.main                     = {}
-    info.main.connection          = {}
-    info.main.nginx_version       = nginx_version
-    info.main.loadsec             = start_sec
-    info.main.resetsec            = reset_sec
-    info.main.connection.active   = active
-    info.main.connection.reading  = reading
-    info.main.connection.writing  = writing
-    info.main.connection.waiting  = waiting
-    info.main.connection.accepted = accepted
-    info.main.connection.handled  = handled
-    info.main.connection.requests = requests
+    local info                    =  {}
+    info.main                     =  {}
+    info.main.connection          =  {}
+    info.main.loadsec             =  start_sec
+    info.main.resetsec            = _get_dict_info("reset_sec")
+    info.main.nginx_version       =  ngx_var.nginx_version                 or "-"
+    info.main.connection.active   = _tonumber(ngx_var.connections_active)  or 0
+    info.main.connection.reading  = _tonumber(ngx_var.connections_reading) or 0
+    info.main.connection.writing  = _tonumber(ngx_var.connections_writing) or 0
+    info.main.connection.waiting  = _tonumber(ngx_var.connections_waiting) or 0
+    info.main.connection.accepted = _tonumber(ngx_var.stat_accepted)       or 0
+    info.main.connection.handled  = _tonumber(ngx_var.stat_handled)        or 0
+    info.main.connection.requests = _tonumber(ngx_var.stat_requests)       or 0
     
     _get_reqstat_info(info.main, modules_name.."_"..global_uuid)
     
@@ -126,7 +120,10 @@ end
 function _M.get_reqstat_uuid_info(self, uuids)
 
     local info = {}
-
+    
+    local stat_keys  = reqstat_dict:get(modules_name.."_stat_uuids")
+    local stat_uuids = cjson.decode(stat_keys) or {}
+    
     if uuids[1] == "policy_all" then
         for uuid, _ in pairs(stat_uuids) do
              info[uuid] = {}
@@ -141,7 +138,7 @@ function _M.get_reqstat_uuid_info(self, uuids)
              info[uuid] = {}
             _get_reqstat_info(info[uuid], modules_name.."_"..uuid)
         else
-            ngx_log(ngx.ERR, "uuid \""..uuid.."\" is not exist")
+            ngx_log(ngx_ERR, "uuid \""..uuid.."\" is not exist")
         end
     end
     
@@ -198,12 +195,12 @@ local function _reqstat_upstream_init(key)
     end
 end
 
-local function _log_access_stat(safe_event, key)
+local function _log_access_stat(safe_event, key, ctx)
 
-    local status       = tonumber(ngx.status)
-    local bytes_in     = tonumber(ngx_var.bytes_in) or 0
-    local bytes_sent   = tonumber(ngx_var.bytes_sent) or 0
-    local conn         = ngx_var.connection_requests
+    local status       = ctx.RESPONSE_STATUS
+    local bytes_in     = ctx.BYTES_IN
+    local bytes_sent   = ctx.BYTES_SENT
+    local conn         = ctx.CONNECTION_REQUESTS
     
     reqstat_dict:incr(key.."_req_total", 1)
     reqstat_dict:incr(key.."_bytes_in", bytes_in)
@@ -215,7 +212,7 @@ local function _log_access_stat(safe_event, key)
     
     if safe_event then
         for k, v in pairs(safe_event) do
-            if v == "DENY" or v == "WARN" or v == "RESET_CONNECTION" then
+            if twaf_func:table_has_value(stat_action, v) then
                 reqstat_dict:incr(key.."_attack_total", 1)
                 break
             end
@@ -242,23 +239,25 @@ local function _log_safe_stat(safe_event, key)
     end
     
     for k, v in pairs(safe_event) do
-        if v == "DENY" or v == "WARN" or v == "RESET_CONNECTION" then
+        if twaf_func:table_has_value(stat_action, v) then
             reqstat_dict:add(key.."_"..k, 0)
             reqstat_dict:incr(key.."_"..k, 1)
             
-            if not stat_safe[k] then
+            if not reqstat_dict:get(k) then
+                local d_key = modules_name.."_safe_keys"
+                local stat_safe = cjson.decode(reqstat_dict:get(d_key)) or {}
                 stat_safe[k] = 1
-                reqstat_dict:set(modules_name.."_safe_keys", cjson.encode(stat_safe))
+                reqstat_dict:set(d_key, cjson.encode(stat_safe))
             end
         end
     end
 end
 
-local function _log_upstream_stat(key)
+local function _log_upstream_stat(key, ctx)
 
-    local status    = tonumber(ngx_var.upstream_status)
-    local bytes_in  = tonumber(ngx_var.bytes_in) or 0
-    local bytes_out = tonumber(ngx_var.upstream_response_length) or 0
+    local status    = ctx.UPSTREAM_STATUS
+    local bytes_in  = ctx.UPSTREAM_BYTES_SENT
+    local bytes_out = ctx.UPSTREAM_BYTES_RECEIVED
     
     if status == nil or bytes_in == nil or bytes_out == nil then
         return
@@ -283,21 +282,24 @@ local function _log_upstream_stat(key)
     end
 end
 
-local function _reqstat(events, uuid)
+local function _reqstat(events, uuid, ctx)
 
     access_state   = twaf_func:state(access_state)
     safe_state     = twaf_func:state(safe_state)
     upstream_state = twaf_func:state(upstream_state)
-
-    local key      = modules_name.."_"..uuid
-    local value    = reqstat_dict:get(key)
     
-    if value == nil then
-        stat_uuids[uuid] = 1
+    local key      = modules_name.."_"..uuid
+    
+    if not reqstat_dict:get(key) then
         reqstat_dict:add(key, 1)
         _reqstat_access_init(key)
         _reqstat_safe_init(key)
         _reqstat_upstream_init(key)
+        
+        local d_key      = modules_name.."_stat_uuids"
+        local stat_uuids = cjson.decode(reqstat_dict:get(d_key)) or {}
+        stat_uuids[uuid] = 1
+        reqstat_dict:set(d_key, cjson.encode(stat_uuids))
     end
     
     if safe_state == true then
@@ -305,56 +307,54 @@ local function _reqstat(events, uuid)
     end
 	
     if access_state == true then
-        _log_access_stat(events, key)
+        _log_access_stat(events, key, ctx)
     end
     
     if upstream_state == true then
-        _log_upstream_stat(key)
+        _log_upstream_stat(key, ctx)
     end
 
 end
 
-function _M.reqstat_log_handler(self, events, uuid)
+local _timer_log = function (premature, events, ctx, uuid)
+    _reqstat(events, global_uuid, ctx)
+    
+    if uuid then
+        _reqstat(events, uuid, ctx)
+    end
+end
+
+function _M.reqstat_log_handler(self, _twaf)
 
     if twaf_func:state(state) == false then
         return true
     end
     
-    _reqstat(events, global_uuid)
+    local cf      = _twaf:get_config_param(modules_name)
+    local tctx    = _twaf:ctx()
+    local req     =  tctx.req
+    local key     =  twaf_func:key(cf.shared_dict_key)
+    local events  =  tctx.events.stat
+    local ctx     =  {}
     
-    if uuid then
-        _reqstat(events, uuid)
+    ctx.RESPONSE_STATUS         = _twaf:get_vars("RESPONSE_STATUS", req)
+    ctx.BYTES_IN                = _twaf:get_vars("BYTES_IN", req)
+    ctx.BYTES_SENT              = _twaf:get_vars("BYTES_SENT", req)
+    ctx.CONNECTION_REQUESTS     = _twaf:get_vars("CONNECTION_REQUESTS", req)
+    ctx.UPSTREAM_STATUS         = _twaf:get_vars("UPSTREAM_STATUS", req)
+    ctx.UPSTREAM_BYTES_SENT     = _twaf:get_vars("BYTES_IN", req)  -- UPSTREAM_BYTES_SENT
+    ctx.UPSTREAM_BYTES_RECEIVED = _twaf:get_vars("UPSTREAM_BYTES_RECEIVED", req)
+    
+    local ok, err = ngx_timer_at(0, _timer_log, events, ctx, key)
+    if not ok then
+        ngx_log(ngx_ERR, "twaf_limit_conn - failed to create timer: ", err)
+        return
     end
     
     return true
 end
 
 --init
-
-local function _reqstat_init()
-
-    reqstat_dict = ngx_shared[shared_dict_name]
-
-    reqstat_dict:delete(modules_name.."_init")
-    
-    for uuid, _ in pairs(stat_uuids) do
-        local key   = modules_name.."_"..uuid
-        local value = reqstat_dict:get(key)
-        if value == nil then
-             reqstat_dict:add(key, 1)
-            _reqstat_access_init(key)
-            _reqstat_safe_init(key)
-            _reqstat_upstream_init(key)
-        end
-    end
-    
-    local key = modules_name.."_start_sec"
-    start_sec = reqstat_dict:get(key)
-    if not start_sec then
-        start_sec = ngx_time()
-        reqstat_dict:add(key, start_sec)
-    end
-end
 
 function _M.new(self, reqstat_conf, uuids)
 
@@ -373,14 +373,18 @@ function _M.new(self, reqstat_conf, uuids)
         elseif k == "upstream_state" then
             upstream_state = v
         elseif k == "shared_dict_name" then
-            shared_dict_name = v
+            reqstat_dict = assert(ngx_shared[v], "no shared dict " .. v)
         end
     end
     
-    stat_uuids = twaf_func:copy_table(uuids)
-    stat_uuids[global_uuid] = 1
+    if not reqstat_dict then assert(nil, "no shared dict") end
     
-    _reqstat_init()
+    local d_key     = modules_name.."_stat_uuids"
+    if not reqstat_dict:get(d_key) then
+        local stat_uuids = {}
+        stat_uuids[global_uuid] = 1
+        reqstat_dict:set(d_key, cjson.encode(stat_uuids))
+    end
     
     return setmetatable({config = reqstat_conf} , mt)
 end
