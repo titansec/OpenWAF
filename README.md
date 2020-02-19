@@ -33,7 +33,7 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v0.0.6 released on 26 Dec 2017.
+This document describes OpenWAF v1.0.0β released on 14 Feb 2020.
 
 Docker Version  
 1. titansec/openwaf:0.0.1.161130_beta  
@@ -233,38 +233,7 @@ TODO
 Changes
 =======
 
-Time: 2017/03/20  
-Version: v0.0.4  
-&emsp;&emsp;1. New Module - twaf_anti_cc  
-&emsp;&emsp;&emsp;&emsp;Anti http flood  
-
-Time: 2017/01/03  
-Version: v0.0.3.170103_beta  
-&emsp;&emsp;1. New Module - twaf_anti_mal_crawler  
-&emsp;&emsp;&emsp;&emsp;Distinguish malicious crawler and some scan tools  
-
-Time: 2016/12/05  
-Version: v0.0.2.161205_beta  
-&emsp;&emsp;1. New Module - twaf_attack_response  
-&emsp;&emsp;&emsp;&emsp;Return custom response page When the request is rejected by OpenWAF  
-&emsp;&emsp;2. Api - api/stat[/policy_uuid]  
-&emsp;&emsp;&emsp;&emsp;Show statistical infomation  
-    
-Time: 2016/12/05  
-Version: v0.0.1.161130_beta  
-&emsp;&emsp;1. Docker  
-&emsp;&emsp;&emsp;&emsp;build OpenWAF with docker  
-        
-Time: 2016/12/05  
-Version: v0.0.1.161012_beta  
-&emsp;&emsp;1. log module  
-&emsp;&emsp;&emsp;&emsp;Send tcp/udp log  
-&emsp;&emsp;2. reqstat module  
-&emsp;&emsp;&emsp;&emsp;Statistics of request infomation  
-&emsp;&emsp;3. access rule  
-&emsp;&emsp;&emsp;&emsp;Publish applications  
-&emsp;&emsp;4. rule engine  
-&emsp;&emsp;&emsp;&emsp;Access Control  
+[Changelog](https://github.com/titansec/OpenWAF/blob/master/Changelog)
 
 [Back to TOC](#table-of-contents)
 
@@ -307,20 +276,20 @@ twaf_access_rule
     "twaf_access_rule": {
         "rules": [                                 -- 注意先后顺序
             {                                      
-                "client_ssl": false,               -- 客户端认证的开关，与ngx_ssl组成双向认证
-                "client_ssl_cert": "path",         -- 客户端认证所需PEM证书地址
-                "ngx_ssl": false,                  -- nginx认证的开关
+                "user": "user_id",                 -- 用户名ID，非必填，默认值"-"
+                "ngx_ssl": false,                  -- nginx认证的开关，非必填，默认值false
                 "ngx_ssl_cert": "path",            -- nginx认证所需PEM证书地址
                 "ngx_ssl_key": "path",             -- nginx认证所需PEM私钥地址
-                "host": "^1\\.1\\.1\\.1$",         -- 域名，正则匹配
-                "port": 80,                        -- 端口号（缺省80）
-                "path": "\/",                      -- 路径，正则匹配
-                "server_ssl": false,               -- 后端服务器ssl开关
-                "forward": "server_5",             -- 后端服务器upstream名称
-                "forward_addr": "1.1.1.2",         -- 后端服务器ip地址
-                "forward_port": "8080",            -- 后端服务器端口号（缺省80）
-                "uuid": "access_567b067ff2060",    -- 用来标记此规则的uuid
-                "policy": "policy_uuid"            -- 安全策略ID
+                "host": "^1\\.1\\.1\\.1$",         -- 域名，支持正则匹配，支持字符串或数组，同时支持IPv4/IPv6
+                "port": 80,                        -- 端口号。支持number或数组类型，非必填，默认值80或443
+                "path": "\/",                      -- 路径，支持正则匹配，非必填，默认值"/"
+                "url_case_sensitive": false,       -- 路径区分大小写，boolean类型，非必填，默认值 false
+                "server_ssl": false,               -- 后端服务器ssl开关，boolean类型，非必填，默认值 false
+                "forward": "server_5",             -- 后端服务器upstream名称，string类型
+                "forward_addr": "1.1.1.2",         -- 后端服务器ip地址，string类型
+                "forward_port": "8080",            -- 后端服务器端口号，非必填，默认值80或443
+                "uuid": "access_567b067ff2060",    -- 用来标记此规则的uuid，非必填，默认16位随机字符串
+                "policy": "policy_uuid"            -- 安全策略ID，string类型，非必填，默认值twaf_default_conf
             }
         ]
     }
@@ -336,26 +305,17 @@ rules
 
 table类型，接入规则，顺序匹配
 
-client_ssl
-----------
-**syntax:** *"client_ssl": true|false*
+user
+----
+**syntax:** *"user": string*
 
-**default:** *false*
+**default:** *-*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
-客户端认证开关，与ngx_ssl组成双向认证，默认false  
-PS: 当前客户端认证不生效  
+string类型。用户名ID。对应变量 %{USERID}。
 
-client_ssl_cert
----------------
-**syntax:** *"client_ssl_cert": "path"*
-
-**default:** *none*
-
-**context:** *twaf_access_rule*
-
-string类型，客户端认证所需PEM证书地址，目前仅支持绝对地址
+非必填，默认值"-".
 
 ngx_ssl
 -------
@@ -363,9 +323,11 @@ ngx_ssl
 
 **default:** *false*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
-boolean类型，服务器端(nginx)认证开关，与client_ssl组成双向认证，默认关闭
+boolean类型，服务器端(nginx)认证开关，可与client_ssl组成双向认证
+
+非必填，默认值false
 
 ngx_ssl_cert
 ------------
@@ -373,7 +335,7 @@ ngx_ssl_cert
 
 **default:** *none*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
 string类型，服务器端(nginx)认证所需PEM证书地址，目前仅支持绝对地址
 
@@ -383,7 +345,7 @@ ngx_ssl_key
 
 **default:** *none*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
 string类型，服务器端(nginx)认证所需PEM私钥地址，目前仅支持绝对地址
 
@@ -393,9 +355,13 @@ host
 
 **default:** *none*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
-string类型，域名，正则匹配(匹配时，忽略大小写)
+string或数组类型。发布域名。(从 v1.0.0β 版本开始支持数组)
+
+支持正则表达式(匹配时，自动忽略大小写)。
+
+同时支持IPv4/IPv6。(从 v1.0.0β 版本开始支持IPv6)
 
 例如:
 ```
@@ -403,17 +369,26 @@ string类型，域名，正则匹配(匹配时，忽略大小写)
     "host": "test\\.com"
     "host": "^.*\\.com$"
     "host": "www.baidu.com"
+    "host": ["www.baidu.com", "1.1.1.1", "8888::192.168.1.1"]
 ```
 
 port
 ----
 **syntax:** *"port": number*
 
-**default:** *80*
+**default:** *80|443*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
-number类型，端口号
+number或数组类型，端口号。(从 v1.0.0β 版本开始支持数组)
+
+非必填，默认值80或443
+
+若"host"参数为数组时，"port"也应为数组。例如:
+```
+    "host": ["www.baidu.com", "1.1.1.1", "8888::192.168.1.1"]
+    "posrt": [80, 8088, 8099]
+```
 
 path
 ----
@@ -421,9 +396,11 @@ path
 
 **default:** *none*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
-string类型，路径，正则匹配
+string类型，路径，支持正则匹配
+
+非必填，默认值"/"
 
 例如:
 ```
@@ -432,15 +409,29 @@ string类型，路径，正则匹配
     "path": "/[a|b]test"
 ```
 
+url_case_sensitive
+------------------
+**syntax:** *"url_case_sensitive": "true|false"*
+
+**default:** *false*
+
+**context:** *twaf_access_rule:rules*
+
+boolean类型，路径区分大小写(从 v1.0.0β 版本开始支持此参数)
+
+非必填，默认值false(不区分大小写)
+
 server_ssl
 ----------
 **syntax:** *"server_ssl": true|false*
 
 **default:** *false*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
 boolean类型，OpenWAF向后端服务器连接的ssl开关
+
+非必填，默认值 false
 
 例如:
 ```
@@ -469,14 +460,44 @@ forward
 
 **default:** *none*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
 string类型，forward表示后端服务器的uuid，即upstream的名称
 
+若不使用OpenWAF提供的$twaf_upstream_server变量，则"forward","forward_addr","forward_port"均非必填(从 v1.0.0β 版本开始支持非必填)
+
 ```
-    #如：forward值为test
+    #如：使用OpenWAF自带的$twaf_upstream_server变量，forward值为test
     upstream test {
         server 1.1.1.1;
+    }
+    
+    server {
+        ...
+        location / {
+            proxy_pass $twaf_upstream_server;
+        }
+    }
+    
+    ---------------------------------
+    
+    #如：未使用OpenWAF自带的$twaf_upstream_server变量，forward非必填
+    server {
+        ...
+        location / {
+            proxy_pass http://1.1.1.1;
+        }
+    }
+    
+    ---------------------------------
+    
+    #如：未使用OpenWAF自带的$twaf_upstream_server变量，forward非必填
+    server {
+        ...
+        location / {
+            root html;
+            index index.htm;
+        }
     }
 ```
 
@@ -486,7 +507,7 @@ forward_addr
 
 **default:** *none*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
 string类型，forward_addr表示后端服务器的ip地址（TODO：支持域名）
 
@@ -501,11 +522,13 @@ forward_port
 ------------
 **syntax:** *"forward_port": port*
 
-**default:** *80*
+**default:** *80|443*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
-number类型，forward_port表示后端服务器端口号，默认80
+number类型，forward_port表示后端服务器端口号
+
+非必填，默认值80或443
 
 ```
     upstream test {
@@ -518,21 +541,25 @@ uuid
 ----
 **syntax:** *"uuid": "string"*
 
-**default:** *none*
+**default:** *random(16)*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
 string类型，接入规则的唯一标识
+
+非必填，默认16位随机字符串(从 v1.0.0β 版本开始默认16位随机字符串)
 
 policy
 ------
 **syntax:** *"policy": "policy_uuid"*
 
-**default:** *none*
+**default:** *twaf_default_conf*
 
-**context:** *twaf_access_rule*
+**context:** *twaf_access_rule:rules*
 
 string类型，满足此接入规则的请求，所使用安全策略的uuid
+
+非必填，默认值twaf_default_conf
 
 [Back to twaf_access_rule](#twaf_access_rule)
 
@@ -875,14 +902,17 @@ trap_args
 
 twaf_reqstat
 ------------
-```json
+```txt
     "twaf_reqstat": {
-        "state":true,
-        "safe_state":true,
-        "access_state":true,
-        "upstream_state":true,
-        "shared_dict_name":"twaf_reqshm"
+        "state":true,                       -- 统计模块总开关
+        "safe_state":true,                  -- 安全信息统计开关
+        "access_state":true,                -- 访问信息统计开关
+        "upstream_state":true,              -- upstream信息统计开关
+        "shared_dict_name":"twaf_reqstat",  -- shm名称
+        "shared_dict_key":"policy_id"       -- shm键值。依据此值进行分类统计
     }
+    
+    PS: 当前统计模块是全局模块，仅支持在twaf_default_conf中进行全局配置，不支持在自定义策略中进行配置
 ```
 
 state
@@ -929,13 +959,27 @@ shared_dict_name
 ----------------
 **syntax:** *shared_dict_name string*
 
-**default:** *openwaf_reqshm*
+**default:** *twaf_reqstat*
 
 **context:** *twaf_reqstat*
 
 指定shared_dict名称，在这之前需在nginx配置文件中配置[lua_shared_dict](https://github.com/openresty/lua-nginx-module#lua_shared_dict) <name> <size>
 
-默认shared_dict名称为openwaf_reqshm
+shared_dict_key
+---------------
+**syntax:** *shared_dict_key string*
+
+**default:** *policyid*
+
+**context:** *twaf_reqstat*
+
+string类型。指定shm键值。依据此值进行分类统计。
+
+如：值设为 policyid，则统计每一个策略相关的access、safe和upstream信息。
+
+如：值设为 userid，则统计每一个用户相关的access、safe和upstream信息。
+
+如：值设为 access_id，则统计每一个接入规则相关的access、safe和upstream信息。
 
 [Back to twaf_reqstat](#twaf_reqstat)
 
@@ -945,19 +989,32 @@ twaf_log
 --------
 ```txt
 "twaf_log": {
-        "access_log_state":false,     -- 访问日志开关
-        "security_log_state":true,    -- 安全日志开关
-        "sock_type":"udp",            -- 支持tcp和udp两种协议
-        "content_type":"JSON",        -- 支持JSON和INFLUXDB两种日志格式
-        "host":"127.0.0.1",           -- 日志服务器地址
-        "port":60055,                 -- 日志服务器端口号
-        "flush_limit":0,              -- 缓冲，当存储的日志大于阈值才发送
-        "size_limit": 200,            -- 控制日志中每一项的字符上限，如'raw_header'或请求体响应体，可能会使udp日志报错
-        "drop_limit":65507,           -- 缓冲上限，达到此值，丢弃当前日志，发送缓存并清空缓存，当sock_type为udp时，drop_limit值最大为65507（65508会报错message too long）
-        "max_retry_times":5,          -- 最大容错次数
-        "ssl":false,                  -- 是否开启ssl协议
-        "access_log":{}               -- 访问日志格式
-        "security_log":{}             -- 安全日志格式
+        "access_log_state":true,                         -- 访问日志总开关
+        "security_log_state":true,                       -- 安全日志总开关
+        "flush_limit":32768,                             -- 缓冲，当存储的日志大于阈值时发送日志
+        "size_limit": 200,                               -- 控制日志中每一项的字符上限，如'raw_header'或请求体响应体，可能会使udp日志报错
+        "drop_limit":65507,                              -- 缓冲上限，达到此值，丢弃当前日志，发送缓存并清空缓存，当sock_type为udp时，drop_limit值最大为65507（65508会报错message too long）
+        "periodic_flush": 2,                             -- flush间隔周期。单位：秒。日志会在达到flush_limit或periodic_flush时输出
+        "max_retry_times":5,                             -- 最大容错次数
+                                                      -- -- 以下为socket输出日志配置
+        "socket_access_log_state": true,                 -- socket模式的访问日志开关
+        "socket_security_log_state": true,               -- socket模式的安全日志开关
+        "sock_type":"udp",                               -- 支持tcp和udp两种协议
+        "content_type":"JSON",                           -- sock支持JSON和INFLUXDB两种日志格式
+        "host":"127.0.0.1",                              -- 日志服务器地址
+        "port":60055,                                    -- 日志服务器端口号
+        "ssl":false,                                     -- 是否开启ssl协议
+        "access_log":{},                                 -- 访问日志格式
+        "security_log":{},                               -- 安全日志格式
+                                                      -- -- 以下为file输出日志配置
+        "file_access_log_state": true,                   -- file模式的访问日志开关
+        "file_security_log_state": true,                 -- file模式的安全日志开关
+        "file_flush": false,                             -- 是否实时写入文件
+        "file_content_type": "W3C",                      -- file模式时日志格式，当前仅支持W3C
+        "file_access_log_path": "/twaf_access.log",      -- file模式的访问日志路径
+        "file_security_log_path": "/twaf_security.log",  -- file模式的安全日志路径
+        "access_log_w3c": "",                            -- file模式访问日志的w3c格式
+        "security_log_w3c": ""                           -- file模式安全日志的w3c格式
 }
 ```
 
@@ -969,7 +1026,7 @@ access_log_state
 
 **context:** *twaf_log*
 
-访问日志开关，默认关闭
+boolean类型，访问日志总开关，默认关闭。
 
 security_log_state
 ------------------
@@ -979,7 +1036,87 @@ security_log_state
 
 **context:** *twaf_log*
 
-安全事件日志开关，默认开启
+boolean类型，安全事件日志总开关，默认开启
+
+flush_limit
+-----------
+**syntax:** *"flush_limit": number*
+
+**default:** *32768*
+
+**context:** *twaf_log*
+
+number类型。缓冲区大小，当存储的日志大于阈值才发送，默认值为32768
+
+v0.0.6及之前版本默认值为0，即立刻发送日志，不进行缓存。
+
+v1.0.0β版本开始，默认值为32768。
+
+日志输出控制条件，还与 periodic_flush 参数有关.
+
+size_limit
+----------
+**syntax:** *"size_limit": number*
+
+**default:** *200*
+
+**context:** *twaf_log*
+
+number类型。控制日志中每一项的字符上限。单位：字节。
+
+若'raw_header'或请求体响应体过长，可能会使udp日志报错
+
+drop_limit
+----------
+**syntax:** *"drop_limit": number*
+
+**default:** *65507*
+
+**context:** *twaf_log*
+
+number类型。缓冲上限，达到此值，丢弃当前日志，发送缓存并清空缓存，当sock_type为udp时，drop_limit值最大为65507（65508会报错message too long）
+
+periodic_flush
+--------------
+**syntax:** *"periodic_flush": number*
+
+**default:** *2*
+
+**context:** *twaf_log*
+
+number类型。日志flush间隔周期。单位：秒。
+
+日志会在满足 flush_limit 或 periodic_flush 条件时输出
+
+max_retry_times
+---------------
+**syntax:** *"max_retry_times": number*
+
+**default:** *5*
+
+**context:** *twaf_log*
+
+number类型。最大容错次数
+
+socket_access_log_state
+-----------------------
+**syntax:** *"socket_access_log_state": true|false*
+
+**default:** *true*
+
+**context:** *twaf_log*
+
+boolean类型，socket模式的访问日志开关
+
+socket_security_log_state
+-------------------------
+**syntax:** *"socket_security_log_state": true|false*
+
+**default:** *true*
+
+**context:** *twaf_log*
+
+boolean类型，socket模式的安全日志开关
 
 sock_type
 ---------
@@ -1021,46 +1158,6 @@ port
 
 日志接收服务器的端口号
 
-flush_limit
------------
-**syntax:** *"flush_limit": number*
-
-**default:** *0*
-
-**context:** *twaf_log*
-
-缓冲区大小，当存储的日志大于阈值才发送，默认值为0，即立即发送日志
-
-size_limit
-----------
-**syntax:** *"size_limit": number*
-
-**default:** *200*
-
-**context:** *twaf_log*
-
-控制日志中每一项的字符上限，如'raw_header'或请求体响应体，可能会使udp日志报错
-
-drop_limit
-----------
-**syntax:** *"drop_limit": number*
-
-**default:** *65507*
-
-**context:** *twaf_log*
-
-缓冲上限，达到此值，丢弃当前日志，发送缓存并清空缓存，当sock_type为udp时，drop_limit值最大为65507（65508会报错message too long）
-
-max_retry_times
----------------
-**syntax:** *"max_retry_times": number*
-
-**default:** *5*
-
-**context:** *twaf_log*
-
-最大容错次数
-
 ssl
 ---
 **syntax:** *"ssl": true|false*
@@ -1079,7 +1176,7 @@ access_log
 
 **context:** *twaf_log*
 
-访问日志格式
+table类型。访问日志格式。格式详见 security_log 说明.
 
 security_log
 ------------
@@ -1091,7 +1188,7 @@ security_log
 
 安全事件日志格式
 
-若 content_type 为 JSON，则日志格式为
+若content_type为JSON，则日志格式为
 ```
 [
     variable_key_1, 
@@ -1109,7 +1206,7 @@ security_log
 }
 ```
 
-变量名称详见规则引擎模块[twaf_secrules](#https://github.com/titansec/openwaf_rule_engine#variables)
+变量名称详见规则引擎模块 [twaf_secrules](https://github.com/titansec/OpenWAF#variables) 
 
 ```
     #日志格式举例
@@ -1133,7 +1230,8 @@ security_log
             "http_user_agent",
             "gzip_ratio",
             "http_host",
-            "raw_header"
+            "raw_header",
+            "%{request_headers.host}"
         ]
 
         #INFLUXDB格式
@@ -1159,11 +1257,107 @@ security_log
                 "http_user_agent",
                 "gzip_ratio",
                 "http_host",
-                "raw_header"
+                "raw_header",
+                "%{request_headers.host}"
             ],
             "time":true                   -- 日志是否携带时间戳
         }
+        
+    PS: JSON 和 INFLUXDB 格式的 access_log 和 security_log 支持自定义变量
+        如上述举例，为了获取到 request_headers 中的 host 值，因此配置 "%{request_headers.host}"
 ```
+
+file_access_log_state
+---------------------
+**syntax:** *"file_access_log_state": true|false*
+
+**default:** *true*
+
+**context:** *twaf_log*
+
+boolean类型。file模式的访问日志开关
+
+file_security_log_state
+-----------------------
+**syntax:** *"file_security_log_state": true|false*
+
+**default:** *true*
+
+**context:** *twaf_log*
+
+boolean类型。file模式的安全日志开关
+
+file_flush
+----------
+**syntax:** *"file_flush": true|false*
+
+**default:** *false*
+
+**context:** *twaf_log*
+
+boolean类型。是否实时写入文件
+
+file_content_type
+-----------------
+**syntax:** *"file_content_type": W3C*
+
+**default:** *W3C*
+
+**context:** *twaf_log*
+
+string类型。file模式时日志格式，当前仅支持W3C
+
+file_access_log_path
+--------------------
+**syntax:** *"file_access_log_path": path*
+
+**default:** *"/var/log/openwaf_access.log"*
+
+**context:** *twaf_log*
+
+string类型。file模式的访问日志路径
+
+file_security_log_path
+----------------------
+**syntax:** *"file_security_log_path": path*
+
+**default:** *"/var/log/openwaf_security.log"*
+
+**context:** *twaf_log*
+
+string类型。file模式的安全日志路径
+
+access_log_w3c
+--------------
+**syntax:** *"access_log_w3c": string*
+
+**default:** *详见说明*
+
+**context:** *twaf_log*
+
+string类型。file模式访问日志的w3c格式
+
+```
+默认值为："%{remote_addr} - %{remote_user} [%{time_local}] \"%{request_method} %{request_uri} %{request_protocol}\" %{response_status} %{bytes_sent} \"%{http_referer}\" \"%{http_user_agent}\" %{userid} %{server_addr}:%{server_port} \"%{http_host}\" %{request_time} %{policyid} %{unique_id} %{api_id}"
+```
+
+变量名称详见规则引擎模块 [twaf_secrules](https://github.com/titansec/OpenWAF#variables) 
+
+security_log_w3c
+----------------
+**syntax:** *"security_log_w3c": string*
+
+**default:** *详见说明*
+
+**context:** *twaf_log*
+
+string类型。file模式安全日志的w3c格式
+
+```
+默认值为："%{remote_addr} - %{remote_user} [%{time_local}] \"%{request_method} %{request_uri} %{request_protocol}\" %{response_status} %{bytes_sent} \"%{http_referer}\" \"%{http_user_agent}\" %{userid} %{server_addr}:%{server_port} \"%{http_host}\" %{request_time} %{policyid} %{category} %{severity} %{action} %{id} %{rule_name} %{unique_id} %{api_id}"
+```
+
+变量名称详见规则引擎模块 [twaf_secrules](https://github.com/titansec/OpenWAF#variables) 
 
 [Back to twaf_log](#twaf_log)
 
@@ -1187,7 +1381,11 @@ twaf_secrules
             "111112": [{"REMOTE_HOST":"a.com", "URI":"^/ab"}],      -- 匹配中数组中信息则对应规则失效，数组中key为变量名称，值支持正则
             "111113": {},                                           -- 特征未被排除
             "111114": [{}]                                          -- 特征被无条件排除
-        }
+        },
+        "ruleset_ids": [                                            -- 规则集引用。若 ruleset_ids 值为空，则默认所有的规则都生效(用于兼容无ruleset_ids的旧版本)
+            "set_123456789",
+            "set_987654321"
+        ]
     }
 ```
 
@@ -1377,6 +1575,29 @@ rules_id
 **context:** *twaf_secrules*
 
 用于排除特征
+
+ruleset_ids
+-----------
+**syntax:** *ruleset_ids table*
+
+**default:** *none*
+
+**context:** *twaf_secrules*
+
+table类型。规则集引用,用于不同策略加载不同的规则进行防护。从 v1.0.0β 版本开始引入规则集。
+
+若 ruleset_ids 值为空，则默认引用所有加载的规则。
+
+若 ruleset_ids 值为空数组，则无任何规则生效。
+
+```
+    "ruleset_ids": [       -- 有序引用 set_123456789 与 set_987654321 两个规则集。
+        "set_123456789",
+        "set_987654321"
+    ]
+    
+    PS： 当前规则集有关具体配置仅支持通过rule_set API进行配置
+```
 
 [Back to twaf_secrules](#twaf_secrules)
 
@@ -2423,6 +2644,8 @@ UNIQUE_ID
 ---------
 string类型，ID标识，随机生成的字符串，可通过配置来控制随机字符串的长度
 
+从 v1.0.0β 版本开始，默认34位自定义随机字符串 改为从 ngx.request_id 变量获取的 16/32 位随机字符串
+
 [Back to Var](#variables)
 
 [Back to TOC](#table-of-contents)
@@ -2693,12 +2916,12 @@ Operators
 * [ip_utils](#ip_utils)
 * [less_eq](#less_eq)
 * [less](#less)
+* [num_range](#num_range)
 * [pf](#pf)
 * [regex](#regex)
 * [str_match](#str_match)
-* [validate_url_encoding](#validate_url_encoding)
-* [num_range](#num_range)
 * [str_range](#str_range)
+* [validate_url_encoding](#validate_url_encoding)
 
 [Back to OPERATORS](#operators)
 
@@ -2816,6 +3039,8 @@ Full IPv4 Address: 192.168.1.100
 Network Block/CIDR Address: 192.168.1.0/24
 IPv4 Address Region: 1.1.1.1-2.2.2.2
 
+从 v1.0.0β 版本开始支持 IPv6，如8888::192.168.1.1
+
 ip_utils与pf的组合相当于modsecurity中的ipMatchF和ipMatchFromFile
 
 ```
@@ -2832,6 +3057,8 @@ ip_utils与pf的组合相当于modsecurity中的ipMatchF和ipMatchFromFile
 192.168.1.100
 192.168.1.0/24
 1.1.1.1-2.2.2.2
+8888::192.168.1.1
+8888::1:1
 ```
 
 [Back to OPERATORS](#operators)
@@ -2853,6 +3080,27 @@ less
 Performs numerical comparison and returns true if the input value is less than to the operator parameter.
 
 return false, if a value is provided that cannot be converted to a number.
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents
+
+num_range
+---------
+判断是否在数字范围内
+
+它与transform的length组合，相当于modsecurity的validateByteRange
+
+```
+{
+    "id": "xxx",
+    ...
+    "operator": "num_range",
+    "pattern": [10, "13", "32-126"],
+    "transform": "length",
+    ...
+}
+```
 
 [Back to OPERATORS](#operators)
 
@@ -2945,35 +3193,6 @@ str_match
 
 [Back to TOC](#table-of-contents)
 
-validate_url_encoding
----------------------
-Validates the URL-encoded characters in the provided input string.
-
-[Back to OPERATORS](#operators)
-
-[Back to TOC](#table-of-contents)
-
-num_range
----------
-判断是否在数字范围内
-
-它与transform的length组合，相当于modsecurity的validateByteRange
-
-```
-{
-    "id": "xxx",
-    ...
-    "operator": "num_range",
-    "pattern": [10, "13", "32-126"],
-    "transform": "length",
-    ...
-}
-```
-
-[Back to OPERATORS](#operators)
-
-[Back to TOC](#table-of-contents)
-
 str_range
 ---------
 判断是否在字符串范围内
@@ -2988,6 +3207,14 @@ str_range
     ...
 }
 ```
+
+[Back to OPERATORS](#operators)
+
+[Back to TOC](#table-of-contents)
+
+validate_url_encoding
+---------------------
+Validates the URL-encoded characters in the provided input string.
 
 [Back to OPERATORS](#operators)
 
@@ -3014,6 +3241,7 @@ Others
 * [severity](#severity)
 * [setvar](#setvar)
 * [meta](#meta)
+* [ngx_var](#ngx_var)
 * [transform](#transform)
 * [tag](#tag)
 * [release_version](#release_version)
@@ -3455,6 +3683,27 @@ meta
 若"action"为"redirect"，则"meta"为重定向地址
 "action": "redirect",
 "meta": "/index.html"
+```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+ngx_var
+-------
+为 nginx 变量赋值，支持赋值字符串
+
+v1.0.0β版本之后支持赋值变量%{}
+
+```
+如在 nginx.conf 中 set $twaf_test "";
+
+可在 secrules 中基于条件动态赋值
+"opts": {
+    "ngx_var": {
+        "twaf_test": "1.1.1.1"      -- 也可赋值变量，如 "twaf_test": "%{remote_addr}"
+    }
+}
 ```
 
 [Back to OTHERS](#others)
