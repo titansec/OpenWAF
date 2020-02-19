@@ -5,36 +5,29 @@
         "rules":[
             {
                 "host":"^.*$",
-                "path":"/",
-                "uuid":"test_uuid1",
                 "forward":"test",
-                "client_ssl":false,
-                "server_ssl":false,
                 "forward_addr":"1.1.1.1",
+                "uuid":"test_uuid1",
                 "policy": "twaf_policy_conf"
             },
             {
                 "host":"qj.com",
-                "path":"/",
-                "uuid":"test_uuid2",
+                "port":81,
+                "path":"/admin/",
                 "forward":"test",
-                "client_ssl": true,
-                "client_ssl_cert": "/opt/openresty/bundle/lua-resty-core-0.1.6/t/cert/ocsp/chain.pem",
-                "ngx_ssl": true,
-                "ngx_ssl_cert": "/opt/openresty/bundle/lua-resty-core-0.1.6/t/cert/test.crt",
-                "ngx_ssl_key": "/opt/openresty/bundle/lua-resty-core-0.1.6/t/cert/test.key",
-                "forward_addr": "1.1.1.1",
+                "forward_addr": "1.1.1.2",
+                "forward_port": 82,
+                "uuid":"test_uuid2",
                 "policy": "twaf_policy_conf"
             },
             {
                 "host":"jq.com",
-                "path":"/",
-                "uuid":"test_uuid3",
-                "forward":"test",
                 "ngx_ssl": true,
-                "ngx_ssl_cert": "/usr/local/openresty/nginx/conf/ssl/nginx.crt",
-                "ngx_ssl_key": "/usr/local/openresty/nginx/conf/ssl/nginx.key",
-                "forward_addr": "1.1.1.1",
+                "ngx_ssl_cert": "/opt/OpenWAF/conf/ssl/nginx.crt",
+                "ngx_ssl_key": "/opt/OpenWAF/conf/ssl/nginx.key",
+                "forward":"test",
+                "forward_addr": "1.1.1.3",
+                "uuid":"test_uuid3",
                 "policy": "twaf_policy_conf"
             }
         ]
