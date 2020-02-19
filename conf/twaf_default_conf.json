@@ -104,7 +104,7 @@
         "access_state":true,
         "upstream_state":true,
         "shared_dict_name":"twaf_reqstat",
-        "shared_dict_key": "policy_id"
+        "shared_dict_key": "policyid"
     },
     "twaf_log": {
         "access_log_state":true,
