@@ -6,7 +6,7 @@ Version: v1.0.0β
 &emsp;&emsp;&emsp;&emsp;Add: [host](https://github.com/titansec/OpenWAF#host) 参数与 [port](https://github.com/titansec/OpenWAF#port) 参数支持数组类型  
 &emsp;&emsp;&emsp;&emsp;Add: [host](https://github.com/titansec/OpenWAF#host) 参数支持 IPv6  
 &emsp;&emsp;&emsp;&emsp;Add: 接入规则 [POST](https://github.com/titansec/openwaf_api#access_rule_post) 和 [DELETE](https://github.com/titansec/openwaf_api#delete) 的 API 支持批量添加或批量删除接入规则  
-&emsp;&emsp;&emsp;&emsp;Update: 接入规则 [PUT API](https://github.com/titansec/openwaf_api#put) 从 部分修改配置 改为 全量修改配置  
+&emsp;&emsp;&emsp;&emsp;Update: 接入规则 [PUT API](https://github.com/titansec/openwaf_api#put) <i><strong>功能从 修改部分配置 改为 全量(覆盖)修改配置</strong></i>  
 &emsp;&emsp;&emsp;&emsp;Add: 新增接入规则的 [PATCH API](https://github.com/titansec/openwaf_api#access_rule_patch) 用于部分修改配置  
 
 &emsp;&emsp;twaf_secrules 规则引擎模块：  
@@ -26,7 +26,7 @@ Version: v1.0.0β
 &emsp;&emsp;&emsp;&emsp;Add: 新增 [errlog](https://github.com/titansec/openwaf_api#errlog) API，可通过调用API查询错误日志  
 &emsp;&emsp;&emsp;&emsp;Add: 新增 [luajit](https://github.com/titansec/openwaf_api#luajit) API，便于判断环境是 lua 还是 luajit  
 &emsp;&emsp;&emsp;&emsp;Add: 新增 PSET 功能，可自定义“对象”  
-&emsp;&emsp;&emsp;&emsp;DELETE: user_defined_rules 的 [POST](https://github.com/titansec/openwaf_api#user_defined_rules_post) API 不再支持 {index} 参数  
+&emsp;&emsp;&emsp;&emsp;Update: <i><strong>user_defined_rules 的 [POST](https://github.com/titansec/openwaf_api#user_defined_rules_post) API 不再支持 {index} 参数</strong></i>  
 
 &emsp;&emsp;others：  
 &emsp;&emsp;&emsp;&emsp;Update: 变量 UNIQUE_ID，默认34位自定义随机字符串 改为从 $request_id 变量获取的 16/32 位随机字符串  
@@ -44,6 +44,10 @@ Version: v1.0.0β
 &emsp;&emsp;Add: 配置初始化。无需在请求过程中处理不必要的配置校验及转换。  
 &emsp;&emsp;Add: 基于配置初始化，规则引擎设置二级缓存(变量缓存级transform结果缓存)  
 &emsp;&emsp;Add: 基于配置初始化，接入规则设置二级缓存，实现快速匹配(由原来的顺序匹配O(N)，改为缓存定位O(1))  
+
+PS: 从低版本升级至 v1.0.0β 版本：  
+&emsp;&emsp;1. 所有 Add 新增，向下兼容，不影响原有配置功能。  
+&emsp;&emsp;2. Update 更新基本做到向下兼容，不影响原有配置。可能会有影响的，字体已加粗且斜体  
 
 Time: 2017/12/26  
 Version: v0.0.6  
