@@ -2917,7 +2917,6 @@ Operators
 * [less_eq](#less_eq)
 * [less](#less)
 * [num_range](#num_range)
-* [pf](#pf)
 * [regex](#regex)
 * [str_match](#str_match)
 * [str_range](#str_range)
@@ -2939,7 +2938,7 @@ contains
 --------
 Returns true if the parameter string is found anywhere in the input.
 
-operator为contains且pattern为数组，相当于modsecurity的pm
+operator 为 contains 且 pattern 为数组，等价于 modsecurity 的 pm
 
 PS: modsecurity的pm忽略大小写，OpenWAF中contains不忽略大小写
 
@@ -2994,7 +2993,7 @@ equal
 -----
 Performs a string comparison and returns true if the parameter string is identical to the input string.
 
-相当于modsecurity的eq和streq
+等价于 modsecurity 的 eq 和 streq
 
 ```
 例如:
@@ -3106,30 +3105,16 @@ num_range
 
 [Back to TOC](#table-of-contents)
 
-pf
---
-pattern是operator操作的参数
-
-pf是指pattern from file，与pattern互斥（二者不可同时出现），目前仅支持绝对路径
-
-pf与contains组合，相当于modsecurity的pmf或pmFromFile
-
-pf与ip_utils组合，相当于modsecurity的ipMatchF或ipMatchFromFile
-
-[Back to OPERATORS](#operators)
-
-[Back to TOC](#table-of-contents)
-
 regex
 -----
 Performs a regular expression match of the pattern provided as parameter. 
 
-regex还有modecurity的capture捕获功能
+regex 等于 rx + capture，即 regex 同时包含 modsecurity 的 rx 功能 和 capture 捕获功能
 
 modsecurity有关capture的描述如下：
 When used together with the regular expression operator (@rx), the capture action will create copies of the regular expression captures and place them into the transaction variable collection.
 
-OpenWAF中无capture指令，但使用regex默认开启capture功能
+OpenWAF 中无单独的 capture 指令，但使用 regex 默认开启 capture 功能
 
 ```
 例如:
@@ -3236,6 +3221,8 @@ Others
 * [audit](#audit)
 * [phase](#phase)
 * [proxy_cache](#proxy_cache)
+* [pf](#pf)
+* [pset](#pset)
 * [redirect](#redirect)
 * [charactor_version](#charactor_version)
 * [severity](#severity)
@@ -3578,6 +3565,32 @@ http {
 
 PS: proxy_cache_content_type指令为官方指令，是miracle Qi修改Nginx源码扩展的功能
 ```
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+pf
+----
+pattern是operator操作的参数
+
+pf是指pattern from file，与pattern和pset互斥（三者不可同时出现），目前仅支持绝对路径
+
+pf 与 contains 组合，相当于modsecurity的 pmf 或 pmFromFile
+
+pf 与 ip_utils 组合，相当于modsecurity的 ipMatchF 或 ipMatchFromFile
+
+[Back to OTHERS](#others)
+
+[Back to TOC](#table-of-contents)
+
+pset
+----
+集合。pattern、pf 和 pset 互斥(只能同时出现一个)。
+
+暂不支持数组。
+
+使用方法详见 https://github.com/titansec/openwaf_api#pset_post
 
 [Back to OTHERS](#others)
 

@@ -25,7 +25,7 @@ Version: v1.0.0β
 &emsp;&emsp;&emsp;&emsp;Add: 新增策略policy的[PATCH](https://github.com/titansec/openwaf_api#policy_patch)方法API，用于修改策略部分配置。  
 &emsp;&emsp;&emsp;&emsp;Add: 新增 [errlog](https://github.com/titansec/openwaf_api#errlog) API，可通过调用API查询错误日志  
 &emsp;&emsp;&emsp;&emsp;Add: 新增 [luajit](https://github.com/titansec/openwaf_api#luajit) API，便于判断环境是 lua 还是 luajit  
-&emsp;&emsp;&emsp;&emsp;Add: 新增 PSET 功能，可自定义“对象”  
+&emsp;&emsp;&emsp;&emsp;Add: 新增 [PSET(集合)](https://github.com/titansec/OpenWAF#pset)功能。可用于自定义"对象"  
 &emsp;&emsp;&emsp;&emsp;Update: <i><strong>user_defined_rules 的 [POST](https://github.com/titansec/openwaf_api#user_defined_rules_post) API 不再支持 {index} 参数</strong></i>  
 
 &emsp;&emsp;others：  
