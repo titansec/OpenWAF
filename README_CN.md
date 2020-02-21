@@ -33,7 +33,7 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v1.0.0β released on 14 Feb 2020.
+This document describes OpenWAF v1.0.0β released on 21 Feb 2020.
 
 Docker Version  
 1. titansec/openwaf:0.0.1.161130_beta  
@@ -192,42 +192,8 @@ Please submit bug reports, wishlists, or patches by
 TODO
 ====
 
-* V1.0.0β 较 V0.0.6 有以下优化，2020年02月17至2020年02月21完善以下内容文档。
-
-```txt
-性能优化：
-  Update: 变量，按需获取。不必每个请求都加载所有变量
-  Add: 配置初始化。无需在请求过程中处理不必要的配置校验及转换。
-  Add: 基于配置初始化，规则引擎设置二级缓存(变量缓存级transform结果缓存)
-  Add: 基于配置初始化，接入规则设置二级缓存，实现快速匹配(由原来的顺序匹配O(N)，改为缓存定位O(1))
-
-功能变更：
-  Add: 接入规则中”路径path”支持区分大小写(默认不区分)
-  Update: ngx.request_id 代替 random_id
-  Add: 规则引擎中 opts 的ngx_var 设置项支持动态变量
-  Add: 可从XFF中获取真实来源IP。
-  Add: 支持响应体内容替换
-  Fix: 修复变量hash上限告警提示
-  Update: 接入规则POST和DELETE的API支持批量添加或批量删除接入规则
-  Add: 支持IPv6
-  Update: OpenWAF 颁发的cookie，默认追加HttpOnly属性。
-  Add: 新增接入规则的PATCH API
-  Add: 新增策略的PATCH API
-  Upload: 接入规则host字段支持数组类型
-  Add: 可用规则生成不同频率级别的CC防护
-  Add: 添加规则集机制。可设置不同规则集，并在策略中引用指定规则集。(策略未引用规则集，则默认加载所有规则生效，兼容了无规则集的旧版本)
-  Add: 新增规则集APIs。包含增删改查。
-  Add: 日志写入本地文件(同时支持原有tcp/udp外发)
-  Update: 自定义响应头支持配置动态变量
-  Update:“重定向”动作支持配置动态变量
-  Add: 新增 errlog API，可通过调用API查询错误日志
-  Add: 新增luajit API，便于判断环境是lua还是luajit
-  Update: 统计：支持按关键字进行分类统计。
-  Add: 新增PSET功能，可自定义“对象”
-  Update: POST user_defined_rules API 不再支持 {index} 参数
-```
-* 从 V0.0.6 升级至 V1.0.0β 需要哪些注意事项。时间: 2020年02月17至2020年02月21
-* 发布 V1.0.0β 版本，更新 docker。时间: 2020年02月17至2020年02月21
+* 将 OpenWAF 依赖的 OpenResty 升级至 1.15.8.2 版本。时间：2020年2月24日至28日
+* 更新 Docker 至 v1.0.0β 版本。时间：2020年2月24日至28日
 * 支持对接 sso
 * 动态令牌
 * APISG(API安全网关)
