@@ -35,20 +35,7 @@ Version
 
 This document describes OpenWAF v1.0.0β released on 21 Feb 2020.
 
-Docker Version  
-1. titansec/openwaf:0.0.1.161130_beta  
-&emsp;&emsp;SHA: 596dee9d2b9ce44d59dc445141f72b3607f9fbe6  
-&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/596dee9d2b9ce44d59dc445141f72b3607f9fbe6  
-2. titansec/openwaf:0.0.3.170103_beta  
-&emsp;&emsp;SHA: 28ce1556250301f26f31b46d9cd9dde5a3b3f03f  
-&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/28ce1556250301f26f31b46d9cd9dde5a3b3f03f  
-3. titansec/openwaf:v0.0.4  
-&emsp;&emsp;SHA: cdef1e0eac4f12c374feb6ac3c3c465610daaf6c  
-&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/cdef1e0eac4f12c374feb6ac3c3c465610daaf6c  
-4. titansec/openwaf:v0.0.5(titansec/openwaf:latest)  
-&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/f9a3a6cfb8b75b1f4af9f44477a5b64337a7da47  
-5. titansec/openwaf:v0.0.6(titansec/openwaf:latest)  
-&emsp;&emsp;https://github.com/titansec/OpenWAF/tree/7c86321c69e2423cacc432e7f41cf37ec4b42c6b  
+[Dockerfile](https://github.com/titansec/docker-openwaf) and [Docker Images](https://hub.docker.com/r/titansec/openwaf/tags) have been upgraded to version 1.0.0_beta on February 25, 2020.
 
 Synopsis
 ========

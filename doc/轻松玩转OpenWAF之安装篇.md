@@ -165,7 +165,9 @@ PS:
         docker pull titansec/openwaf:x.x.x-jessie 获取 jessie 的 OpenWAF x.x.x 版
         docker pull titansec/openwaf:x.x.x-centos 获取 centos 的 OpenWAF x.x.x 版
         
-        历史版本列表：https://hub.docker.com/r/titansec/openwaf/tags/
+        历史版本列表：
+            国外镜像源：https://hub.docker.com/r/titansec/openwaf/tags/  
+            国内镜像源：https://cr.console.aliyun.com/images/cn-hangzhou/titansec/openwaf/detail
         
     2. 挂载配置文件和日志
         将配置文件保留在宿主机中，更新 OpenWAF 只需更新 Docker 镜像即可
