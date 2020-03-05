@@ -4,6 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
+use Config;
 use File::Spec;
 use File::Temp qw( tempfile tmpnam );
 
@@ -11,6 +12,7 @@ sub shell ($@);
 sub env ($$);
 sub cd ($);
 sub auto_complete ($);
+sub add_lua_lib ($$$);
 sub usage ($);
 sub trim ($);
 
@@ -21,7 +23,7 @@ chomp $root_dir;
 
 my $OS = $^O;
 
-my $ngx_dir;
+my ($ngx_dir, $lualib_prefix);
 
 for my $opt (@ARGV) {
     if ($opt =~ /^--platform=(.*)/) {
@@ -130,6 +132,7 @@ my $cores;
 my $luajit_xcflags = '';
 my $user_luajit_xcflags;
 my $no_luajit_lua52;
+my $no_luajit_gc64;
 
 my (@ngx_opts, @ngx_cc_opts, @ngx_ld_opts);
 
@@ -191,6 +194,10 @@ for my $opt (@ARGV) {
     } elsif ($opt eq '--without-lua_libinjection') {
         $resty_opts{no_lua_libinjection} = 1;
 
+    } elsif ($opt eq '--without-lua_tablepool') {
+        $resty_opts{no_lua_tablepool} = 1;
+        $resty_opts{no_lua_resty_shell} = 1;
+
     } elsif ($opt eq '--without-lua_redis_parser') {
         $resty_opts{no_lua_redis_parser} = 1;
 
@@ -224,6 +231,13 @@ for my $opt (@ARGV) {
     } elsif ($opt eq '--without-lua_resty_lrucache') {
         $resty_opts{no_lua_resty_lrucache} = 1;
 
+    } elsif ($opt eq '--without-lua_resty_signal') {
+        $resty_opts{no_lua_resty_signal} = 1;
+        $resty_opts{no_lua_resty_shell} = 1;
+
+    } elsif ($opt eq '--without-lua_resty_shell') {
+        $resty_opts{no_lua_resty_shell} = 1;
+
     } elsif ($opt eq '--without-lua_resty_core') {
         $resty_opts{no_lua_resty_core} = 1;
 
@@ -245,7 +259,7 @@ for my $opt (@ARGV) {
     } elsif ($opt eq '--with-debug') {
         $resty_opts{debug} = 1;
 
-    } elsif ($opt eq '--help') {
+    } elsif ($opt eq '--help' || $opt eq '-h') {
         usage 0;
 
     } elsif ($opt =~ /^--with-cc-opt=(.*)/) {
@@ -276,6 +290,9 @@ for my $opt (@ARGV) {
     } elsif ($opt =~ /^--without-luajit-lua52/) {
         $no_luajit_lua52 = 1;
 
+    } elsif ($opt =~ /^--without-luajit-gc64/) {
+        $no_luajit_gc64 = 1;
+
     } elsif ($opt =~ /^--with-libdrizzle=(.*)/) {
         $resty_opts{libdrizzle} = $1;
 
@@ -303,6 +320,23 @@ for my $opt (@ARGV) {
     } elsif ($opt eq '--without-http_ssl_module') {
         $resty_opts{no_http_ssl} = 1;
         $resty_opts{no_http_encrypted_session} = 1;
+
+    } elsif ($opt eq '--with-stream_ssl_module') {
+        $resty_opts{stream_ssl} = 1;
+        push @ngx_opts, $opt;
+
+    } elsif ($opt eq '--with-stream_ssl_preread_module') {
+        $resty_opts{stream_ssl_preread} = 1;
+        push @ngx_opts, $opt;
+
+    } elsif ($opt eq '--without-stream') {
+        $resty_opts{no_stream} = 1;
+        $resty_opts{no_stream_ssl} = 1;
+        $resty_opts{no_stream_ssl_preread} = 1;
+        $resty_opts{no_stream_lua} = 1;
+
+    } elsif ($opt eq '--without-stream_ssl_module') {
+        $resty_opts{no_stream_ssl} = 1;
 
     } elsif ($opt =~ /^--add-module=(.*)/) {
 
@@ -338,6 +372,11 @@ for my $opt (@ARGV) {
     }
 }
 
+if ($platform eq 'msys') {
+    $resty_opts{no_lua_resty_signal} = 1;
+    $resty_opts{no_lua_resty_shell} = 1;
+}
+
 print "platform: $platform ($OS)\n";
 
 my $ngx_prefix;
@@ -358,7 +397,14 @@ if ($platform ne 'msys') {
 my $resty_opts = build_resty_opts(\%resty_opts);
 
 if (@ngx_rpaths) {
-    unshift @ngx_ld_opts, "-Wl,-rpath," . join(":", @ngx_rpaths);
+    if ($platform eq 'macosx') {
+        for (@ngx_rpaths) {
+            unshift @ngx_ld_opts, "-Wl,-rpath,$_";
+        }
+
+    } else {
+        unshift @ngx_ld_opts, "-Wl,-rpath," . join ":", @ngx_rpaths;
+    }
 }
 
 my $ld_opts = '';
@@ -498,7 +544,28 @@ _END_
     }
 
     if (!$opts->{no_stream_lua}) {
-        push @ngx_opts, '--with-stream', '--with-stream_ssl_module';
+        push @ngx_opts, '--with-stream';
+    }
+
+    if ($opts->{no_stream_ssl} && $opts->{stream_ssl}) {
+        die "--with-stream_ssl_module conflicts with --without-stream_ssl_module.",
+            "\n";
+    }
+
+    if (!$opts->{no_stream}
+        && ! $opts->{no_stream_ssl}
+        && ! $opts->{stream_ssl})
+    {
+        $opts->{stream_ssl} = 1;
+        push @ngx_opts, '--with-stream_ssl_module';
+    }
+
+    if (!$opts->{no_stream}
+        && ! $opts->{no_stream_ssl_preread}
+        && ! $opts->{stream_ssl_preead})
+    {
+        $opts->{stream_ssl_preread} = 1;
+        push @ngx_opts, '--with-stream_ssl_preread_module';
     }
 
     if (!$opts->{lua}
@@ -667,6 +734,14 @@ _END_
                 || $user_luajit_xcflags !~ /-DLUAJIT_ENABLE_LUA52COMPAT\b/))
         {
             $luajit_xcflags .= " -DLUAJIT_ENABLE_LUA52COMPAT";
+        }
+
+        if (!$no_luajit_gc64
+            && $Config{"archname"} =~ /\bx86_64\b/
+            && (!$user_luajit_xcflags
+                || $user_luajit_xcflags !~ /-DLUAJIT_ENABLE_GC64\b/))
+        {
+            $luajit_xcflags .= " -DLUAJIT_ENABLE_GC64";
         }
 
         if (!$user_luajit_xcflags
@@ -885,7 +960,7 @@ int main(void) {
     {
         # build lua modules
 
-        my $lualib_prefix = File::Spec->catfile($prefix, "lualib");
+        $lualib_prefix = File::Spec->catfile($prefix, "lualib");
         my $site_lualib_prefix = File::Spec->catfile($prefix, "site/lualib");
 
         my $ngx_lua_dir = auto_complete 'ngx_lua';
@@ -1024,6 +1099,44 @@ _EOC_
                 "\$(MAKE) install$extra_opts";
         }
 
+        unless ($opts->{no_lua_resty_signal}) {
+            my $dir = auto_complete 'lua-resty-signal';
+
+            my $extra_opts =
+                " DESTDIR=\$(DESTDIR) LUA_INCLUDE_DIR=$ENV{LUAJIT_INC} " .
+                "LUA_LIB_DIR=$lualib_prefix";
+
+            if ($on_solaris) {
+                $extra_opts .= " INSTALL=$root_dir/build/install";
+            }
+
+            if ($opts->{debug}) {
+                $extra_opts .= " CFLAGS=\"-g -O -Wall -fpic\"";
+            }
+
+            if ($platform eq 'macosx') {
+                $extra_opts .=
+                    " LDFLAGS='-bundle -undefined dynamic_lookup'";
+
+            } elsif ($platform eq 'msys') {
+                my $luajit_root = File::Spec->rel2abs("luajit-root");
+                $extra_opts .= " LDFLAGS=\"-shared -L$luajit_root -llua51\"";
+            }
+
+            if (defined $cc) {
+                $extra_opts .= " CC='$cc'";
+
+            } else {
+                $extra_opts .= " CC=cc";
+            }
+
+            push @make_cmds, "cd $root_dir/build/$dir && " .
+                "\$(MAKE)$extra_opts";
+
+            push @make_install_cmds, "cd $root_dir/build/$dir && " .
+                "\$(MAKE) install$extra_opts";
+        }
+
         unless ($opts->{no_lua_redis_parser}) {
             my $dir = auto_complete 'lua-redis-parser';
             if (!defined $dir) {
@@ -1128,25 +1241,13 @@ _EOC_
         }
 
         for my $key (qw(dns memcached redis mysql string upload websocket
-                        lock lrucache core upstream_healthcheck limit_traffic 
-                        logger_socket iputils libinjection))
+                        lock lrucache core upstream_healthcheck limit_traffic
+                        shell logger_socket iputils libinjection))
         {
-            unless ($opts->{"no_lua_resty_$key"}) {
-                (my $key2 = $key) =~ s/_/-/g;
-                my $name = "lua-resty-$key2";
-                my $dir = auto_complete $name;
-                if (!defined $dir) {
-                    die "No $name found";
-                }
-
-                my $extra_opts =
-                    " DESTDIR=\$(DESTDIR) LUA_LIB_DIR=$lualib_prefix"
-                    ." INSTALL=$root_dir/build/install";
-
-                push @make_install_cmds, "cd $root_dir/build/$dir && " .
-                    "\$(MAKE) install$extra_opts";
-            }
+            add_lua_lib($opts, "lua_resty", $key);
         }
+
+        add_lua_lib($opts, "lua", "tablepool");
     }
 
     # configure opm:
@@ -1242,6 +1343,27 @@ _EOC_
     return $opts_line;
 }
 
+sub add_lua_lib ($$$) {
+    my ($opts, $prefix, $lib) = @_;
+
+    unless ($opts->{"no_${prefix}_$lib"}) {
+        (my $prefix2 = $prefix) =~ s/_/-/g;
+        (my $lib2 = $lib) =~ s/_/-/g;
+        my $name = "$prefix2-$lib2";
+        my $dir = auto_complete $name;
+        if (!defined $dir) {
+            die "No $name library found";
+        }
+
+        my $extra_opts =
+        " DESTDIR=\$(DESTDIR) LUA_LIB_DIR=$lualib_prefix"
+        ." INSTALL=$root_dir/build/install";
+
+        push @make_install_cmds, "cd $root_dir/build/$dir && " .
+        "\$(MAKE) install$extra_opts";
+    }
+}
+
 sub usage ($) {
     my $retval = shift;
     my $msg = <<'_EOC_';
@@ -1305,6 +1427,7 @@ _EOC_
     $msg .= <<'_EOC_';
   --without-ngx_devel_kit_module     disable ngx_devel_kit_module
   --without-http_ssl_module          disable ngx_http_ssl_module
+  --without-stream_ssl_module        disable ngx_stream_ssl_module
 
 _EOC_
 
@@ -1315,6 +1438,8 @@ _EOC_
   --without-lua_cjson                disable the lua-cjson library
   --without-lua_geoip                disable the lua-geoip library
   --without-lua_libinjection         disable the lua-libinjection library
+  --without-lua_tablepool            disable the lua-tablepool library (and by consequence, the
+                                     lua-resty-shell library)
   --without-lua_redis_parser         disable the lua-redis-parser library
   --without-lua_rds_parser           disable the lua-rds-parser library
   --without-lua_resty_dns            disable the lua-resty-dns library
@@ -1332,6 +1457,9 @@ _EOC_
   --without-lua_resty_limit_traffic  disable the lua-resty-limit-traffic library
   --without-lua_resty_lock           disable the lua-resty-lock library
   --without-lua_resty_lrucache       disable the lua-resty-lrucache library
+  --without-lua_resty_signal         disable the lua-resty-signal library (and by consequence,
+                                     the lua-resty-shell library)
+  --without-lua_resty_shell          disable the lua-resty-shell library
   --without-lua_resty_core           disable the lua-resty-core library
 
   --with-luajit                      enable and build the bundled LuaJIT 2.1 (the default)
@@ -1339,6 +1467,8 @@ _EOC_
   --with-luajit-xcflags=FLAGS        Specify extra C compiler flags for LuaJIT 2.1
   --without-luajit-lua52             Turns off the LuaJIT extensions from Lua 5.2 that may break
                                      backward compatibility.
+  --without-luajit-gc64              Turns off the LuaJIT GC64 mode (which is enabled by default
+                                     on x86_64)
 
   --with-libdrizzle=DIR              specify the libdrizzle 1.0 (or drizzle) installation prefix
   --with-libpq=DIR                   specify the libpq (or postgresql) installation prefix
@@ -1455,9 +1585,12 @@ Options directly inherited from nginx
   --without-mail_imap_module         disable ngx_mail_imap_module
   --without-mail_smtp_module         disable ngx_mail_smtp_module
 
-  --with-stream                      enable TCP/UDP proxy module
+  --without-stream                   disable TCP/UDP proxy module
+  --without-stream_ssl_module        disable ngx_stream_ssl_module
+
+  --with-stream                      enable TCP/UDP proxy module (default on)
   --with-stream=dynamic              enable dynamic TCP/UDP proxy module
-  --with-stream_ssl_module           enable ngx_stream_ssl_module
+  --with-stream_ssl_module           enable ngx_stream_ssl_module (default on)
   --with-stream_realip_module        enable ngx_stream_realip_module
   --with-stream_geoip_module         enable ngx_stream_geoip_module
   --with-stream_geoip_module=dynamic enable dynamic ngx_stream_geoip_module

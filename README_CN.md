@@ -179,8 +179,7 @@ Please submit bug reports, wishlists, or patches by
 TODO
 ====
 
-* 将 OpenWAF 依赖的 OpenResty 升级至 1.15.8.2 版本。时间：2020年2月24日至28日
-* 更新 Docker 至 v1.0.0β 版本。时间：2020年2月24日至28日
+* 添加接入规则模块动态开关
 * 支持对接 sso
 * 动态令牌
 * APISG(API安全网关)

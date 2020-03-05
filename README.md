@@ -174,8 +174,7 @@ Please submit bug reports, wishlists, or patches by
 TODO
 ====
 
-* Update OpenResty version to 1.15.8.2.Time: February 24, 2020 to February 28, 2020
-* Update docker version to v1.0.0 β. Time: February 24, 2020 to February 28, 2020
+* Add access_rule module dynamic switch
 * Support connecting SSO
 * Dynamic token
 * APISG(API Security gateway)
