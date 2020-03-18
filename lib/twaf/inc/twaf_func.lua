@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "1.1.1"
+    _VERSION = "1.1.2"
 }
 
 local ffi                   =  require "ffi"
@@ -933,11 +933,7 @@ function _M.syn_config(self, _twaf)
     
     local res = dict:get("worker_process_"..wid)
     
-    if res and res ~= true and res ~= wpid then
-        res = true
-    end
-    
-    if res == true then
+    if res == nil or res == true or res ~= wpid then
         ngx_log(ngx_INFO, "config synchronization ing..")
         local worker_config = dict:get("worker_config")
         worker_config = cjson.decode(worker_config)
