@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "1.0.0"
+    _VERSION = "1.0.1"
 }
 
 _M.api = {}
@@ -64,7 +64,7 @@ _M.api.timer_count.get = function(_twaf, log, u)
     return
 end
 
--- get shm, e.g: GET /api/shm/{shared_dict_name}
+-- get shm, e.g: GET /api/shm/{shared_dict_name}/{key}
 _M.api.shm.get  = function(_twaf, log, u)
     
     if not u[2] then
@@ -78,6 +78,11 @@ _M.api.shm.get  = function(_twaf, log, u)
     if not dict then
         log.success = 0
         log.reason = "invalid shared dict '"..u[2].."'"
+        return
+    end
+    
+    if u[3] then
+        log.result = dict:get(u[3]) or "nil"
         return
     end
     
@@ -241,7 +246,7 @@ _M.help.ctx = {
 }
 
 _M.help.shm = {
-    "GET /api/shm/{shared_dict_name}"
+    "GET /api/shm/{shared_dict_name}/{key}"
 }
 
 _M.help.version = {
