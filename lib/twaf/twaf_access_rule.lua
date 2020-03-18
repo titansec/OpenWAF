@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "1.1.0"
+    _VERSION = "1.1.1"
 }
 
 local twaf_func            = require "lib.twaf.inc.twaf_func"
@@ -290,6 +290,7 @@ function _M.rule_init(r, err)
     -- server
 
     r.is_star = r.is_star or false
+    twaf_func.type_check(r.is_star, "is_star", "boolean", err)
     
     if _type(r.host) == "table" and not r.host[2] then
         r.host = r.host[1]
