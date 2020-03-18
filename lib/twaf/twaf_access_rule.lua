@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "1.0.9"
+    _VERSION = "1.1.0"
 }
 
 local twaf_func            = require "lib.twaf.inc.twaf_func"
@@ -368,7 +368,7 @@ function _M.rule_init(r, err)
         r.forward_port = r.forward_port or 80
     end
 
-    r.policy = r.policy or _twaf.config.global_conf_uuid
+    r.policy = r.policy or twaf.config.global_conf_uuid
     twaf_func.type_check(r.policy, "policy", "string", err)
 
     r.uuid = r.uuid or twaf_func:random_id(16, true)
