@@ -3,7 +3,7 @@
 -- Copyright (C) OpenWAF
 
 local _M = {
-    _VERSION = "1.1.2"
+    _VERSION = "1.1.3"
 }
 
 local ffi                   =  require "ffi"
@@ -864,8 +864,8 @@ local function table_value_to_string(tb)
     return tb
 end
 
-function _M.table_to_string(self, tb)
-    if _type(tb) ~= "table" then return tb end
+function _M.table_to_string(self, tb, is_all)
+    if _type(tb) ~= "table" then return is_all == true and _tostring(tb) or tb end
     
     local tbl = _M:copy_table(tb)
     
@@ -881,7 +881,7 @@ function _M.syn_config_process(self, _twaf, worker_config)
     end
     
     local phase = {"access", "header_filter", "body_filter"}
-    
+    --[[
     -- system rules
     if worker_config.rules then
         for phase, rules in pairs(worker_config.rules) do
@@ -915,7 +915,7 @@ function _M.syn_config_process(self, _twaf, worker_config)
             end
         end
     end
-        
+    ]]
     for k, v in pairs(worker_config) do
         if _type(_twaf.config[k]) == "userdata" then
             worker_config[k] = _twaf.config[k]
@@ -944,6 +944,8 @@ function _M.syn_config(self, _twaf)
     end
 end
 
+-- input：nil string number boolean table "nil" function
+-- output: nil string, number
 function _M.parse_dynamic_value(self, key, req)
     local lookup = function(m)
         local val      = twaf:get_vars(string_upper(m[1]), req)
@@ -956,15 +958,14 @@ function _M.parse_dynamic_value(self, key, req)
         
         if (_type(val) == "table") then
             if (specific) then
-                return _M:table_to_string(val[specific])
+                return _M:table_to_string(val[specific], true)
             else
-                return _M:table_to_string(val)
-                --return _tostring(m[1])
+                return _M:table_to_string(val, true)
             end
         elseif (_type(val) == "function") then
-            return _M:table_to_string(val(twaf))
+            return _M:table_to_string(val(twaf), true)
         else
-            return _M:table_to_string(val)
+            return _M:table_to_string(val, true)
         end
     end
     
@@ -973,7 +974,7 @@ function _M.parse_dynamic_value(self, key, req)
     -- and find it in the lookup table
     local str = ngx_re_gsub(key, [[%{([^\.]+?)(?:\.([^}]+))?}]], lookup, "oij")
     
-    if str == "nil" then str = nil end
+    if str == "nil" then return nil end
     
     --logger.log(_twaf, "Parsed dynamic value is " .. str)
     
