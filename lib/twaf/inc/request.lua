@@ -409,6 +409,14 @@ _M.vars = {
     -- MATCHED_VARS = function(req) req.MATCHED_VARS = {} return req.MATCHED_VARS end,
     -- MATCHED_VAR_NAMES = function(req) req.MATCHED_VAR_NAMES = {} return req.MATCHED_VAR_NAMES end,
     
+    FILES = function(req)
+        _get_vars(req, "REQUEST_BODY")
+        return req.FILES
+    end,
+    FILES_NAMES = function(req)
+        _get_vars(req, "REQUEST_BODY")
+        return req.FILES_NAMES
+    end,
     REAL_IP = function(req)
         req.REAL_IP = __get_real_ip(req)
         return req.REAL_IP
