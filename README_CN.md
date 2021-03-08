@@ -33,9 +33,9 @@ Table of Contents
 Version
 =======
 
-This document describes OpenWAF v1.0.0β released on 21 Feb 2020.
+This document describes OpenWAF v1.1 released on Mar 8, 2021.
 
-[Dockerfile](https://github.com/titansec/docker-openwaf) and [Docker Images](https://hub.docker.com/r/titansec/openwaf/tags) have been upgraded to version 1.0.0_beta on February 25, 2020.
+[Dockerfile](https://github.com/titansec/docker-openwaf) and [Docker Images](https://hub.docker.com/r/titansec/openwaf/tags) have been upgraded to version 1.1 on Mar 8, 2021.
 
 Synopsis
 ========
@@ -968,8 +968,8 @@ twaf_log
         "file_security_log_state": true,                 -- file模式的安全日志开关
         "file_flush": false,                             -- 是否实时写入文件
         "file_content_type": "W3C",                      -- file模式时日志格式，当前仅支持W3C
-        "file_access_log_path": "/twaf_access.log",      -- file模式的访问日志路径
-        "file_security_log_path": "/twaf_security.log",  -- file模式的安全日志路径
+        "file_access_log_path": "/var/log/openwaf_access.log",      -- file模式的访问日志路径
+        "file_security_log_path": "/var/log/openwaf_security.log",  -- file模式的安全日志路径
         "access_log_w3c": "",                            -- file模式访问日志的w3c格式
         "security_log_w3c": ""                           -- file模式安全日志的w3c格式
 }
