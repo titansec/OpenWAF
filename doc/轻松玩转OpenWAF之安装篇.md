@@ -27,16 +27,16 @@ Table of Contents
     cd /opt
     apt-get install gcc wget git swig make perl build-essential zlib1g-dev libgeoip-dev libncurses5-dev libreadline-dev -y
     wget http://www.over-yonder.net/~fullermd/projects/libcidr/libcidr-1.2.3.tar.xz
-    wget https://ftp.pcre.org/pub/pcre/pcre-8.43.tar.gz
+    wget https://ftp.pcre.org/pub/pcre/pcre-8.44.tar.gz
     wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz
-    wget https://openresty.org/download/openresty-1.15.8.2.tar.gz
+    wget https://openresty.org/download/openresty-1.19.3.1.tar.gz
     tar -xvf libcidr-1.2.3.tar.xz
-    tar -zxvf pcre-8.43.tar.gz
+    tar -zxvf pcre-8.44.tar.gz
     tar -zxvf openssl-1.1.1d.tar.gz
-    tar -zxvf openresty-1.15.8.2.tar.gz
-    rm -rf pcre-8.43.tar.gz \
+    tar -zxvf openresty-1.19.3.1.tar.gz
+    rm -rf pcre-8.44.tar.gz \
            openssl-1.1.1d.tar.gz \
-           openresty-1.15.8.2.tar.gz
+           openresty-1.19.3.1.tar.gz
     cd /opt/libcidr-1.2.3
     make && make install
 ```
@@ -72,15 +72,15 @@ PS:
         OpenResty 依赖 PCRE ，但通过 apt-get 安装无法开启 pcre-jit，解决方法：  
         
         方法 1. 源码编译
-            wget https://ftp.pcre.org/pub/pcre/pcre-8.43.tar.gz  
-            tar -zxvf pcre-8.43.tar.gz  
-            cd pcre-8.43  
+            wget https://ftp.pcre.org/pub/pcre/pcre-8.44.tar.gz  
+            tar -zxvf pcre-8.44.tar.gz  
+            cd pcre-8.44  
             ./configure --enable-jit  
             make && make install  
             
         方法 2. 编译 openresty 时指定 pcre 安装目录
-            wget https://ftp.pcre.org/pub/pcre/pcre-8.43.tar.gz  
-            tar -zxvf pcre-8.43.tar.gz  
+            wget https://ftp.pcre.org/pub/pcre/pcre-8.44.tar.gz  
+            tar -zxvf pcre-8.44.tar.gz  
             编译 openresty 时通过 --with-pcre=/path/to/pcre-xxx/ 指定 pcre 安装路径 
         
         本示例使用方法 2
@@ -92,8 +92,8 @@ PS:
     cd /opt  
     git clone https://github.com/titansec/OpenWAF.git
     mv /opt/OpenWAF/lib/openresty/ngx_openwaf.conf /etc
-    mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.15.8.2
-    cp -RP /opt/OpenWAF/lib/openresty/* /opt/openresty-1.15.8.2/bundle/
+    mv /opt/OpenWAF/lib/openresty/configure /opt/openresty-1.19.3.1
+    cp -RP /opt/OpenWAF/lib/openresty/* /opt/openresty-1.19.3.1/bundle/
     cd /opt/OpenWAF
     make clean
     make install
@@ -113,7 +113,7 @@ PS:
 3. 编译 openresty  
 
 ```txt
-    cd /opt/openresty-1.15.8.2/  
+    cd /opt/openresty-1.19.3.1/  
     ./configure --with-pcre-jit --with-ipv6 \  
                 --with-http_stub_status_module \  
                 --with-http_ssl_module \  
@@ -121,7 +121,7 @@ PS:
                 --with-http_sub_module  \  
                 --with-http_geoip_module \  
                 --with-openssl=/opt/openssl-1.1.1d \ 
-                --with-pcre=/opt/pcre-8.43
+                --with-pcre=/opt/pcre-8.44
     make && make install 
 ```
 
