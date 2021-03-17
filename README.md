@@ -2378,7 +2378,7 @@ string类型，http请求协议，如: HTTP/1.1
 
 HTTP_VERSION
 ------------
-string类型，http请求协议版本，如: 1.1
+number类型，http请求协议版本，如: 1, 1.1, 2
 
 [Back to Var](#variables)
 

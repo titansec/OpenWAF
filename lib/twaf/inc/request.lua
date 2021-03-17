@@ -388,12 +388,22 @@ _M.vars = {
         end
     end,
     RAW_HEADER = function(req)
+        if _get_vars(req, "HTTP_VERSION") == 2 then -- don't support HTTP 2.0
+            req.RAW_HEADER = "-"
+            return req.RAW_HEADER
+        end
+
         if req.phase_n == 7 or req.phase_n == 9 or req.phase_n == 10 or req.phase_n == 11 then -- rewrite access content header_filter
             req.RAW_HEADER = ngx_req_raw_header()
             return req.RAW_HEADER
         end
     end,
     RAW_HEADER_TRUE = function(req)
+        if _get_vars(req, "HTTP_VERSION") == 2 then -- don't support HTTP 2.0
+            req.RAW_HEADER_TRUE = "-"
+            return req.RAW_HEADER_TRUE
+        end
+
         if req.phase_n == 7 or req.phase_n == 9 or req.phase_n == 10 or req.phase_n == 11 then -- rewrite access content header_filter
             req.RAW_HEADER_TRUE = ngx_req_raw_header(true) 
             return req.RAW_HEADER_TRUE
