@@ -64,7 +64,7 @@ local function _content_log(_twaf, ctx, status)
         req.TIME_LOCAL  =  "-"
         
         socket.init(log_cf)
-        local security_msg = twaf_log:set_msg(ctx, log_cf, log_cf.security_log, "security_log")
+        local security_msg = twaf_log:set_msg(ctx, log_cf, log_cf.content_type, "security_log")
         socket.log(security_msg)
     end
     
